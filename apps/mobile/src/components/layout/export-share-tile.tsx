@@ -42,7 +42,7 @@ export function ExportShareTile({ pack }: { pack: ExportPack }) {
 
   return (
     <SurfaceCard tone={toneForExport(pack)}>
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.md }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 15 }}>{pack.label}</Text>
           <StatusBadge
@@ -50,7 +50,7 @@ export function ExportShareTile({ pack }: { pack: ExportPack }) {
             tone={pack.status === "ready" ? "connected" : pack.status === "generating" ? "buddy" : pack.status === "failed" ? "danger" : "neutral"}
           />
         </View>
-        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>{pack.description}</Text>
+        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{pack.description}</Text>
         <ActionButton label={actionLabel(pack)} variant={pack.status === "ready" ? "primary" : "secondary"} />
       </View>
     </SurfaceCard>

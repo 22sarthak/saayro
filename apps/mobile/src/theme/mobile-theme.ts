@@ -45,6 +45,11 @@ export const mobileTheme = {
     xxl: remToNumber(semanticTokens.spacing[8]),
     hero: remToNumber(semanticTokens.spacing[12])
   },
+  layout: {
+    pageGutter: 18,
+    contentMaxWidth: 460,
+    tabBarInset: 12
+  },
   radius: {
     sm: pxToNumber(semanticTokens.radius.sm),
     md: pxToNumber(semanticTokens.radius.md),
@@ -80,4 +85,3 @@ export const mobileTheme = {
 } as const;
 
 export type MobileTheme = typeof mobileTheme;
-

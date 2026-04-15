@@ -26,13 +26,13 @@ function ProfilePopulatedScreen() {
     <AppTabShell
       section="Profile"
       title="Traveler preferences, trust, and connection state."
-      subtitle="Profile on mobile should feel calm and legible, especially when connected sources are only partially confident."
+      subtitle="Profile should feel compact and deliberate, with settings and trust signals easy to scan in one thumb pass."
     >
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           <View style={{ gap: theme.spacing.xs }}>
-            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 25, lineHeight: 29 }}>{data.userName}</Text>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14 }}>Home base: {data.homeBase}</Text>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 22, lineHeight: 26 }}>{data.userName}</Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13 }}>Home base: {data.homeBase}</Text>
           </View>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.preferences.interests.map((interest) => (
@@ -45,13 +45,13 @@ function ProfilePopulatedScreen() {
       <SectionHeader eyebrow="Preferences" title="How this traveler likes to move" description="Preference surfaces should stay explicit so later planning and Buddy suggestions remain grounded." />
 
       <SurfaceCard tone="connected">
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14 }}>Preferred maps: {data.preferences.preferredMapsApp}</Text>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14 }}>Travel pace: {data.preferences.travelPace}</Text>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14 }}>
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Preferred maps: {data.preferences.preferredMapsApp}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Travel pace: {data.preferences.travelPace}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>
             Comfort priority: {data.preferences.comfortPriority}
           </Text>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14 }}>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>
             Notifications: {data.preferences.notificationsEnabled ? "enabled" : "off"}
           </Text>
         </View>
@@ -72,9 +72,9 @@ function ProfilePopulatedScreen() {
       <SectionHeader eyebrow="Trust" title="Clarity over cleverness" description="The product should explain what it knows, what it inferred, and what still needs review." />
 
       <SurfaceCard tone="buddy">
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           {data.trustNotes.map((note) => (
-            <Text key={note} style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>
+            <Text key={note} style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
               {note}
             </Text>
           ))}
@@ -82,7 +82,7 @@ function ProfilePopulatedScreen() {
       </SurfaceCard>
 
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Support surfaces</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.supportActions.map((action) => (

@@ -27,7 +27,7 @@ export function SurfaceCard({
       style={{
         backgroundColor,
         borderRadius: theme.radius.lg,
-        padding: theme.spacing.xl,
+        padding: theme.spacing.lg,
         borderWidth: 1,
         borderColor: theme.colors.borderSoft,
         ...theme.shadow.card
@@ -37,4 +37,3 @@ export function SurfaceCard({
     </View>
   );
 }
-

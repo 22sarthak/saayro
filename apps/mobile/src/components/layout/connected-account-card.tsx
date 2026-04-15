@@ -9,7 +9,7 @@ export function ConnectedAccountCard({ account }: { account: ConnectedAccount })
 
   return (
     <SurfaceCard tone={account.state === "connected" ? "connected" : account.state === "partial" ? "discovery" : "raised"}>
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.md }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 15 }}>{account.label}</Text>
           <StatusBadge connectionState={account.state} />
@@ -18,7 +18,7 @@ export function ConnectedAccountCard({ account }: { account: ConnectedAccount })
           Scopes: {account.grantedScopes.join(", ")}
         </Text>
         {account.lastSyncedAt ? (
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 12 }}>Last sync: {account.lastSyncedAt}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 11 }}>Last sync: {account.lastSyncedAt}</Text>
         ) : null}
       </View>
     </SurfaceCard>

@@ -23,14 +23,14 @@ export function EmptyStateBlock({
 
   return (
     <SurfaceCard tone={tone}>
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {eyebrow ? (
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.6 }}>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.5 }}>
             {eyebrow.toUpperCase()}
           </Text>
         ) : null}
-        <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 18, lineHeight: 25 }}>{title}</Text>
-        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{description}</Text>
+        <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 17, lineHeight: 23 }}>{title}</Text>
+        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>{description}</Text>
         {children}
         {actionLabel ? <ActionButton label={actionLabel} variant="secondary" /> : null}
       </View>

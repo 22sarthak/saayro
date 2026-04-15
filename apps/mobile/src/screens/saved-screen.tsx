@@ -31,12 +31,12 @@ function SavedPopulatedScreen() {
   return (
     <AppTabShell
       section="Saved"
-      title="Saved items should feel warm, curated, and still route-aware."
-      subtitle="This tab holds places worth returning to, not a dead-end wishlist."
+      title="Saved items should feel warm and curated."
+      subtitle="Saved should feel tighter and more deliberate, like a personal shortlist rather than a broad shelf."
     >
       <SurfaceCard tone="discovery">
-        <View style={{ gap: theme.spacing.md }}>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 17 }}>What this trip keeps close</Text>
+        <View style={{ gap: theme.spacing.sm }}>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>What this trip keeps close</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.suggestionChips.map((option) => (
               <TagChip key={option.id} option={option} />
@@ -46,14 +46,14 @@ function SavedPopulatedScreen() {
       </SurfaceCard>
 
       {data.sections.map((section) => (
-        <View key={section.id} style={{ gap: theme.spacing.md }}>
+        <View key={section.id} style={{ gap: theme.spacing.sm }}>
           <SectionHeader eyebrow="Collection" title={section.title} description={section.description} />
           {section.items.map((item) => (
             <SurfaceCard key={item.id} tone={section.id === "discovery" ? "discovery" : "raised"}>
-              <View style={{ gap: theme.spacing.md }}>
+              <View style={{ gap: theme.spacing.sm }}>
                 <View style={{ gap: theme.spacing.xs }}>
                   <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>{item.title}</Text>
-                  <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>{item.subtitle}</Text>
+                  <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{item.subtitle}</Text>
                 </View>
                 <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>
                   {item.city} · {item.category}

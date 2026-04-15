@@ -32,21 +32,21 @@ function HomePopulatedScreen() {
   return (
     <AppTabShell
       section="Discovery home"
-      title="Trips that already feel composed before anything goes live."
-      subtitle="Discovery home should help users move between the active trip, Buddy, exports, and connected travel without a single crowded panel."
+      title="Trips that already feel composed."
+      subtitle="The home shell should stay one-thumb scannable: active trip first, then movement, then portability."
     >
       <SurfaceCard tone="connected">
-        <View style={{ gap: theme.spacing.lg }}>
+        <View style={{ gap: theme.spacing.md }}>
           <View style={{ gap: theme.spacing.xs }}>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.8 }}>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.5 }}>
               ACTIVE TRIP
             </Text>
-            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 28, lineHeight: 32 }}>{featuredTrip.title}</Text>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 24, lineHeight: 28 }}>{featuredTrip.title}</Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
               {featuredTrip.destinationCity}, {featuredTrip.destinationRegion} · {featuredTrip.startDate} to {featuredTrip.endDate}
             </Text>
           </View>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{featuredTrip.overview}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>{featuredTrip.overview}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.quickActions.map((option) => (
               <TagChip key={option.id} option={option} />
@@ -62,20 +62,20 @@ function HomePopulatedScreen() {
       />
 
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.lg }}>
+        <View style={{ gap: theme.spacing.md }}>
           <View style={{ gap: theme.spacing.xs }}>
             <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Recent trips</Text>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 12, lineHeight: 18 }}>
               Drafts and planned travel stay visible instead of getting buried behind one active itinerary.
             </Text>
           </View>
-          <View style={{ gap: theme.spacing.md }}>
+          <View style={{ gap: theme.spacing.sm }}>
             {data.recentTrips.map((trip) => (
               <View
                 key={trip.id}
                 style={{
                   borderRadius: theme.radius.md,
-                  padding: theme.spacing.lg,
+                  padding: theme.spacing.md,
                   backgroundColor: theme.colors.canvas,
                   borderWidth: 1,
                   borderColor: theme.colors.borderSoft,
@@ -84,7 +84,7 @@ function HomePopulatedScreen() {
               >
                 <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 15 }}>{trip.title}</Text>
                 <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13 }}>{trip.destinationLabel}</Text>
-                <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 12 }}>
+                <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 11 }}>
                   {trip.status} · {trip.connectedItemCount} connected item{trip.connectedItemCount === 1 ? "" : "s"}
                 </Text>
               </View>
@@ -96,7 +96,7 @@ function HomePopulatedScreen() {
       <SurfaceCard tone="buddy">
         <View style={{ gap: theme.spacing.md }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Connected travel pulse</Text>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
             {data.connectedSummary.attachedCount} item{data.connectedSummary.attachedCount === 1 ? "" : "s"} attached,{" "}
             {data.connectedSummary.candidateCount} awaiting review.
           </Text>

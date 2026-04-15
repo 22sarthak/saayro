@@ -15,17 +15,17 @@ export default function SignInScreen() {
       title="Re-enter the trip with context intact."
       description="Choose your path back into the shell. The flow is mock-only, but the pacing and tone should already feel real."
     >
-      <View style={{ gap: theme.spacing.lg }}>
+      <View style={{ gap: theme.spacing.md }}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
           {authEntryOptions.map((option) => (
             <TagChip key={option.id} option={option} />
           ))}
         </View>
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           <ActionButton label="Continue with Google" onPress={() => router.replace("/(tabs)")} />
           <ActionButton label="Continue with mobile OTP" variant="secondary" onPress={() => router.push("/otp")} />
         </View>
-        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>
+        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>
           New here? Switch to sign up to preview the calmer account-creation shell.
         </Text>
         <ActionButton label="Open sign-up shell" variant="ghost" onPress={() => router.push("/sign-up")} />
@@ -33,4 +33,3 @@ export default function SignInScreen() {
     </AuthFrame>
   );
 }
-

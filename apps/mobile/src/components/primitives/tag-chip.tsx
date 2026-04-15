@@ -10,12 +10,11 @@ export function TagChip({ option }: { option: ChipOption }) {
       style={{
         backgroundColor: theme.colors.surfaceMuted,
         borderRadius: theme.radius.pill,
-        paddingHorizontal: theme.spacing.lg,
-        paddingVertical: theme.spacing.sm
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.xs + 2
       }}
     >
-      <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.bodyMedium, fontSize: 12 }}>{option.label}</Text>
+      <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.bodyMedium, fontSize: 11 }}>{option.label}</Text>
     </View>
   );
 }
-

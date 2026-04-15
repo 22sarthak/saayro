@@ -9,17 +9,20 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     <View
       style={{
         alignItems: "center",
-        gap: 4
+        justifyContent: "center"
       }}
     >
       <View
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          minWidth: focused ? 38 : 30,
+          height: 30,
+          paddingHorizontal: focused ? 10 : 0,
+          borderRadius: 15,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: focused ? theme.colors.accentBuddy : theme.colors.surfaceMuted
+          backgroundColor: focused ? theme.colors.accentBuddy : theme.colors.surfaceMuted,
+          borderWidth: focused ? 1 : 0,
+          borderColor: focused ? theme.colors.borderSoft : "transparent"
         }}
       >
         <Text
@@ -45,16 +48,25 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: theme.colors.surfaceRaised,
-          borderTopColor: theme.colors.borderSoft,
-          height: 78,
-          paddingTop: 8,
-          paddingBottom: 10
+          borderTopColor: "transparent",
+          position: "absolute",
+          left: theme.layout.tabBarInset,
+          right: theme.layout.tabBarInset,
+          bottom: theme.layout.tabBarInset,
+          height: 68,
+          paddingTop: 6,
+          paddingBottom: 8,
+          borderRadius: 24,
+          ...theme.shadow.card
         },
         tabBarActiveTintColor: theme.colors.textPrimary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontFamily: theme.fonts.bodyMedium
+        },
+        tabBarItemStyle: {
+          paddingTop: 2
         }
       }}
     >

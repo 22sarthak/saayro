@@ -31,13 +31,13 @@ function BuddyPopulatedScreen() {
   return (
     <AppTabShell
       section="Buddy"
-      title="Trip-aware guidance that stays grounded in the itinerary."
-      subtitle="Buddy on mobile should feel like a calm planning companion, not a floating chatbot detached from the trip."
+      title="Trip-aware guidance that stays grounded."
+      subtitle="Buddy should read like a calm planning companion, with denser chat rhythm and clearer next actions."
     >
       <SurfaceCard tone="buddy">
-        <View style={{ gap: theme.spacing.md }}>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 24, lineHeight: 28 }}>{data.tripTitle}</Text>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>{tripContext}</Text>
+        <View style={{ gap: theme.spacing.sm }}>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 22, lineHeight: 26 }}>{data.tripTitle}</Text>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{tripContext}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.actionChips.map((option) => (
               <TagChip key={option.id} option={option} />
@@ -52,28 +52,28 @@ function BuddyPopulatedScreen() {
         description="Structured action surfaces keep Buddy useful without crossing into live AI behavior."
       />
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {data.messages.map((message) => (
           <View
             key={message.id}
             style={{
               alignSelf: message.role === "buddy" ? "flex-start" : "flex-end",
-              maxWidth: "94%",
-              borderRadius: theme.radius.lg,
+              maxWidth: "88%",
+              borderRadius: theme.radius.md,
               backgroundColor: message.role === "buddy" ? theme.colors.surfaceBuddy : theme.colors.surfaceRaised,
-              padding: theme.spacing.lg,
+              padding: theme.spacing.md,
               borderWidth: 1,
               borderColor: theme.colors.borderSoft,
-              gap: theme.spacing.sm
+              gap: 6
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.md }}>
-              <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.sm }}>
+              <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11 }}>
                 {message.role === "buddy" ? "Buddy" : "You"}
               </Text>
               {message.confidence ? <StatusBadge confidence={message.confidence} /> : null}
             </View>
-            <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{message.content}</Text>
+            <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{message.content}</Text>
             {message.actions?.length ? (
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
                 {message.actions.map((action) => (
@@ -86,7 +86,7 @@ function BuddyPopulatedScreen() {
       </View>
 
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Prompt ideas</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.promptOptions.map((option) => (
@@ -97,9 +97,9 @@ function BuddyPopulatedScreen() {
       </SurfaceCard>
 
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.6 }}>COMPOSER</Text>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{data.composerHint}</Text>
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.4 }}>COMPOSER</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{data.composerHint}</Text>
         </View>
       </SurfaceCard>
     </AppTabShell>

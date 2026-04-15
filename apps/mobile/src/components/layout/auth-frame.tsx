@@ -21,7 +21,7 @@ export function AuthFrame({
   return (
     <ScreenShell eyebrow={eyebrow} title={title} description={description}>
       <SurfaceCard tone="raised">
-        <View style={{ gap: theme.spacing.lg }}>
+        <View style={{ gap: theme.spacing.md }}>
           <SaayroMark compact />
           {children}
         </View>
@@ -30,18 +30,17 @@ export function AuthFrame({
         style={{
           borderRadius: theme.radius.lg,
           backgroundColor: theme.colors.surfaceBuddy,
-          padding: theme.spacing.xl,
-          gap: theme.spacing.sm
+          padding: theme.spacing.lg,
+          gap: theme.spacing.xs
         }}
       >
-        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 2.2 }}>
+        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.7 }}>
           PREVIEW MODE
         </Text>
-        <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>
+        <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>
           These flows are visual shells only. No live authentication, backend, or sync is connected in this step.
         </Text>
       </View>
     </ScreenShell>
   );
 }
-

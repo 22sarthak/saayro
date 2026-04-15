@@ -28,25 +28,21 @@ export function RouteHandoffCard({
 
   return (
     <SurfaceCard tone="connected">
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.md }}>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Route handoff</Text>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 15 }}>Route handoff</Text>
           <StatusBadge tone="maps" label={mapsLabel(preferredMapsApp)} />
         </View>
         <View style={{ gap: theme.spacing.xs }}>
           <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.bodyMedium, fontSize: 14 }}>{route.originLabel}</Text>
           <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13 }}>to {route.destinationLabel}</Text>
         </View>
-        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>
+        <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
           {route.durationMinutes} min · {route.distanceKilometers} km · {route.mode}
         </Text>
-        <View style={{ flexDirection: "row", gap: theme.spacing.md }}>
-          <View style={{ flex: 1 }}>
-            <ActionButton label={`Open in ${mapsLabel(preferredMapsApp)}`} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <ActionButton label="Preview route" variant="secondary" />
-          </View>
+        <View style={{ gap: theme.spacing.sm }}>
+          <ActionButton label={`Open in ${mapsLabel(preferredMapsApp)}`} />
+          <ActionButton label="Preview route" variant="secondary" />
         </View>
       </View>
     </SurfaceCard>

@@ -21,21 +21,24 @@ export function AppTabShell({
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingHorizontal: theme.spacing.xl,
-          paddingTop: theme.spacing.lg,
-          paddingBottom: theme.spacing.hero,
-          gap: theme.spacing.xl
+          paddingHorizontal: theme.layout.pageGutter,
+          paddingTop: theme.spacing.md,
+          paddingBottom: theme.spacing.xxl + 72,
+          gap: theme.spacing.lg,
+          width: "100%",
+          maxWidth: theme.layout.contentMaxWidth,
+          alignSelf: "center"
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 2.2 }}>
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.8 }}>
             {section.toUpperCase()}
           </Text>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 34, lineHeight: 40 }}>{title}</Text>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 15, lineHeight: 24 }}>{subtitle}</Text>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 30, lineHeight: 34 }}>{title}</Text>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{subtitle}</Text>
         </View>
-        <View style={{ gap: theme.spacing.lg, flex: 1 }}>{children}</View>
+        <View style={{ gap: theme.spacing.md, flex: 1 }}>{children}</View>
       </ScrollView>
     </SafeAreaView>
   );

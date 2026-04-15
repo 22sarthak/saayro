@@ -13,12 +13,12 @@ export function LoadingBlock({
 
   return (
     <SurfaceCard tone={tone}>
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {Array.from({ length: lines }).map((_, index) => (
           <View
             key={index}
             style={{
-              height: index === 0 ? 18 : 12,
+              height: index === 0 ? 16 : 10,
               borderRadius: theme.radius.sm,
               backgroundColor: theme.colors.surfaceMuted,
               width: index === 0 ? "58%" : index === lines - 1 ? "72%" : "100%"

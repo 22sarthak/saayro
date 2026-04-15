@@ -38,8 +38,9 @@ export function ActionButton({
     <Pressable
       onPress={onPress}
       style={{
+        minHeight: 46,
         paddingHorizontal: theme.spacing.lg,
-        paddingVertical: theme.spacing.md,
+        paddingVertical: theme.spacing.sm + 1,
         borderRadius: theme.radius.md,
         backgroundColor: tone.backgroundColor,
         borderWidth: tone.borderColor ? 1 : 0,
@@ -48,8 +49,7 @@ export function ActionButton({
         justifyContent: "center"
       }}
     >
-      <Text style={{ color: tone.textColor, fontFamily: theme.fonts.bodyMedium, fontSize: 14 }}>{label}</Text>
+      <Text style={{ color: tone.textColor, fontFamily: theme.fonts.bodyMedium, fontSize: 13 }}>{label}</Text>
     </Pressable>
   );
 }
-

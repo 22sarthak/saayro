@@ -20,24 +20,27 @@ export function ScreenShell({
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: theme.spacing.xl,
-          paddingTop: theme.spacing.xl,
+          paddingHorizontal: theme.layout.pageGutter,
+          paddingTop: theme.spacing.lg,
           paddingBottom: theme.spacing.hero,
-          gap: theme.spacing.xl
+          gap: theme.spacing.lg,
+          width: "100%",
+          maxWidth: theme.layout.contentMaxWidth,
+          alignSelf: "center"
         }}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={{ gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
           {eyebrow ? (
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 2.2 }}>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.8 }}>
               {eyebrow.toUpperCase()}
             </Text>
           ) : null}
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 36, lineHeight: 42 }}>{title}</Text>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 15, lineHeight: 24 }}>{description}</Text>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 31, lineHeight: 36 }}>{title}</Text>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{description}</Text>
         </View>
         {children}
       </ScrollView>
     </SafeAreaView>
   );
 }
-

@@ -36,18 +36,18 @@ function TripsPopulatedScreen() {
   return (
     <AppTabShell
       section="Trips"
-      title="The active trip hub, tuned for mobile scanning."
-      subtitle="Trips should hold itinerary flow, connected travel, exports, and route handoff in one calm stacked surface."
+      title="The active trip hub, tuned for mobile."
+      subtitle="Trips stays the strongest tab, but with tighter hierarchy, quicker scanning, and cleaner stacked sections."
     >
       <SurfaceCard tone="connected">
         <View style={{ gap: theme.spacing.md }}>
           <View style={{ gap: theme.spacing.xs }}>
-            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 26, lineHeight: 30 }}>{trip.title}</Text>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 23, lineHeight: 27 }}>{trip.title}</Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
               {trip.destinationCity}, {trip.destinationRegion}, {trip.destinationCountry}
             </Text>
           </View>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 22 }}>{trip.overview}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>{trip.overview}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {trip.highlights.map((highlight) => (
               <TagChip key={highlight} option={{ id: highlight, label: highlight }} />
@@ -62,18 +62,18 @@ function TripsPopulatedScreen() {
         description="Each day should read like an editorial plan, not a wall of stops."
       />
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {data.itineraryDays.map((day) => (
           <SurfaceCard key={day.id} tone="raised">
-            <View style={{ gap: theme.spacing.lg }}>
+            <View style={{ gap: theme.spacing.md }}>
               <View style={{ gap: theme.spacing.xs }}>
-                <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.8 }}>
+                <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.5 }}>
                   DAY {day.dayNumber}
                 </Text>
-                <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 18 }}>{day.title}</Text>
-                <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 14, lineHeight: 21 }}>{day.summary}</Text>
+                <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 17 }}>{day.title}</Text>
+                <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{day.summary}</Text>
               </View>
-              <View style={{ gap: theme.spacing.sm }}>
+              <View style={{ gap: 8 }}>
                 {day.stops.map((stop) => (
                   <ItineraryTimelineItem key={stop.id} stop={stop} />
                 ))}
@@ -85,7 +85,7 @@ function TripsPopulatedScreen() {
 
       <SectionHeader eyebrow="Maps" title="Route handoff" description="Preferred maps choice should be visible at the moment route clarity matters." />
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {mappedRoutes.map((stop) => (
           <RouteHandoffCard key={stop.id} route={stop.routePreview!} preferredMapsApp={data.mapsPreference} />
         ))}
@@ -93,7 +93,7 @@ function TripsPopulatedScreen() {
 
       <SectionHeader eyebrow="Portability" title="Exports and sharing" description="Trip sharing should read as part of planning, not as an afterthought." />
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {data.exportPacks.map((pack) => (
           <ExportShareTile key={pack.id} pack={pack} />
         ))}
@@ -105,13 +105,13 @@ function TripsPopulatedScreen() {
         description="Partial sync and review-needed states should remain legible and calm."
       />
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {data.connectedItems.map((item) => (
           <ConnectedTravelCard key={item.id} item={item} />
         ))}
       </View>
 
-      <View style={{ gap: theme.spacing.md }}>
+      <View style={{ gap: theme.spacing.sm }}>
         {data.connectedAccounts.map((account) => (
           <ConnectedAccountCard key={account.id} account={account} />
         ))}

@@ -1,19 +1,15 @@
-import { Text, View } from "react-native";
-import { ActionButton } from "@/components/primitives/action-button";
-import { TagChip } from "@/components/primitives/tag-chip";
-import { AppTabShell } from "@/components/layout/app-tab-shell";
-import { TabPreviewCard } from "@/components/layout/tab-preview-card";
-import { getHomePreview, homeQuickActions } from "@/lib/mock-selectors";
-import { useMobileTheme } from "@/theme/mobile-theme-provider";
+import { HomeScreen } from "@/screens/home-screen";
 
 export default function HomeTab() {
+  return <HomeScreen />;
+  /*
   const theme = useMobileTheme();
   const { featuredTrip, recentTrips } = getHomePreview();
 
   return (
     <AppTabShell
       section="Discovery home"
-      title="Move from intent to a trip that already feels usable."
+      title="X"
       subtitle="Home is a mobile-first preview of quick actions, recent trips, and a calmer starting point."
     >
       <TabPreviewCard
@@ -43,5 +39,5 @@ export default function HomeTab() {
       <ActionButton label="Create trip shell" variant="secondary" />
     </AppTabShell>
   );
+  */
 }
-

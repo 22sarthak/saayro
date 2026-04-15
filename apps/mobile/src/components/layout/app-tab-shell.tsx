@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
@@ -18,14 +18,15 @@ export function AppTabShell({
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <View
-        style={{
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
           paddingHorizontal: theme.spacing.xl,
           paddingTop: theme.spacing.lg,
-          paddingBottom: theme.spacing.xl,
-          gap: theme.spacing.xl,
-          flex: 1
+          paddingBottom: theme.spacing.hero,
+          gap: theme.spacing.xl
         }}
+        showsVerticalScrollIndicator={false}
       >
         <View style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 2.2 }}>
@@ -35,8 +36,7 @@ export function AppTabShell({
           <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 15, lineHeight: 24 }}>{subtitle}</Text>
         </View>
         <View style={{ gap: theme.spacing.lg, flex: 1 }}>{children}</View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
-

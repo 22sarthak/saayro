@@ -4,15 +4,28 @@
     "baseUrl": ".",
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["expo-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "references": [
-    { "path": "../../packages/tokens" },
-    { "path": "../../packages/types" },
-    { "path": "../../packages/mock-data" }
+    {
+      "path": "../../packages/tokens"
+    },
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/mock-data"
+    }
   ]
 }
-

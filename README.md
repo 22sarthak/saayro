@@ -1,8 +1,11 @@
-﻿# Saayro
+# Saayro
 
 Saayro is a premium pan-India AI travel companion app.
 
 Tagline: Your trip's smarter half
+
+## What Saayro is
+Saayro helps users plan, organize, and navigate trips with a travel-first product experience, a structured Buddy assistant, and portable outputs such as exports and map handoffs.
 
 ## Current phase
 - Front-end shell first with mock data
@@ -13,6 +16,15 @@ Tagline: Your trip's smarter half
 - Saayro is travel-first, not chatbot-first
 - the approved visual direction is Ivory Atlas with subtle hues
 
+## Start here
+- Product overview: `docs/00-overview/product-brief.md`
+- Design direction: `docs/01-design/ivory-atlas-system.md`
+- Product requirements: `docs/02-product/prd.md`
+- MVP boundaries: `docs/02-product/mvp-scope.md`
+- Frontend architecture: `docs/05-frontend/frontend-architecture.md`
+- API expectations: `docs/06-backend/api-spec.md`
+- Buddy behavior: `docs/07-ai/buddy-behavior-spec.md`
+
 ## Stack
 | Area | Planned stack |
 | --- | --- |
@@ -21,6 +33,25 @@ Tagline: Your trip's smarter half
 | API | FastAPI, PostgreSQL |
 | Shared | `packages/ui`, `packages/types` |
 
+## Repository structure
+- `docs/00-overview`: product context, market framing, glossary, and success metrics
+- `docs/01-design`: brand rules, Ivory Atlas system, accessibility, motion, and content tone
+- `docs/02-product`: PRD, scope, roadmap, release plan, and monetization
+- `docs/03-user-flows`: end-to-end user behavior specs
+- `docs/04-information-architecture`: navigation, screens, permissions, and data ownership
+- `docs/05-frontend`: UI architecture, components, analytics, and frontend contracts
+- `docs/06-backend`: API, data model, security, integrations, jobs, and errors
+- `docs/07-ai`: Buddy behavior, prompts, multimodal, trust, and evaluation
+- `docs/08-operations`: deployment, observability, QA, testing, and support
+- `docs/09-legal-and-policy`: privacy, retention, permissions, disclaimers, and regional considerations
+- `docs/10-launch`: launch, pricing, beta, and feedback strategy
+- `docs/templates`: reusable templates for future specs and decisions
+
 ## Guardrails
 - Do not implement real payments, production auth backend wiring, real email parsing, real calendar syncing, video understanding pipelines, complex RAG, or advanced model orchestration unless explicitly requested.
 
+## Working principles
+- keep the product calm, premium, and editorial
+- use the Ivory Atlas system with subtle, meaningful accent hues
+- prefer portability, clarity, and trust over lock-in or flashy AI behavior
+- keep modules explicit and implementation-friendly

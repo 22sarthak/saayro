@@ -1,0 +1,18 @@
+{
+  "extends": "../../packages/config/tsconfig.expo.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["expo-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../../packages/tokens" },
+    { "path": "../../packages/types" },
+    { "path": "../../packages/mock-data" }
+  ]
+}
+

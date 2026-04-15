@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Saayro",
+    "slug": "saayro-mobile",
+    "scheme": "saayro",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#fcf7ee"
+      }
+    }
+  }
+}
+

@@ -1,6 +1,8 @@
 node_modules/
 .turbo/
 .next/
+.expo/
 dist/
+apps/mobile/build/
 coverage/
 *.tsbuildinfo

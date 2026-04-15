@@ -6,6 +6,7 @@
   "main": "./index.js",
   "exports": {
     "./tsconfig/base": "./tsconfig.base.json",
+    "./tsconfig/expo": "./tsconfig.expo.json",
     "./tsconfig/package": "./tsconfig.package.json",
     "./tsconfig/react-library": "./tsconfig.react-library.json",
     "./tailwind-preset": "./tailwind-preset.cjs"

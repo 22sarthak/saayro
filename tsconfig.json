@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/tokens" },
+    { "path": "./packages/types" },
+    { "path": "./packages/mock-data" },
+    { "path": "./packages/ui" }
+  ]
+}
+

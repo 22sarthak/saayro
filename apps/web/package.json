@@ -1,0 +1,32 @@
+{
+  "name": "@saayro/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "clean": "node ./scripts/clean.mjs"
+  },
+  "dependencies": {
+    "@saayro/mock-data": "workspace:*",
+    "@saayro/tokens": "workspace:*",
+    "@saayro/types": "workspace:*",
+    "@saayro/ui": "workspace:*",
+    "next": "^15.2.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@saayro/config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3"
+  }
+}
+

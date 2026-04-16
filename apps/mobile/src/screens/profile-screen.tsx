@@ -1,11 +1,13 @@
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedAccountCard } from "@/components/layout/connected-account-card";
+import { ConnectedTravelCard } from "@/components/layout/connected-travel-card";
+import { ExportShareTile } from "@/components/layout/export-share-tile";
 import { LoadingBlock } from "@/components/layout/loading-block";
 import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
-import { getProfileScreenData } from "@/lib/mock-selectors";
+import { getProfileScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export function ProfileScreen() {
@@ -69,6 +71,18 @@ function ProfilePopulatedScreen() {
         ))}
       </View>
 
+      {data.partialConnection ? (
+        <SurfaceCard tone="danger">
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Needs review</Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
+              Connected Travel keeps low-confidence items calm and reviewable instead of treating them like failures.
+            </Text>
+            <ConnectedTravelCard item={data.partialConnection} />
+          </View>
+        </SurfaceCard>
+      ) : null}
+
       <SectionHeader eyebrow="Trust" title="Clarity over cleverness" description="The product should explain what it knows, what it inferred, and what still needs review." />
 
       <SurfaceCard tone="buddy">
@@ -91,6 +105,18 @@ function ProfilePopulatedScreen() {
           </View>
         </View>
       </SurfaceCard>
+
+      <SectionHeader
+        eyebrow="Portability"
+        title="Export Packs stay visible here too"
+        description="Sharing and handoff are part of the product system, not a hidden trip-only utility."
+      />
+
+      <View style={{ gap: theme.spacing.md }}>
+        {data.exportPacks.map((pack) => (
+          <ExportShareTile key={pack.id} pack={pack} />
+        ))}
+      </View>
     </AppTabShell>
   );
 }

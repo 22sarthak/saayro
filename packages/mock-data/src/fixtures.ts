@@ -141,8 +141,14 @@ export const buddyThread: BuddyMessage[] = [
       {
         id: "action-2",
         type: "open-map",
-        label: "Review Amber route",
+        label: "Open Amber route",
         payload: { routeId: "route-jaipur-amber" }
+      },
+      {
+        id: "action-3",
+        type: "draft-export",
+        label: "Share Export Pack",
+        payload: { exportId: "export-1" }
       }
     ]
   }
@@ -160,14 +166,14 @@ export const exportPacks: ExportPack[] = [
   {
     id: "export-2",
     format: "whatsapp",
-    label: "WhatsApp share",
+    label: "WhatsApp Share",
     description: "Compact day-by-day copy designed for fast sharing.",
     status: "idle"
   },
   {
     id: "export-3",
     format: "share-link",
-    label: "Shareable link",
+    label: "Shareable Link",
     description: "A simple read-only trip view for travel companions.",
     status: "generating"
   }
@@ -185,7 +191,7 @@ export const connectedAccounts: ConnectedAccount[] = [
   {
     id: "conn-2",
     provider: "gmail",
-    label: "Inbox travel scan",
+    label: "Connected Travel inbox scan",
     state: "partial",
     grantedScopes: ["gmail.readonly"],
     lastSyncedAt: "2026-10-10T08:55:00.000Z"
@@ -271,4 +277,3 @@ export const tripSummaries: TripSummary[] = [
     connectedItemCount: 0
   }
 ];
-

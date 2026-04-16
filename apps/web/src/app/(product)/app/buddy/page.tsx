@@ -1,16 +1,12 @@
+import { getBuddyScenario } from "@saayro/mock-data";
 import { Badge, Button, Card, SectionHeader } from "@saayro/ui";
 import { StatePanel } from "@/components/ui/state-panel";
 import { getBuddyThread, getFeaturedTrip } from "@/lib/mock-selectors";
 
-const emptyPrompts = [
-  "Make day two feel softer without losing Amber Fort.",
-  "What should we export for the driver and hotel handoff?",
-  "Can you cluster food stops around the market pass?"
-];
-
 export default function BuddyPage() {
   const trip = getFeaturedTrip();
   const messages = getBuddyThread();
+  const emptyPrompts = getBuddyScenario("empty").promptOptions;
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
@@ -41,8 +37,8 @@ export default function BuddyPage() {
           ))}
         </div>
         <div className="rounded-[24px] border border-slate-200/70 bg-white p-4">
-          <p className="text-sm font-semibold text-slate-900">Next question</p>
-          <div className="mt-4 rounded-[20px] bg-ivory-50 p-4 text-sm text-slate-500">Ask about pacing, route logic, driver handoff, exports, or a cleaner next stop.</div>
+          <p className="text-sm font-semibold text-slate-900">Next move</p>
+          <div className="mt-4 rounded-[20px] bg-ivory-50 p-4 text-sm text-slate-500">Ask about pacing, Connected Travel review, route handoff, or the right Export Pack for this trip.</div>
         </div>
       </div>
       <div className="space-y-5">
@@ -66,8 +62,8 @@ export default function BuddyPage() {
         >
           <div className="grid gap-3">
             {emptyPrompts.map((prompt) => (
-              <div key={prompt} className="rounded-[22px] bg-amber-100 p-4 text-sm leading-6 text-slate-700">
-                {prompt}
+              <div key={prompt.id} className="rounded-[22px] bg-amber-100 p-4 text-sm leading-6 text-slate-700">
+                {prompt.label}
               </div>
             ))}
           </div>

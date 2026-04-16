@@ -6,6 +6,11 @@ import {
   emptyTripState,
   exportPacks,
   failedConnectedItem,
+  getBuddyScenario,
+  getDashboardScenario,
+  getProfileScenario,
+  getSavedScenario,
+  getTripHubScenario,
   jaipurTrip,
   loadingExportState,
   tripSummaries
@@ -25,7 +30,7 @@ import type {
 } from "@saayro/types";
 import type { ChipOption } from "@saayro/ui";
 
-type ScreenState = "loading" | "empty" | "populated";
+type ScreenState = "loading" | "empty" | "populated" | "partial";
 
 interface ScreenData<T> {
   state: ScreenState;
@@ -90,8 +95,10 @@ interface ProfileScreenData {
   homeBase: string;
   preferences: UserPreferences;
   connectedAccounts: ConnectedAccount[];
+  partialConnection: ConnectedTravelItem | undefined;
   trustNotes: string[];
   supportActions: ChipOption[];
+  exportPacks: ExportPack[];
 }
 
 export const authEntryOptions: ChipOption[] = [
@@ -100,17 +107,8 @@ export const authEntryOptions: ChipOption[] = [
   { id: "preview", label: "Mock shell" }
 ];
 
-export const homeQuickActions: ChipOption[] = [
-  { id: "trip", label: "Open trip hub" },
-  { id: "buddy", label: "Ask Buddy" },
-  { id: "saved", label: "Review saved" }
-];
-
-export const buddyPromptOptions: ChipOption[] = [
-  { id: "pace", label: "Soften day two pacing" },
-  { id: "route", label: "Review Amber route" },
-  { id: "export", label: "Prep export handoff" }
-];
+const homeQuickActions: ChipOption[] = getDashboardScenario("populated").quickActions.map(({ id, label }) => ({ id, label }));
+const buddyPromptOptions: ChipOption[] = getBuddyScenario("empty").promptOptions.map(({ id, label }) => ({ id, label }));
 
 function toPrettyMapsLabel(preferredMapsApp: MapsApp) {
   if (preferredMapsApp === "google-maps") {
@@ -121,123 +119,34 @@ function toPrettyMapsLabel(preferredMapsApp: MapsApp) {
     return "Apple Maps";
   }
 
-  return "In-app preview";
+  return "In-app Preview";
 }
 
-function deriveConfidenceLabel(items: ConnectedTravelItem[]): ConfidenceLabel {
-  if (items.some((item) => item.confidence === "needs-review")) {
-    return "needs-review";
-  }
-
-  if (items.some((item) => item.confidence === "medium" || item.confidence === "low")) {
-    return "medium";
-  }
-
-  return "high";
-}
-
-function buildSavedSections(trip: Trip): SavedSectionViewModel[] {
-  const stays = trip.itinerary
-    .flatMap((day) => day.stops)
-    .filter((stop) => stop.type === "stay" || stop.type === "meal")
-    .map((stop) => ({
-      id: stop.id,
-      title: stop.title,
-      subtitle: stop.subtitle,
-      city: stop.city,
-      category: stop.type === "stay" ? "Stay" : "Table",
-      tags: stop.tags,
-      routeStop: stop
-    }));
-
-  const discovery = trip.itinerary
-    .flatMap((day) => day.stops)
-    .filter((stop) => stop.type === "activity")
-    .map((stop) => ({
-      id: stop.id,
-      title: stop.title,
-      subtitle: stop.subtitle,
-      city: stop.city,
-      category: "Discovery",
-      tags: stop.tags,
-      routeStop: stop
-    }));
-
-  return [
-    {
-      id: "editors-picks",
-      title: "Held for this trip",
-      description: "A quieter shortlist of premium stays and meals worth carrying forward.",
-      items: stays
-    },
-    {
-      id: "discovery",
-      title: "Discovery saves",
-      description: "Cultural and route-aware stops that still feel warm on mobile.",
-      items: discovery
-    }
-  ];
+function buildSavedSections(_trip: Trip): SavedSectionViewModel[] {
+  return getSavedScenario("populated").sections.map((section) => ({
+    id: section.id,
+    title: section.title,
+    description: section.description,
+    items: section.items
+  }));
 }
 
 export function getHomeScreenData(state: ScreenState = "populated"): ScreenData<HomeScreenData> {
-  if (state === "loading") {
-    return {
-      state,
-      data: {
-        featuredTrip: undefined,
-        recentTrips: [],
-        quickActions: homeQuickActions,
-        connectedSummary: {
-          attachedCount: 0,
-          candidateCount: 0,
-          confidenceLabel: "medium"
-        },
-        exportHighlights: [loadingExportState],
-        discoveryPrompts: []
-      }
-    };
-  }
-
-  if (state === "empty") {
-    return {
-      state,
-      data: {
-        featuredTrip: undefined,
-        recentTrips: emptyTripState,
-        quickActions: homeQuickActions,
-        connectedSummary: {
-          attachedCount: 0,
-          candidateCount: 0,
-          confidenceLabel: "medium"
-        },
-        exportHighlights: [],
-        discoveryPrompts: defaultPreferences.interests.map((interest, index) => ({
-          id: `interest-${index}`,
-          label: interest
-        }))
-      }
-    };
-  }
-
-  const attachedCount = connectedTravelItems.filter((item) => item.state === "attached").length;
-  const candidateCount = connectedTravelItems.filter((item) => item.state === "candidate").length;
+  const scenario = getDashboardScenario(state);
 
   return {
-    state,
+    state: scenario.state,
     data: {
-      featuredTrip: jaipurTrip,
-      recentTrips: tripSummaries,
-      quickActions: homeQuickActions,
+      featuredTrip: scenario.featuredTrip,
+      recentTrips: scenario.recentTrips,
+      quickActions: scenario.quickActions.map(({ id, label }) => ({ id, label })),
       connectedSummary: {
-        attachedCount,
-        candidateCount,
-        confidenceLabel: deriveConfidenceLabel(connectedTravelItems)
+        attachedCount: scenario.connectedSummary.attachedCount,
+        candidateCount: scenario.connectedSummary.candidateCount,
+        confidenceLabel: scenario.connectedSummary.confidenceLabel
       },
-      exportHighlights: exportPacks,
-      discoveryPrompts: jaipurTrip.highlights.map((highlight, index) => ({
-        id: `highlight-${index}`,
-        label: highlight
-      }))
+      exportHighlights: scenario.exportHighlights,
+      discoveryPrompts: scenario.discoveryPrompts.map(({ id, label }) => ({ id, label }))
     }
   };
 }
@@ -378,8 +287,10 @@ export function getProfileScreenData(state: ScreenState = "populated"): ScreenDa
         homeBase: "Delhi",
         preferences: defaultPreferences,
         connectedAccounts: [],
+        partialConnection: undefined,
         trustNotes: [],
-        supportActions: []
+        supportActions: [],
+        exportPacks: []
       }
     };
   }
@@ -391,6 +302,7 @@ export function getProfileScreenData(state: ScreenState = "populated"): ScreenDa
       homeBase: "Delhi",
       preferences: defaultPreferences,
       connectedAccounts,
+      partialConnection: failedConnectedItem,
       trustNotes: [
         "Permission prompts stay staged and contextual.",
         "Exports and map handoffs should feel portable, not locked in.",
@@ -400,7 +312,8 @@ export function getProfileScreenData(state: ScreenState = "populated"): ScreenDa
         { id: "maps", label: "Review maps preference" },
         { id: "support", label: "Open support playbook" },
         { id: "privacy", label: "Read privacy summary" }
-      ]
+      ],
+      exportPacks
     }
   };
 }

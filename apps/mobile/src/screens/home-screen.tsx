@@ -7,7 +7,7 @@ import { LoadingBlock } from "@/components/layout/loading-block";
 import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
-import { getHomeScreenData } from "@/lib/mock-selectors";
+import { getHomeScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export function HomeScreen() {
@@ -95,7 +95,7 @@ function HomePopulatedScreen() {
 
       <SurfaceCard tone="buddy">
         <View style={{ gap: theme.spacing.md }}>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Connected travel pulse</Text>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Connected Travel pulse</Text>
           <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
             {data.connectedSummary.attachedCount} item{data.connectedSummary.attachedCount === 1 ? "" : "s"} attached,{" "}
             {data.connectedSummary.candidateCount} awaiting review.

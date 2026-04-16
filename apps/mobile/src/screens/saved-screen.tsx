@@ -6,7 +6,7 @@ import { RouteHandoffCard } from "@/components/layout/route-handoff-card";
 import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
-import { getSavedScreenData, getTripsScreenData } from "@/lib/mock-selectors";
+import { getSavedScreenData, getTripsScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export function SavedScreen() {
@@ -26,7 +26,7 @@ export function SavedScreen() {
 function SavedPopulatedScreen() {
   const theme = useMobileTheme();
   const { data } = getSavedScreenData("populated");
-  const routes = getTripsScreenData("populated").data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview).slice(0, 1);
+      const routes = getTripsScreenData("partial").data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview).slice(0, 1);
 
   return (
     <AppTabShell
@@ -47,9 +47,9 @@ function SavedPopulatedScreen() {
 
       {data.sections.map((section) => (
         <View key={section.id} style={{ gap: theme.spacing.sm }}>
-          <SectionHeader eyebrow="Collection" title={section.title} description={section.description} />
+          <SectionHeader eyebrow="Saved Places" title={section.title} description={section.description} />
           {section.items.map((item) => (
-            <SurfaceCard key={item.id} tone={section.id === "discovery" ? "discovery" : "raised"}>
+            <SurfaceCard key={item.id} tone={section.id === "saved-discoveries" ? "discovery" : section.id === "connected-travel" ? "connected" : "raised"}>
               <View style={{ gap: theme.spacing.sm }}>
                 <View style={{ gap: theme.spacing.xs }}>
                   <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>{item.title}</Text>
@@ -73,7 +73,7 @@ function SavedPopulatedScreen() {
         <RouteHandoffCard
           key={stop.id}
           route={stop.routePreview!}
-          preferredMapsApp={getTripsScreenData("populated").data.mapsPreference}
+          preferredMapsApp={getTripsScreenData("partial").data.mapsPreference}
         />
       ))}
     </AppTabShell>

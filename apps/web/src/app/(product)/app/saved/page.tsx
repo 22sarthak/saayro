@@ -1,10 +1,10 @@
+import { getSavedScenario } from "@saayro/mock-data";
 import { Badge, SectionHeader } from "@saayro/ui";
 import { StatePanel } from "@/components/ui/state-panel";
-import { getSavedCollection, getSavedEmptyCollection } from "@/lib/mock-selectors";
 
 export default function SavedPage() {
-  const savedItems = getSavedCollection();
-  const emptyState = getSavedEmptyCollection();
+  const savedScenario = getSavedScenario("populated");
+  const emptyState = getSavedScenario("empty");
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
@@ -13,24 +13,29 @@ export default function SavedPage() {
           title="Saved places and items"
           description="A curated travel shelf for the places and anchors worth keeping close while the trip is still taking shape."
         />
-        <div className="grid gap-4 md:grid-cols-2">
-          {savedItems.map((item) => (
-            <div key={item.id} className="rounded-[26px] border border-slate-200/70 bg-white p-5 shadow-soft">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{item.category}</p>
-              <h2 className="mt-3 text-xl font-semibold text-slate-900">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <Badge>{item.city}</Badge>
-                <span className="text-sm text-slate-500">Saved for later</span>
-              </div>
+        {savedScenario.sections.map((section) => (
+          <div key={section.id} className="space-y-4">
+            <SectionHeader title={section.title} description={section.description} />
+            <div className="grid gap-4 md:grid-cols-2">
+              {section.items.map((item) => (
+                <div key={item.id} className="rounded-[26px] border border-slate-200/70 bg-white p-5 shadow-soft">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{item.category}</p>
+                  <h2 className="mt-3 text-xl font-semibold text-slate-900">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <Badge>{item.city}</Badge>
+                    <span className="text-sm text-slate-500">Ready to pull back into the trip</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
       <div className="space-y-5">
         <StatePanel
           eyebrow="Empty-state preview"
-          title={emptyState.length === 0 ? "Nothing saved yet should still feel intentional." : "Saved items ready"}
+          title={emptyState.sections.length === 0 ? "Nothing saved yet should still feel intentional." : "Saved items ready"}
           description="Fresh accounts should see travel curation and direction instead of an abandoned-looking page."
           tone="discovery"
         />

@@ -37,16 +37,28 @@ export default function ProfilePage() {
         </section>
       </div>
       <div className="space-y-5">
-        <StatePanel
-          eyebrow="Partial connected state"
-          title={profile.partialConnection.title}
-          description="A low-confidence connected item should feel reviewable and fixable, not alarming."
-          tone="danger"
-        >
-          <div className="rounded-[22px] bg-white/70 p-4 text-sm leading-6 text-slate-700">
-            {profile.partialConnection.metadata.reason}
+        {profile.partialConnection ? (
+          <StatePanel
+            eyebrow="Partial connected state"
+            title={profile.partialConnection.title}
+            description="A low-confidence connected item should feel reviewable and fixable, not alarming."
+            tone="danger"
+          >
+            <div className="rounded-[22px] bg-white/70 p-4 text-sm leading-6 text-slate-700">
+              {profile.partialConnection.metadata.reason}
+            </div>
+          </StatePanel>
+        ) : null}
+        <section className="section-shell space-y-4">
+          <SectionHeader title="Trust notes" description="The same product promises should show up across web and mobile." />
+          <div className="grid gap-3">
+            {profile.trustNotes?.map((note) => (
+              <div key={note} className="rounded-[22px] bg-ivory-50 p-4 text-sm leading-6 text-slate-700">
+                {note}
+              </div>
+            ))}
           </div>
-        </StatePanel>
+        </section>
         <section className="section-shell space-y-4">
           <SectionHeader title="Portable outputs" description="Export readiness belongs in profile too because travelers often need sharable outputs beyond a single trip view." />
           <div className="grid gap-3">
@@ -58,7 +70,7 @@ export default function ProfilePage() {
         <StatePanel
           eyebrow="Trust and privacy"
           title="Keep scope clear, calm, and reversible."
-          description="Profile should show how permissions and connected account confidence will be managed, without pretending any live linkage already exists."
+          description="Profile should show how permissions, Connected Travel confidence, and portability are managed without pretending any live linkage already exists."
           tone="raised"
         />
       </div>

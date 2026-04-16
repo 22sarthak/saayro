@@ -10,7 +10,7 @@ import { RouteHandoffCard } from "@/components/layout/route-handoff-card";
 import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
-import { getTripsScreenData } from "@/lib/mock-selectors";
+import { getTripsScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export function TripsScreen() {
@@ -29,7 +29,7 @@ export function TripsScreen() {
 
 function TripsPopulatedScreen() {
   const theme = useMobileTheme();
-  const { data } = getTripsScreenData("populated");
+  const { data } = getTripsScreenData("partial");
   const trip = data.trip!;
   const mappedRoutes = data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview);
 
@@ -101,7 +101,7 @@ function TripsPopulatedScreen() {
 
       <SectionHeader
         eyebrow="Connected travel"
-        title="Attached items and partial confidence"
+        title="Connected Travel, attached and review-ready"
         description="Partial sync and review-needed states should remain legible and calm."
       />
 

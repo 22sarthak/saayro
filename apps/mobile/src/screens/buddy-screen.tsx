@@ -6,7 +6,7 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { StatusBadge } from "@/components/primitives/status-badge";
 import { TagChip } from "@/components/primitives/tag-chip";
-import { getBuddyScreenData } from "@/lib/mock-selectors";
+import { getBuddyScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export function BuddyScreen() {
@@ -37,7 +37,7 @@ function BuddyPopulatedScreen() {
       <SurfaceCard tone="buddy">
         <View style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 22, lineHeight: 26 }}>{data.tripTitle}</Text>
-          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{tripContext}</Text>
+          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>{data.tripContext}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.actionChips.map((option) => (
               <TagChip key={option.id} option={option} />
@@ -87,7 +87,7 @@ function BuddyPopulatedScreen() {
 
       <SurfaceCard tone="raised">
         <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Prompt ideas</Text>
+          <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Suggested next moves</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
             {data.promptOptions.map((option) => (
               <TagChip key={option.id} option={option} />

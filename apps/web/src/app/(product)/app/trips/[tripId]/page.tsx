@@ -54,7 +54,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
           <SectionHeader
             title="Itinerary"
             description="A route-aware planner shell with visible day structure, timing assumptions, and room for refinement."
-            actionSlot={<ButtonLink href="/app/buddy" variant="secondary">Refine with Buddy</ButtonLink>}
+            actionSlot={<ButtonLink href="/app/buddy" variant="secondary">Ask Buddy</ButtonLink>}
           />
           <div className="grid gap-5">
             {trip.itinerary.map((day) => (
@@ -83,12 +83,12 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
           tone="buddy"
           actions={
             <>
-              <ButtonLink href="/app/buddy" variant="primary">Refine with Buddy</ButtonLink>
-              <ButtonLink href="/app/saved" variant="secondary">Open saved places</ButtonLink>
+              <ButtonLink href="/app/buddy" variant="primary">Ask Buddy</ButtonLink>
+              <ButtonLink href="/app/saved" variant="secondary">Review Saved Places</ButtonLink>
             </>
           }
         />
-        {firstRoute ? <RoutePreviewCard route={firstRoute} ctaLabel="Open route preview" /> : null}
+        {firstRoute ? <RoutePreviewCard route={firstRoute} ctaLabel="Open in Maps" /> : null}
         <div className="section-shell space-y-4">
           <SectionHeader title="Exports" description="Portable outputs stay attached to the trip hub." />
           <div className="grid gap-3">

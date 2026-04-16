@@ -26,7 +26,7 @@ export default function AppDashboardPage() {
           actions={
             <>
               {quickActions.map((action) => (
-                <ButtonLink key={action.href} href={action.href} variant={action.tone === "buddy" ? "primary" : "secondary"}>
+                <ButtonLink key={action.id} href={action.href ?? "/app"} variant={action.tone === "buddy" ? "primary" : "secondary"}>
                   {action.label}
                 </ButtonLink>
               ))}
@@ -52,7 +52,7 @@ export default function AppDashboardPage() {
             ))}
           </div>
           <ButtonLink href={`/app/trips/${featuredTrip.id}`} variant="primary">
-            Review Jaipur trip
+            Open Trip Hub
           </ButtonLink>
         </div>
       </section>
@@ -86,7 +86,7 @@ export default function AppDashboardPage() {
             title={noTripState.length === 0 ? "No trips yet, and that should still feel useful." : "Trips loaded"}
             description="A first-run account should still point toward a useful next move instead of feeling empty."
             tone="discovery"
-            actions={<Button variant="secondary">Start a first India trip</Button>}
+            actions={<Button variant="secondary">Start first trip</Button>}
           />
           <StatePanel
             eyebrow="Portable output"

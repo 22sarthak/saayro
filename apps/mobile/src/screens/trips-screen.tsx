@@ -1,3 +1,5 @@
+import type { ConnectedAccount, ConnectedTravelItem } from "@saayro/types";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedAccountCard } from "@/components/layout/connected-account-card";
@@ -10,6 +12,7 @@ import { RouteHandoffCard } from "@/components/layout/route-handoff-card";
 import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
+import { useAuth } from "@/lib/auth";
 import { getTripsScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
@@ -29,9 +32,41 @@ export function TripsScreen() {
 
 function TripsPopulatedScreen() {
   const theme = useMobileTheme();
+  const { session, status, listConnections, listTripConnectedItems } = useAuth();
   const { data } = getTripsScreenData("partial");
+  const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(data.connectedAccounts);
+  const [connectedItems, setConnectedItems] = useState<ConnectedTravelItem[]>(data.connectedItems);
   const trip = data.trip!;
   const mappedRoutes = data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview);
+
+  useEffect(() => {
+    if (status !== "ready" || !session?.authenticated) {
+      setConnectedAccounts(data.connectedAccounts);
+      setConnectedItems(data.connectedItems);
+      return;
+    }
+
+    let active = true;
+    void Promise.all([listConnections(), listTripConnectedItems(trip.id)])
+      .then(([accounts, items]) => {
+        if (!active) {
+          return;
+        }
+        setConnectedAccounts(accounts);
+        setConnectedItems(items.length > 0 ? items : data.connectedItems);
+      })
+      .catch(() => {
+        if (!active) {
+          return;
+        }
+        setConnectedAccounts(data.connectedAccounts);
+        setConnectedItems(data.connectedItems);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [listConnections, listTripConnectedItems, session?.authenticated, status, trip.id]);
 
   return (
     <AppTabShell
@@ -106,13 +141,13 @@ function TripsPopulatedScreen() {
       />
 
       <View style={{ gap: theme.spacing.sm }}>
-        {data.connectedItems.map((item) => (
+        {connectedItems.map((item) => (
           <ConnectedTravelCard key={item.id} item={item} />
         ))}
       </View>
 
       <View style={{ gap: theme.spacing.sm }}>
-        {data.connectedAccounts.map((account) => (
+        {connectedAccounts.map((account) => (
           <ConnectedAccountCard key={account.id} account={account} />
         ))}
       </View>

@@ -1,4 +1,5 @@
-import { Badge, ConnectedSourceTile, ExportTile, SectionHeader } from "@saayro/ui";
+import { Badge, ExportTile, SectionHeader } from "@saayro/ui";
+import { LiveConnectedAccounts } from "@/components/connections/live-connected-accounts";
 import { StatePanel } from "@/components/ui/state-panel";
 import { getProfileData } from "@/lib/mock-selectors";
 
@@ -29,11 +30,7 @@ export default function ProfilePage() {
 
         <section className="section-shell space-y-4">
           <SectionHeader title="Connected accounts" description="Profile needs to express both confidence and partial connection states clearly." />
-          <div className="grid gap-3">
-            {profile.connectedAccounts.map((account) => (
-              <ConnectedSourceTile key={account.id} account={account} itemCount={2} />
-            ))}
-          </div>
+          <LiveConnectedAccounts fallbackAccounts={profile.connectedAccounts} />
         </section>
       </div>
       <div className="space-y-5">
@@ -70,7 +67,7 @@ export default function ProfilePage() {
         <StatePanel
           eyebrow="Trust and privacy"
           title="Keep scope clear, calm, and reversible."
-          description="Profile should show how permissions, Connected Travel confidence, and portability are managed without pretending any live linkage already exists."
+          description="Profile should show how permissions, Connected Travel confidence, and portability are managed without pretending the parsing is broader or smarter than it really is."
           tone="raised"
         />
       </div>

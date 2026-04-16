@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from httpx import AsyncClient
 
 from saayro_api.ai.providers.gemini import GeminiProvider
 from saayro_api.ai.providers.ollama import OllamaProvider
 from saayro_api.ai.types import BuddyAction, BuddyProviderResponse, BuddyStructuredReply
+from saayro_api.core.config import get_settings
 from saayro_api.core.errors import ApiException
+from saayro_api.core.secrets import seal_payload
 from saayro_api.services import auth as auth_service
+from saayro_api.services import google_connectors
 
 
 async def _login_web(client: AsyncClient, monkeypatch) -> None:
@@ -138,9 +143,15 @@ async def test_mobile_bearer_session_and_error_envelope(client: AsyncClient, mon
     assert missing.status_code == 404
     assert missing.json()["error"]["code"] == "not_found"
 
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_ID", "connector-client")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_SECRET", "connector-secret")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_STATE_SECRET", "connector-state")
+    get_settings.cache_clear()
+
     connected = await authed_client.post("/v1/connections/gmail/connect")
     assert connected.status_code == 201
     assert connected.json()["provider"] == "gmail"
+    assert "authorization_url" in connected.json()
 
     invalid = await authed_client.post("/v1/connections/unknown/connect")
     assert invalid.status_code == 400
@@ -149,6 +160,98 @@ async def test_mobile_bearer_session_and_error_envelope(client: AsyncClient, mon
     bearer_session = await authed_client.get("/v1/auth/session")
     assert bearer_session.status_code == 200
     assert bearer_session.json()["transport"] == "bearer"
+
+
+async def test_google_connector_callback_sync_and_disconnect_flow(monkeypatch, client_factory) -> None:
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_ID", "connector-client")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_SECRET", "connector-secret")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_STATE_SECRET", "connector-state")
+    monkeypatch.setenv("SAAYRO_API_WEB_APP_URL", "http://localhost:3000")
+
+    async def fake_exchange(settings, code):
+        return google_connectors.ConnectorTokens(
+            access_token="gmail-access-token",
+            refresh_token="gmail-refresh-token",
+            scopes=["openid", "email", "profile", settings.google_connector_gmail_scope],
+            expires_at=None,
+        )
+
+    async def fake_identity(settings, access_token):
+        return google_connectors.GoogleConnectorIdentity(
+            subject="google-connector-subject",
+            email="connector@saayro.app",
+            full_name="Connector Tester",
+        )
+
+    async def fake_gmail(settings, access_token):
+        return [
+            google_connectors.ImportCandidate(
+                external_id="gmail-msg-1",
+                provider="gmail",
+                source_kind="gmail_message",
+                title="Flight to Jaipur confirmed",
+                item_type="flight",
+                start_at=datetime(2026, 11, 12, 7, 30, tzinfo=timezone.utc),
+                end_at=datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc),
+                summary="IndiGo flight into Jaipur for the long weekend.",
+                location="Jaipur",
+                metadata={"source_id": "gmail-msg-1", "sender": "IndiGo"},
+            ),
+            google_connectors.ImportCandidate(
+                external_id="gmail-msg-2",
+                provider="gmail",
+                source_kind="gmail_message",
+                title="Hotel confirmation waiting for review",
+                item_type="hotel",
+                start_at=datetime(2026, 11, 20, 14, 0, tzinfo=timezone.utc),
+                end_at=datetime(2026, 11, 22, 11, 0, tzinfo=timezone.utc),
+                summary="A stay that does not clearly match the current trip.",
+                location="Udaipur",
+                metadata={"source_id": "gmail-msg-2", "sender": "Hotel"},
+            ),
+        ]
+
+    monkeypatch.setattr(google_connectors, "exchange_google_connector_code", fake_exchange)
+    monkeypatch.setattr(google_connectors, "fetch_google_identity", fake_identity)
+    monkeypatch.setattr(google_connectors, "fetch_gmail_candidates", fake_gmail)
+
+    async with client_factory() as client:
+        await _login_web(client, monkeypatch)
+        trip_id = await _create_trip(client)
+        settings = get_settings()
+        state = seal_payload(
+            {
+                "user_id": (await client.get("/v1/auth/session")).json()["actor"]["user_id"],
+                "provider": "gmail",
+                "return_to": "/app/profile",
+                "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+            },
+            settings.google_connector_state_secret,
+        )
+
+        callback = await client.get(f"/v1/connections/google/callback?code=test-code&state={state}", follow_redirects=False)
+        assert callback.status_code == 307
+        assert "connector=gmail" in callback.headers["location"]
+
+        listed = await client.get("/v1/connections")
+        assert listed.status_code == 200
+        gmail_account = next(item for item in listed.json() if item["provider"] == "gmail")
+        assert gmail_account["state"] == "partial"
+        assert gmail_account["attached_item_count"] == 1
+        assert gmail_account["review_needed_item_count"] == 1
+
+        items = await client.get(f"/v1/trips/{trip_id}/connected-items")
+        assert items.status_code == 200
+        assert len(items.json()) == 1
+        assert items.json()[0]["provider"] == "gmail"
+
+        refreshed = await client.post("/v1/connections/gmail/sync")
+        assert refreshed.status_code == 200
+        assert refreshed.json()["review_needed_count"] == 1
+
+        disconnected = await client.delete("/v1/connections/gmail")
+        assert disconnected.status_code == 200
+        assert disconnected.json()["disconnected"] is True
 
 
 

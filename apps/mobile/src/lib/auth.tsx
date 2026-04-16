@@ -3,7 +3,7 @@ import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { AuthSession, GoogleAuthExchangeResponse, OtpChallengeResponse } from "@saayro/types";
+import type { AuthSession, ConnectedAccount, ConnectedTravelItem, GoogleAuthExchangeResponse, OtpChallengeResponse } from "@saayro/types";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,6 +20,10 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   requestOtp: (phoneNumber: string) => Promise<OtpChallengeResponse>;
   verifyOtp: (challengeId: string, code: string) => Promise<OtpChallengeResponse>;
+  listConnections: () => Promise<ConnectedAccount[]>;
+  syncConnection: (provider: "gmail" | "calendar") => Promise<ConnectedAccount>;
+  disconnectConnection: (provider: "gmail" | "calendar") => Promise<void>;
+  listTripConnectedItems: (tripId: string) => Promise<ConnectedTravelItem[]>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -90,6 +94,86 @@ function normalizeSession(raw: {
   };
 }
 
+function normalizeConnectedAccount(raw: {
+  id: string;
+  provider: ConnectedAccount["provider"];
+  label: string;
+  state: ConnectedAccount["state"];
+  granted_scopes: string[];
+  capabilities?: string[];
+  provider_account_email?: string | null;
+  provider_account_name?: string | null;
+  last_synced_at?: string | null;
+  last_imported_at?: string | null;
+  attached_item_count?: number;
+  review_needed_item_count?: number;
+  imported_item_count?: number;
+  status_message?: string | null;
+}): ConnectedAccount {
+  const account: ConnectedAccount = {
+    id: raw.id,
+    provider: raw.provider,
+    label: raw.label,
+    state: raw.state,
+    grantedScopes: raw.granted_scopes,
+  };
+  if (raw.capabilities?.length) {
+    account.capabilities = raw.capabilities;
+  }
+  if (raw.provider_account_email) {
+    account.providerAccountEmail = raw.provider_account_email;
+  }
+  if (raw.provider_account_name) {
+    account.providerAccountName = raw.provider_account_name;
+  }
+  if (raw.last_synced_at) {
+    account.lastSyncedAt = raw.last_synced_at;
+  }
+  if (raw.last_imported_at) {
+    account.lastImportedAt = raw.last_imported_at;
+  }
+  if (typeof raw.attached_item_count === "number") {
+    account.attachedItemCount = raw.attached_item_count;
+  }
+  if (typeof raw.review_needed_item_count === "number") {
+    account.reviewNeededItemCount = raw.review_needed_item_count;
+  }
+  if (typeof raw.imported_item_count === "number") {
+    account.importedItemCount = raw.imported_item_count;
+  }
+  if (raw.status_message) {
+    account.statusMessage = raw.status_message;
+  }
+  return account;
+}
+
+function normalizeConnectedTravelItem(raw: {
+  id: string;
+  provider: ConnectedTravelItem["provider"];
+  title: string;
+  item_type: ConnectedTravelItem["itemType"];
+  state: ConnectedTravelItem["state"];
+  confidence: ConnectedTravelItem["confidence"];
+  start_at: string;
+  end_at?: string | null;
+  metadata_json: Record<string, object>;
+}): ConnectedTravelItem {
+  const item: ConnectedTravelItem = {
+    id: raw.id,
+    provider: raw.provider,
+    title: raw.title,
+    itemType: raw.item_type,
+    state: raw.state,
+    confidence: raw.confidence,
+    startAt: raw.start_at,
+    metadata: Object.fromEntries(Object.entries(raw.metadata_json).map(([key, value]) => [key, String(value)])),
+  };
+  if (raw.end_at) {
+    item.endAt = raw.end_at;
+  }
+  return item;
+}
+
 async function fetchMobileSession(token: string): Promise<AuthSession> {
   const raw = await requestJson<{
     authenticated: boolean;
@@ -104,6 +188,16 @@ async function fetchMobileSession(token: string): Promise<AuthSession> {
     headers: { Authorization: `Bearer ${token}` },
   });
   return normalizeSession(raw);
+}
+
+async function authedRequestJson<T>(path: string, token: string, init?: RequestInit): Promise<T> {
+  return requestJson<T>(path, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(init?.headers ?? {}),
+    },
+  });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -252,6 +346,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             expiresAt: raw.expires_at,
           };
         },
+      listConnections: async () => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        const raw = await authedRequestJson<
+          Array<{
+            id: string;
+            provider: ConnectedAccount["provider"];
+            label: string;
+            state: ConnectedAccount["state"];
+            granted_scopes: string[];
+            capabilities?: string[];
+            provider_account_email?: string | null;
+            provider_account_name?: string | null;
+            last_synced_at?: string | null;
+            last_imported_at?: string | null;
+            attached_item_count?: number;
+            review_needed_item_count?: number;
+            imported_item_count?: number;
+            status_message?: string | null;
+          }>
+        >("/v1/connections", token, { method: "GET" });
+        return raw.map(normalizeConnectedAccount);
+      },
+      syncConnection: async (provider) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to refresh Connected Travel.");
+        }
+        const raw = await authedRequestJson<{
+          account: {
+            id: string;
+            provider: ConnectedAccount["provider"];
+            label: string;
+            state: ConnectedAccount["state"];
+            granted_scopes: string[];
+            capabilities?: string[];
+            provider_account_email?: string | null;
+            provider_account_name?: string | null;
+            last_synced_at?: string | null;
+            last_imported_at?: string | null;
+            attached_item_count?: number;
+            review_needed_item_count?: number;
+            imported_item_count?: number;
+            status_message?: string | null;
+          };
+        }>(`/v1/connections/${provider}/sync`, token, { method: "POST" });
+        return normalizeConnectedAccount(raw.account);
+      },
+      disconnectConnection: async (provider) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return;
+        }
+        await authedRequestJson(`/v1/connections/${provider}`, token, { method: "DELETE" });
+      },
+      listTripConnectedItems: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        const raw = await authedRequestJson<
+          Array<{
+            id: string;
+            provider: ConnectedTravelItem["provider"];
+            title: string;
+            item_type: ConnectedTravelItem["itemType"];
+            state: ConnectedTravelItem["state"];
+            confidence: ConnectedTravelItem["confidence"];
+            start_at: string;
+            end_at?: string | null;
+            metadata_json: Record<string, object>;
+          }>
+        >(`/v1/trips/${tripId}/connected-items`, token, { method: "GET" });
+        return raw.map(normalizeConnectedTravelItem);
+      },
     }),
     [session, status],
   );

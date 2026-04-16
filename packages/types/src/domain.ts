@@ -89,7 +89,15 @@ export interface ConnectedAccount {
   label: string;
   state: ConnectionState;
   grantedScopes: string[];
+  capabilities?: string[];
+  providerAccountEmail?: string;
+  providerAccountName?: string;
   lastSyncedAt?: ISODateTimeString;
+  lastImportedAt?: ISODateTimeString;
+  attachedItemCount?: number;
+  reviewNeededItemCount?: number;
+  importedItemCount?: number;
+  statusMessage?: string;
 }
 
 export interface ConnectedTravelItem {
@@ -139,4 +147,3 @@ export interface Trip {
   connectedItems: ConnectedTravelItem[];
   buddyThread: BuddyMessage[];
 }
-

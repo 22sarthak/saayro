@@ -8,6 +8,8 @@ import type {
   OtpVerifyPayload,
   RefreshSessionResponse,
   AuthSession,
+  ConnectedAccount,
+  ConnectedTravelItem,
 } from "@saayro/types";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
@@ -34,6 +36,86 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return (await response.json()) as T;
+}
+
+function normalizeConnectedAccount(raw: {
+  id: string;
+  provider: ConnectedAccount["provider"];
+  label: string;
+  state: ConnectedAccount["state"];
+  granted_scopes: string[];
+  capabilities?: string[];
+  provider_account_email?: string | null;
+  provider_account_name?: string | null;
+  last_synced_at?: string | null;
+  last_imported_at?: string | null;
+  attached_item_count?: number;
+  review_needed_item_count?: number;
+  imported_item_count?: number;
+  status_message?: string | null;
+}): ConnectedAccount {
+  const account: ConnectedAccount = {
+    id: raw.id,
+    provider: raw.provider,
+    label: raw.label,
+    state: raw.state,
+    grantedScopes: raw.granted_scopes,
+  };
+  if (raw.capabilities?.length) {
+    account.capabilities = raw.capabilities;
+  }
+  if (raw.provider_account_email) {
+    account.providerAccountEmail = raw.provider_account_email;
+  }
+  if (raw.provider_account_name) {
+    account.providerAccountName = raw.provider_account_name;
+  }
+  if (raw.last_synced_at) {
+    account.lastSyncedAt = raw.last_synced_at;
+  }
+  if (raw.last_imported_at) {
+    account.lastImportedAt = raw.last_imported_at;
+  }
+  if (typeof raw.attached_item_count === "number") {
+    account.attachedItemCount = raw.attached_item_count;
+  }
+  if (typeof raw.review_needed_item_count === "number") {
+    account.reviewNeededItemCount = raw.review_needed_item_count;
+  }
+  if (typeof raw.imported_item_count === "number") {
+    account.importedItemCount = raw.imported_item_count;
+  }
+  if (raw.status_message) {
+    account.statusMessage = raw.status_message;
+  }
+  return account;
+}
+
+function normalizeConnectedItem(raw: {
+  id: string;
+  title: string;
+  item_type: ConnectedTravelItem["itemType"];
+  state: ConnectedTravelItem["state"];
+  confidence: ConnectedTravelItem["confidence"];
+  start_at: string;
+  end_at?: string | null;
+  metadata_json: Record<string, object>;
+  provider?: ConnectedTravelItem["provider"];
+}): ConnectedTravelItem {
+  const item: ConnectedTravelItem = {
+    id: raw.id,
+    provider: raw.provider ?? "gmail",
+    title: raw.title,
+    itemType: raw.item_type,
+    state: raw.state,
+    confidence: raw.confidence,
+    startAt: raw.start_at,
+    metadata: Object.fromEntries(Object.entries(raw.metadata_json).map(([key, value]) => [key, String(value)])),
+  };
+  if (raw.end_at) {
+    item.endAt = raw.end_at;
+  }
+  return item;
 }
 
 function normalizeSession(raw: {
@@ -158,4 +240,72 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<OtpChallenge
     message: raw.message,
     expiresAt: raw.expires_at,
   };
+}
+
+export async function fetchConnections(): Promise<ConnectedAccount[]> {
+  const raw = await requestJson<
+    Array<{
+      id: string;
+      provider: ConnectedAccount["provider"];
+      label: string;
+      state: ConnectedAccount["state"];
+      granted_scopes: string[];
+      capabilities?: string[];
+      provider_account_email?: string | null;
+      provider_account_name?: string | null;
+      last_synced_at?: string | null;
+      last_imported_at?: string | null;
+      attached_item_count?: number;
+      review_needed_item_count?: number;
+      imported_item_count?: number;
+      status_message?: string | null;
+    }>
+  >("/v1/connections", { method: "GET" });
+  return raw.map(normalizeConnectedAccount);
+}
+
+export async function syncConnection(provider: ConnectedAccount["provider"]): Promise<ConnectedAccount> {
+  const raw = await requestJson<{
+    account: {
+      id: string;
+      provider: ConnectedAccount["provider"];
+      label: string;
+      state: ConnectedAccount["state"];
+      granted_scopes: string[];
+      capabilities?: string[];
+      provider_account_email?: string | null;
+      provider_account_name?: string | null;
+      last_synced_at?: string | null;
+      last_imported_at?: string | null;
+      attached_item_count?: number;
+      review_needed_item_count?: number;
+      imported_item_count?: number;
+      status_message?: string | null;
+    };
+  }>(`/v1/connections/${provider}/sync`, { method: "POST" });
+  return normalizeConnectedAccount(raw.account);
+}
+
+export async function disconnectConnection(provider: ConnectedAccount["provider"]): Promise<void> {
+  await requestJson(`/v1/connections/${provider}`, { method: "DELETE" });
+}
+
+export async function fetchTripConnectedItems(tripId: string): Promise<ConnectedTravelItem[]> {
+  const raw = await requestJson<
+    Array<{
+      id: string;
+      title: string;
+      item_type: ConnectedTravelItem["itemType"];
+      state: ConnectedTravelItem["state"];
+      confidence: ConnectedTravelItem["confidence"];
+      start_at: string;
+      end_at?: string | null;
+      metadata_json: Record<string, object>;
+    }>
+  >(`/v1/trips/${tripId}/connected-items`, { method: "GET" });
+  return raw.map(normalizeConnectedItem);
+}
+
+export function getConnectorStartUrl(provider: "gmail" | "calendar", returnTo = "/app/profile"): string {
+  return `${apiBaseUrl}/v1/connections/${provider}/start?return_to=${encodeURIComponent(returnTo)}`;
 }

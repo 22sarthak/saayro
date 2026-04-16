@@ -1,3 +1,5 @@
+import type { ConnectedAccount, ConnectedTravelItem } from "@saayro/types";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedAccountCard } from "@/components/layout/connected-account-card";
@@ -24,8 +26,54 @@ export function ProfileScreen() {
 
 function ProfilePopulatedScreen() {
   const theme = useMobileTheme();
-  const { signOut } = useAuth();
+  const { signOut, session, status, listConnections } = useAuth();
   const { data } = getProfileScreenData("populated");
+  const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(data.connectedAccounts);
+  const [partialConnection, setPartialConnection] = useState<ConnectedTravelItem | undefined>(data.partialConnection);
+
+  useEffect(() => {
+    if (status !== "ready" || !session?.authenticated) {
+      setConnectedAccounts(data.connectedAccounts);
+      setPartialConnection(data.partialConnection);
+      return;
+    }
+
+    let active = true;
+    void listConnections()
+      .then((accounts) => {
+        if (!active) {
+          return;
+        }
+        setConnectedAccounts(accounts);
+        if (accounts.some((account) => (account.reviewNeededItemCount ?? 0) > 0)) {
+          setPartialConnection(
+            data.partialConnection
+              ? {
+                  ...data.partialConnection,
+                  title: "Connected Travel review queue",
+                  metadata: {
+                    ...data.partialConnection.metadata,
+                    reason: "Imported travel context needs a quick review before it attaches more confidently.",
+                  },
+                }
+              : data.partialConnection,
+          );
+        } else {
+          setPartialConnection(undefined);
+        }
+      })
+      .catch(() => {
+        if (!active) {
+          return;
+        }
+        setConnectedAccounts(data.connectedAccounts);
+        setPartialConnection(data.partialConnection);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [listConnections, session?.authenticated, status]);
 
   return (
     <AppTabShell
@@ -70,19 +118,19 @@ function ProfilePopulatedScreen() {
       />
 
       <View style={{ gap: theme.spacing.md }}>
-        {data.connectedAccounts.map((account) => (
+        {connectedAccounts.map((account) => (
           <ConnectedAccountCard key={account.id} account={account} />
         ))}
       </View>
 
-      {data.partialConnection ? (
+      {partialConnection ? (
         <SurfaceCard tone="danger">
           <View style={{ gap: theme.spacing.sm }}>
             <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Needs review</Text>
             <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
               Connected Travel keeps low-confidence items calm and reviewable instead of treating them like failures.
             </Text>
-            <ConnectedTravelCard item={data.partialConnection} />
+            <ConnectedTravelCard item={partialConnection} />
           </View>
         </SurfaceCard>
       ) : null}

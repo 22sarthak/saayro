@@ -3,6 +3,7 @@
 Backend basics foundation for Saayro using FastAPI, async SQLAlchemy, and Alembic.
 Step 7 adds the first Buddy AI application layer with Gemini primary generation, Ollama fallback, and mock-safe controlled behavior when providers are unavailable.
 Step 8B adds real session handling, Google sign-in exchange endpoints, and an OTP provider-ready seam.
+Step 8C adds Google Gmail and Calendar connector foundations for Connected Travel, with backend-owned OAuth callbacks, conservative import, and review-ready travel context.
 
 ## Local PostgreSQL development
 
@@ -45,6 +46,23 @@ SAAYRO_API_OTP_PROVIDER=provider-ready
 Web exchanges Google access tokens into Saayro-owned HTTP-only session cookies.
 Mobile exchanges Google access tokens into Saayro-owned bearer sessions stored on device.
 OTP endpoints are live structurally, but can remain non-live until an SMS provider is configured.
+
+## Google connector environment
+
+Set these in `.env` to enable Gmail and Calendar connector linking:
+
+```powershell
+SAAYRO_API_WEB_APP_URL=http://localhost:3000
+SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_ID=your-google-connector-client-id
+SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_SECRET=your-google-connector-client-secret
+SAAYRO_API_GOOGLE_CONNECTOR_REDIRECT_URI=http://127.0.0.1:8000/v1/connections/google/callback
+SAAYRO_API_GOOGLE_CONNECTOR_STATE_SECRET=replace-with-a-long-random-secret
+SAAYRO_API_GOOGLE_CONNECTOR_GMAIL_SCOPE=https://www.googleapis.com/auth/gmail.readonly
+SAAYRO_API_GOOGLE_CONNECTOR_CALENDAR_SCOPE=https://www.googleapis.com/auth/calendar.events.readonly
+```
+
+Connector linking is backend-owned and web-initiated in this step.
+Initial import stays travel-first: strong trip matches attach automatically, while lighter matches remain review-ready in Connected Travel.
 
 ## AI provider setup
 

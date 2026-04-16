@@ -30,6 +30,10 @@ function ProfilePopulatedScreen() {
   const { data } = getProfileScreenData("populated");
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(data.connectedAccounts);
   const [partialConnection, setPartialConnection] = useState<ConnectedTravelItem | undefined>(data.partialConnection);
+  const actor = status === "ready" && session?.authenticated ? session.actor : null;
+  const profileName = actor?.fullName?.trim() || data.userName;
+  const homeBase = actor?.homeBase?.trim() || data.homeBase;
+  const preferences = actor?.preferences ?? data.preferences;
 
   useEffect(() => {
     if (status !== "ready" || !session?.authenticated) {
@@ -84,11 +88,11 @@ function ProfilePopulatedScreen() {
       <SurfaceCard tone="raised">
         <View style={{ gap: theme.spacing.sm }}>
           <View style={{ gap: theme.spacing.xs }}>
-            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 22, lineHeight: 26 }}>{data.userName}</Text>
-            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13 }}>Home base: {data.homeBase}</Text>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.display, fontSize: 22, lineHeight: 26 }}>{profileName}</Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13 }}>Home base: {homeBase}</Text>
           </View>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
-            {data.preferences.interests.map((interest) => (
+            {preferences.interests.map((interest) => (
               <TagChip key={interest} option={{ id: interest, label: interest }} />
             ))}
           </View>
@@ -100,13 +104,13 @@ function ProfilePopulatedScreen() {
 
       <SurfaceCard tone="connected">
         <View style={{ gap: 6 }}>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Preferred maps: {data.preferences.preferredMapsApp}</Text>
-          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Travel pace: {data.preferences.travelPace}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Preferred maps: {preferences.preferredMapsApp}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>Travel pace: {preferences.travelPace}</Text>
           <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>
-            Comfort priority: {data.preferences.comfortPriority}
+            Comfort priority: {preferences.comfortPriority}
           </Text>
           <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13 }}>
-            Notifications: {data.preferences.notificationsEnabled ? "enabled" : "off"}
+            Notifications: {preferences.notificationsEnabled ? "enabled" : "off"}
           </Text>
         </View>
       </SurfaceCard>

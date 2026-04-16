@@ -36,8 +36,12 @@ Saayro helps users plan, organize, and navigate trips with a travel-first produc
 ## Backend basics
 - backend service lives in `services/api`
 - uses FastAPI, async SQLAlchemy, Alembic, and `uv`
+- PostgreSQL is the primary local development database for backend work
+- SQLite remains optional for lightweight verification and tests
+- Saayro Docker PostgreSQL is exposed on `127.0.0.1:5433` to avoid conflicts with any existing local PostgreSQL on `5432`
 - local backend commands:
   - `cd services/api`
+  - `docker compose up -d postgres`
   - `uv sync --group dev`
   - `uv run alembic upgrade head`
   - `uv run uvicorn saayro_api.main:app --reload`

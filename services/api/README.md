@@ -1,6 +1,7 @@
 # Saayro API
 
 Backend basics foundation for Saayro using FastAPI, async SQLAlchemy, and Alembic.
+Step 7 adds the first Buddy AI application layer with Gemini primary generation, Ollama fallback, and mock-safe controlled behavior when providers are unavailable.
 
 ## Local PostgreSQL development
 
@@ -28,6 +29,23 @@ uv sync --group dev
 uv run alembic upgrade head
 uv run uvicorn saayro_api.main:app --reload
 ```
+
+## AI provider setup
+
+- Gemini is the primary provider path.
+- Ollama `llama3` is the automatic fallback when Gemini is unavailable, misconfigured, or rate limited.
+- If neither provider is usable, Buddy returns a controlled mock-safe response rather than a raw provider error.
+
+For Gemini, set `SAAYRO_API_AI_GEMINI_API_KEY` in `.env`.
+
+For Ollama fallback, run a local model server:
+
+```powershell
+ollama serve
+ollama pull llama3
+```
+
+Buddy provider/model metadata is exposed only in development mode and only for development review.
 
 If you change the PostgreSQL auth configuration or Docker volume state, recreate the local container:
 

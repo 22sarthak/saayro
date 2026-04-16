@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     )
     demo_user_email: str = "demo@saayro.app"
     demo_user_name: str = "Aarohi Mehta"
+    ai_enabled: bool = True
+    ai_provider: Literal["auto", "gemini", "ollama", "mock"] = "auto"
+    ai_gemini_api_key: str = ""
+    ai_gemini_model: str = "gemini-2.5-flash"
+    ai_gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
+    ai_ollama_base_url: str = "http://127.0.0.1:11434"
+    ai_ollama_model: str = "llama3"
+    ai_timeout_seconds: float = 20.0
+    ai_dev_provider_badge: bool = True
 
     @field_validator("cors_origins", mode="before")
     @classmethod

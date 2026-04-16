@@ -24,6 +24,10 @@ class BuddyMessage(IdTimestampMixin, Base):
     content: Mapped[str] = mapped_column(Text)
     confidence: Mapped[str | None] = mapped_column(String(50), nullable=True)
     actions: Mapped[list[dict[str, object]] | None] = mapped_column(JSON, nullable=True)
+    response_json: Mapped[dict[str, object] | None] = mapped_column(JSON, nullable=True)
+    scope_class: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    provider_name: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    model_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    fallback_used: Mapped[bool] = mapped_column(default=False)
 
     thread = relationship("BuddyThread", back_populates="messages")
-

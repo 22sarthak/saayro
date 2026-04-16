@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from saayro_api.api.deps import get_db, get_session_actor
 from saayro_api.schemas.auth import SessionActor
 from saayro_api.schemas.buddy import BuddyMessageCreate, BuddyMessageRead
-from saayro_api.services.buddy import create_placeholder_exchange, list_messages
+from saayro_api.services.buddy import create_buddy_exchange, list_messages
 
 router = APIRouter(tags=["buddy"])
 
@@ -27,5 +27,4 @@ async def post_buddy_message(
     db: AsyncSession = Depends(get_db),
     actor: SessionActor = Depends(get_session_actor),
 ) -> list[BuddyMessageRead]:
-    return await create_placeholder_exchange(db, actor.user_id, trip_id, payload.content)
-
+    return await create_buddy_exchange(db, actor, trip_id, payload.content)

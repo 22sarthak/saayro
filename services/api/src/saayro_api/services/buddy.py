@@ -1,10 +1,22 @@
 from __future__ import annotations
 
+from functools import lru_cache
+from typing import cast
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from saayro_api.ai import BuddyOrchestrator, build_buddy_orchestrator
+from saayro_api.ai.config import provider_badge_enabled
+from saayro_api.core.config import get_settings
 from saayro_api.models.buddy import BuddyMessage, BuddyThread
-from saayro_api.schemas.buddy import BuddyMessageRead
+from saayro_api.schemas.auth import SessionActor
+from saayro_api.schemas.buddy import (
+    BuddyActionSchema,
+    BuddyDevMetadataSchema,
+    BuddyMessageRead,
+    BuddyResponseSchema,
+)
 from saayro_api.services.trips import get_trip_model_or_404
 
 
@@ -19,32 +31,65 @@ async def _get_or_create_thread(db: AsyncSession, trip_id: str) -> BuddyThread:
     return thread
 
 
+def _to_buddy_message_read(message: BuddyMessage) -> BuddyMessageRead:
+    response = BuddyResponseSchema.model_validate(message.response_json) if message.response_json else None
+    if response and not provider_badge_enabled(get_settings()):
+        response = response.model_copy(update={"dev_metadata": None})
+    elif response and response.dev_metadata is None and provider_badge_enabled(get_settings()) and message.provider_name and message.model_name:
+        response = response.model_copy(
+            update={
+                "dev_metadata": BuddyDevMetadataSchema(
+                    provider=message.provider_name,
+                    model=message.model_name,
+                    fallback_used=message.fallback_used,
+                )
+            }
+        )
+    return BuddyMessageRead(
+        id=message.id,
+        role=message.role,
+        content=message.content,
+        confidence=message.confidence,
+        actions=cast("list[BuddyActionSchema] | None", message.actions),
+        response=response,
+        scope_class=message.scope_class,
+        created_at=message.created_at,
+    )
+
+
 async def list_messages(db: AsyncSession, user_id: str, trip_id: str) -> list[BuddyMessageRead]:
     trip = await get_trip_model_or_404(db, user_id, trip_id)
     thread = await _get_or_create_thread(db, trip.id)
     result = await db.execute(select(BuddyMessage).where(BuddyMessage.thread_id == thread.id).order_by(BuddyMessage.created_at.asc()))
     messages = result.scalars().all()
     await db.commit()
-    return [BuddyMessageRead.model_validate(message) for message in messages]
+    return [_to_buddy_message_read(message) for message in messages]
 
 
-async def create_placeholder_exchange(db: AsyncSession, user_id: str, trip_id: str, content: str) -> list[BuddyMessageRead]:
-    trip = await get_trip_model_or_404(db, user_id, trip_id)
+@lru_cache
+def _orchestrator() -> BuddyOrchestrator:
+    return build_buddy_orchestrator(get_settings())
+
+
+async def create_buddy_exchange(db: AsyncSession, actor: SessionActor, trip_id: str, content: str) -> list[BuddyMessageRead]:
+    trip = await get_trip_model_or_404(db, actor.user_id, trip_id)
     thread = await _get_or_create_thread(db, trip.id)
     db.add(BuddyMessage(thread_id=thread.id, trip_id=trip.id, role="user", content=content))
+    generation = await _orchestrator().generate(db=db, actor=actor, trip_id=trip.id, message=content)
     db.add(
         BuddyMessage(
             thread_id=thread.id,
             trip_id=trip.id,
             role="buddy",
-            content="Buddy generation is not enabled yet. Your message is stored and the thread seam is ready for Step 7.",
-            confidence="medium",
-            actions=[
-                {"id": "placeholder-open-trip", "type": "open-map", "label": "Open Trip Hub"},
-                {"id": "placeholder-export", "type": "draft-export", "label": "Share Export Pack"},
-            ],
+            content=generation.reply.summary,
+            confidence=generation.reply.confidence_label,
+            actions=[action.model_dump() for action in generation.reply.actions],
+            response_json=generation.reply.model_dump(mode="json"),
+            scope_class=generation.reply.scope_class,
+            provider_name=generation.provider,
+            model_name=generation.model,
+            fallback_used=generation.fallback_used,
         )
     )
     await db.commit()
-    return await list_messages(db, user_id, trip.id)
-
+    return await list_messages(db, actor.user_id, trip.id)

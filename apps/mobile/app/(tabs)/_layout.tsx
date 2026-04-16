@@ -1,5 +1,6 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Text, View } from "react-native";
+import { useAuth } from "@/lib/auth";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
@@ -41,6 +42,15 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
 
 export default function TabsLayout() {
   const theme = useMobileTheme();
+  const { session, status } = useAuth();
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (!session?.authenticated) {
+    return <Redirect href="/sign-in" />;
+  }
 
   return (
     <Tabs

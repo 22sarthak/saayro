@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider } from "@/lib/auth";
 import { MobileThemeProvider } from "@/theme/mobile-theme-provider";
 import { mobileTheme } from "@/theme/mobile-theme";
 
@@ -16,13 +17,15 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <MobileThemeProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: "fade"
-          }}
-        />
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "fade"
+            }}
+          />
+        </AuthProvider>
       </MobileThemeProvider>
     </SafeAreaProvider>
   );

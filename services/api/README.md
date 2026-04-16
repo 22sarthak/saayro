@@ -2,6 +2,7 @@
 
 Backend basics foundation for Saayro using FastAPI, async SQLAlchemy, and Alembic.
 Step 7 adds the first Buddy AI application layer with Gemini primary generation, Ollama fallback, and mock-safe controlled behavior when providers are unavailable.
+Step 8B adds real session handling, Google sign-in exchange endpoints, and an OTP provider-ready seam.
 
 ## Local PostgreSQL development
 
@@ -29,6 +30,21 @@ uv sync --group dev
 uv run alembic upgrade head
 uv run uvicorn saayro_api.main:app --reload
 ```
+
+## Auth environment
+
+Set these in `.env` for real auth flow testing:
+
+```powershell
+SAAYRO_API_AUTH_GOOGLE_WEB_CLIENT_ID=your-google-web-client-id
+SAAYRO_API_AUTH_GOOGLE_MOBILE_CLIENT_IDS=your-google-ios-client-id,your-google-android-client-id,your-google-expo-web-client-id
+SAAYRO_API_OTP_ENABLED=false
+SAAYRO_API_OTP_PROVIDER=provider-ready
+```
+
+Web exchanges Google access tokens into Saayro-owned HTTP-only session cookies.
+Mobile exchanges Google access tokens into Saayro-owned bearer sessions stored on device.
+OTP endpoints are live structurally, but can remain non-live until an SMS provider is configured.
 
 ## AI provider setup
 

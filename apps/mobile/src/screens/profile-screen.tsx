@@ -5,8 +5,10 @@ import { ConnectedTravelCard } from "@/components/layout/connected-travel-card";
 import { ExportShareTile } from "@/components/layout/export-share-tile";
 import { LoadingBlock } from "@/components/layout/loading-block";
 import { SectionHeader } from "@/components/layout/section-header";
+import { ActionButton } from "@/components/primitives/action-button";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
+import { useAuth } from "@/lib/auth";
 import { getProfileScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
@@ -22,6 +24,7 @@ export function ProfileScreen() {
 
 function ProfilePopulatedScreen() {
   const theme = useMobileTheme();
+  const { signOut } = useAuth();
   const { data } = getProfileScreenData("populated");
 
   return (
@@ -41,6 +44,7 @@ function ProfilePopulatedScreen() {
               <TagChip key={interest} option={{ id: interest, label: interest }} />
             ))}
           </View>
+          <ActionButton label="Sign out" variant="secondary" onPress={() => void signOut()} />
         </View>
       </SurfaceCard>
 

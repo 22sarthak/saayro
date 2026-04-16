@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     )
     demo_user_email: str = "demo@saayro.app"
     demo_user_name: str = "Aarohi Mehta"
+    auth_session_cookie_name: str = "saayro_session"
+    auth_session_ttl_hours: int = 24 * 14
+    auth_refresh_ttl_hours: int = 24 * 30
+    auth_cookie_secure: bool = False
+    auth_google_web_client_id: str = ""
+    auth_google_mobile_client_ids: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    otp_enabled: bool = False
+    otp_provider: str = "provider-ready"
     ai_enabled: bool = True
     ai_provider: Literal["auto", "gemini", "ollama", "mock"] = "auto"
     ai_gemini_api_key: str = ""
@@ -36,6 +44,13 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def split_cors_origins(cls, value: str | list[str]) -> list[str]:
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    @field_validator("auth_google_mobile_client_ids", mode="before")
+    @classmethod
+    def split_mobile_client_ids(cls, value: str | list[str]) -> list[str]:
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
         return value

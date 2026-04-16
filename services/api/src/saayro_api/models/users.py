@@ -16,4 +16,5 @@ class User(IdTimestampMixin, Base):
 
     trips = relationship("Trip", back_populates="user")
     connected_accounts = relationship("ConnectedAccount", back_populates="user")
-
+    identities = relationship("UserIdentity", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")

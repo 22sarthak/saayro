@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
 import { semanticTokens } from "@saayro/tokens";
 import { createCssVariables } from "@saayro/ui";
+import { SessionProvider } from "@/components/auth/session-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,9 +23,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={cssVariables}
         className="bg-[var(--saayro-surface-base)] font-[var(--saayro-font-body)] text-[var(--saayro-text-primary)] antialiased"
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );
 }
-

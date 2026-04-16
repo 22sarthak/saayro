@@ -32,3 +32,7 @@ async def ensure_demo_user(db: AsyncSession) -> User:
     await db.refresh(user)
     return user
 
+
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+    result = await db.execute(select(User).where(User.email == email.lower()))
+    return result.scalar_one_or_none()

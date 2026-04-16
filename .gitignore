@@ -16,3 +16,4 @@ __pycache__/
 pytest-cache-files-*/
 *.pyc
 .env
+.env.local

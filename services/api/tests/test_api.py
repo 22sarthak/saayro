@@ -6,6 +6,34 @@ from saayro_api.ai.providers.gemini import GeminiProvider
 from saayro_api.ai.providers.ollama import OllamaProvider
 from saayro_api.ai.types import BuddyAction, BuddyProviderResponse, BuddyStructuredReply
 from saayro_api.core.errors import ApiException
+from saayro_api.services import auth as auth_service
+
+
+async def _login_web(client: AsyncClient, monkeypatch) -> None:
+    async def fake_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-1",
+            email="demo@saayro.app",
+            full_name="Aarohi Mehta",
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
+    response = await client.post("/v1/auth/google/web", json={"access_token": "test-google-access-token"})
+    assert response.status_code == 200
+
+
+async def _login_mobile(client: AsyncClient, monkeypatch) -> str:
+    async def fake_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-2",
+            email="mobile@saayro.app",
+            full_name="Ira Kapoor",
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
+    response = await client.post("/v1/auth/google/mobile", json={"access_token": "mobile-google-access-token"})
+    assert response.status_code == 200
+    return response.json()["session_token"]
 
 
 async def _create_trip(client: AsyncClient) -> str:
@@ -45,7 +73,8 @@ async def test_health_and_status(client: AsyncClient) -> None:
     assert status.json()["service"] == "Saayro API"
 
 
-async def test_trip_crud_and_related_placeholders(client: AsyncClient) -> None:
+async def test_trip_crud_and_related_placeholders_with_real_session(client: AsyncClient, monkeypatch) -> None:
+    await _login_web(client, monkeypatch)
     trip_id = await _create_trip(client)
 
     listed = await client.get("/v1/trips")
@@ -70,18 +99,57 @@ async def test_trip_crud_and_related_placeholders(client: AsyncClient) -> None:
     assert export_job.json()["label"] == "Trip PDF"
 
 
-async def test_connections_and_error_envelope(client: AsyncClient) -> None:
-    missing = await client.get("/v1/trips/missing-trip")
+async def test_auth_session_logout_refresh_and_otp_placeholder(client: AsyncClient, monkeypatch) -> None:
+    await _login_web(client, monkeypatch)
+
+    session = await client.get("/v1/auth/session")
+    assert session.status_code == 200
+    assert session.json()["authenticated"] is True
+
+    refreshed = await client.post("/v1/auth/refresh")
+    assert refreshed.status_code == 200
+    assert refreshed.json()["session"]["authenticated"] is True
+
+    otp_requested = await client.post("/v1/auth/otp/request", json={"phone_number": "+919876543210"})
+    assert otp_requested.status_code == 200
+    assert otp_requested.json()["status"] == "provider_ready_non_live"
+
+    otp_verified = await client.post(
+        "/v1/auth/otp/verify",
+        json={"challenge_id": otp_requested.json()["challenge_id"], "code": "123456"},
+    )
+    assert otp_verified.status_code == 200
+    assert otp_verified.json()["status"] == "provider_ready_non_live"
+
+    logout = await client.post("/v1/auth/logout")
+    assert logout.status_code == 200
+    signed_out = await client.get("/v1/auth/session")
+    assert signed_out.status_code == 200
+    assert signed_out.json()["authenticated"] is False
+
+
+async def test_mobile_bearer_session_and_error_envelope(client: AsyncClient, monkeypatch) -> None:
+    token = await _login_mobile(client, monkeypatch)
+    authed_client = client
+    authed_client.headers["Authorization"] = f"Bearer {token}"
+
+    await _create_trip(authed_client)
+    missing = await authed_client.get("/v1/trips/missing-trip")
     assert missing.status_code == 404
     assert missing.json()["error"]["code"] == "not_found"
 
-    connected = await client.post("/v1/connections/gmail/connect")
+    connected = await authed_client.post("/v1/connections/gmail/connect")
     assert connected.status_code == 201
     assert connected.json()["provider"] == "gmail"
 
-    invalid = await client.post("/v1/connections/unknown/connect")
+    invalid = await authed_client.post("/v1/connections/unknown/connect")
     assert invalid.status_code == 400
     assert invalid.json()["error"]["code"] == "validation_error"
+
+    bearer_session = await authed_client.get("/v1/auth/session")
+    assert bearer_session.status_code == 200
+    assert bearer_session.json()["transport"] == "bearer"
+
 
 
 async def test_buddy_generation_uses_gemini_and_persists_structured_response(
@@ -108,8 +176,17 @@ async def test_buddy_generation_uses_gemini_and_persists_structured_response(
         )
 
     monkeypatch.setattr(GeminiProvider, "generate", fake_gemini_generate)
+    async def fake_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-buddy-1",
+            email="buddy@saayro.app",
+            full_name="Buddy Tester",
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
 
     async with client_factory() as client:
+        await client.post("/v1/auth/google/web", json={"access_token": "test-google-access-token"})
         trip_id = await _create_trip(client)
         await client.post(f"/v1/trips/{trip_id}/itinerary/generate")
         buddy = await client.post(f"/v1/trips/{trip_id}/buddy/messages", json={"content": "Can we slow day two down?"})
@@ -147,8 +224,17 @@ async def test_buddy_generation_falls_back_to_ollama_when_gemini_fails(
 
     monkeypatch.setattr(GeminiProvider, "generate", failing_gemini)
     monkeypatch.setattr(OllamaProvider, "generate", fake_ollama_generate)
+    async def fallback_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-buddy-2",
+            email="fallback@saayro.app",
+            full_name="Fallback Tester",
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", fallback_google_profile)
 
     async with client_factory() as client:
+        await client.post("/v1/auth/google/web", json={"access_token": "test-google-access-token"})
         trip_id = await _create_trip(client)
         await client.post(f"/v1/trips/{trip_id}/itinerary/generate")
         buddy = await client.post(f"/v1/trips/{trip_id}/buddy/messages", json={"content": "Help me refine this itinerary pacing."})
@@ -166,8 +252,17 @@ async def test_buddy_out_of_scope_redirects_and_hides_dev_metadata_in_production
     monkeypatch.setenv("SAAYRO_API_AI_ENABLED", "true")
     monkeypatch.setenv("SAAYRO_API_AI_PROVIDER", "mock")
     monkeypatch.setenv("SAAYRO_API_AI_DEV_PROVIDER_BADGE", "false")
+    async def production_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-buddy-3",
+            email="prod@saayro.app",
+            full_name="Prod Tester",
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", production_google_profile)
 
     async with client_factory() as client:
+        await client.post("/v1/auth/google/web", json={"access_token": "test-google-access-token"})
         trip_id = await _create_trip(client)
         buddy = await client.post(f"/v1/trips/{trip_id}/buddy/messages", json={"content": "Help me debug this Python function."})
         body = buddy.json()

@@ -46,6 +46,15 @@ Saayro helps users plan, organize, and navigate trips with a travel-first produc
   - `uv run alembic upgrade head`
   - `uv run uvicorn saayro_api.main:app --reload`
 
+## Auth setup
+- real Google sign-in now depends on matching client IDs in:
+  - `services/api/.env`
+  - `apps/web/.env.local`
+  - `apps/mobile/.env`
+- web uses Google as the live auth path with backend-owned session cookies
+- mobile uses Google AuthSession with backend-issued bearer sessions
+- OTP is wired as a provider-ready path and can remain non-live until an SMS provider is enabled
+
 ## Repository structure
 - `docs/00-overview`: product context, market framing, glossary, and success metrics
 - `docs/01-design`: brand rules, Ivory Atlas system, accessibility, motion, and content tone

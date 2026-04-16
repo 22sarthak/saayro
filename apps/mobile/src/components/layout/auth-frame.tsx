@@ -9,12 +9,14 @@ export function AuthFrame({
   eyebrow,
   title,
   description,
-  children
+  children,
+  footerCopy = "Google sign-in is live in this step. OTP is provider-ready and can be activated later without rebuilding the flow."
 }: {
   eyebrow: string;
   title: string;
   description: string;
   children: ReactNode;
+  footerCopy?: string;
 }) {
   const theme = useMobileTheme();
 
@@ -35,10 +37,10 @@ export function AuthFrame({
         }}
       >
         <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 10, letterSpacing: 1.7 }}>
-          PREVIEW MODE
+          AUTH STATUS
         </Text>
         <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>
-          These flows are visual shells only. No live authentication, backend, or sync is connected in this step.
+          {footerCopy}
         </Text>
       </View>
     </ScreenShell>

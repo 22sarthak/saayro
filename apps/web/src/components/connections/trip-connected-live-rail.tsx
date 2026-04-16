@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/components/auth/session-provider";
 import { fetchConnections, fetchTripConnectedItems } from "@/lib/auth-client";
 
+function isPersistedTripId(tripId: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tripId);
+}
+
 export function TripConnectedLiveRail({
   tripId,
   fallbackAccounts,
@@ -27,7 +31,8 @@ export function TripConnectedLiveRail({
     }
 
     let active = true;
-    void Promise.all([fetchConnections(), fetchTripConnectedItems(tripId)])
+    const itemsPromise = isPersistedTripId(tripId) ? fetchTripConnectedItems(tripId) : Promise.resolve(fallbackItems);
+    void Promise.all([fetchConnections(), itemsPromise])
       .then(([nextAccounts, nextItems]) => {
         if (!active) {
           return;

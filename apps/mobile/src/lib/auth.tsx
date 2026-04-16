@@ -3,12 +3,78 @@ import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { AuthSession, ConnectedAccount, ConnectedTravelItem, GoogleAuthExchangeResponse, OtpChallengeResponse } from "@saayro/types";
+import type {
+  AuthSession,
+  ConnectedAccount,
+  ConnectedTravelItem,
+  GoogleAuthExchangeResponse,
+  OtpChallengeResponse,
+} from "@saayro/types";
+import type {
+  BackendExportJobRead,
+  BackendItineraryRead,
+  BackendTripListItem,
+  BackendTripRead,
+} from "@saayro/types";
 
 WebBrowser.maybeCompleteAuthSession();
 
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 const sessionTokenKey = "saayro.mobile.session";
+
+function isMapsApp(value: unknown): value is NonNullable<NonNullable<AuthSession["actor"]>["preferences"]>["preferredMapsApp"] {
+  return value === "google-maps" || value === "apple-maps" || value === "in-app-preview";
+}
+
+function isTravelPace(value: unknown): value is NonNullable<NonNullable<AuthSession["actor"]>["preferences"]>["travelPace"] {
+  return value === "slow" || value === "balanced" || value === "full";
+}
+
+function isBudgetSensitivity(
+  value: unknown,
+): value is NonNullable<NonNullable<AuthSession["actor"]>["preferences"]>["budgetSensitivity"] {
+  return value === "low" || value === "medium" || value === "high";
+}
+
+function isComfortPriority(
+  value: unknown,
+): value is NonNullable<NonNullable<AuthSession["actor"]>["preferences"]>["comfortPriority"] {
+  return value === "essential" || value === "balanced" || value === "premium";
+}
+
+function normalizePreferences(raw: Record<string, unknown> | null | undefined) {
+  if (!raw) {
+    return null;
+  }
+
+  const preferredMapsApp = raw.preferred_maps_app;
+  const travelPace = raw.travel_pace;
+  const interests = raw.interests;
+  const budgetSensitivity = raw.budget_sensitivity;
+  const comfortPriority = raw.comfort_priority;
+  const notificationsEnabled = raw.notifications_enabled;
+
+  if (
+    !isMapsApp(preferredMapsApp) ||
+    !isTravelPace(travelPace) ||
+    !Array.isArray(interests) ||
+    !interests.every((item) => typeof item === "string") ||
+    !isBudgetSensitivity(budgetSensitivity) ||
+    !isComfortPriority(comfortPriority) ||
+    typeof notificationsEnabled !== "boolean"
+  ) {
+    return null;
+  }
+
+  return {
+    preferredMapsApp,
+    travelPace,
+    interests,
+    budgetSensitivity,
+    comfortPriority,
+    notificationsEnabled,
+  };
+}
 
 type AuthStatus = "loading" | "ready";
 
@@ -24,9 +90,32 @@ interface AuthContextValue {
   syncConnection: (provider: "gmail" | "calendar") => Promise<ConnectedAccount>;
   disconnectConnection: (provider: "gmail" | "calendar") => Promise<void>;
   listTripConnectedItems: (tripId: string) => Promise<ConnectedTravelItem[]>;
+  listTrips: () => Promise<BackendTripListItem[]>;
+  getTrip: (tripId: string) => Promise<BackendTripRead>;
+  getTripItinerary: (tripId: string) => Promise<BackendItineraryRead>;
+  listTripExports: (tripId: string) => Promise<BackendExportJobRead[]>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+type RawSessionActor = {
+  user_id: string;
+  email: string;
+  full_name: string;
+  auth_mode: "google" | "otp";
+  home_base?: string | null;
+  preferences?: Record<string, unknown> | null;
+};
+
+type RawSession = {
+  authenticated: boolean;
+  actor: RawSessionActor | null;
+  session_id: string | null;
+  expires_at: string | null;
+  expires_in_seconds: number | null;
+  transport: AuthSession["transport"];
+  status: AuthSession["status"];
+};
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
@@ -74,18 +163,19 @@ async function clearStoredSessionToken(): Promise<void> {
   await SecureStore.deleteItemAsync(sessionTokenKey);
 }
 
-function normalizeSession(raw: {
-  authenticated: boolean;
-  actor: AuthSession["actor"];
-  session_id: string | null;
-  expires_at: string | null;
-  expires_in_seconds: number | null;
-  transport: AuthSession["transport"];
-  status: AuthSession["status"];
-}): AuthSession {
+function normalizeSession(raw: RawSession): AuthSession {
   return {
     authenticated: raw.authenticated,
-    actor: raw.actor,
+    actor: raw.actor
+      ? {
+          userId: raw.actor.user_id,
+          email: raw.actor.email,
+          fullName: raw.actor.full_name,
+          authMode: raw.actor.auth_mode,
+          homeBase: raw.actor.home_base ?? null,
+          preferences: normalizePreferences(raw.actor.preferences),
+        }
+      : null,
     sessionId: raw.session_id,
     expiresAt: raw.expires_at,
     expiresInSeconds: raw.expires_in_seconds,
@@ -175,15 +265,7 @@ function normalizeConnectedTravelItem(raw: {
 }
 
 async function fetchMobileSession(token: string): Promise<AuthSession> {
-  const raw = await requestJson<{
-    authenticated: boolean;
-    actor: AuthSession["actor"];
-    session_id: string | null;
-    expires_at: string | null;
-    expires_in_seconds: number | null;
-    transport: AuthSession["transport"];
-    status: AuthSession["status"];
-  }>("/v1/auth/session", {
+  const raw = await requestJson<RawSession>("/v1/auth/session", {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -253,15 +335,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       bootstrapSession,
       exchangeGoogleAccessToken: async (accessToken: string) => {
         const raw = await requestJson<{
-          session: {
-            authenticated: boolean;
-            actor: AuthSession["actor"];
-            session_id: string | null;
-            expires_at: string | null;
-            expires_in_seconds: number | null;
-            transport: AuthSession["transport"];
-            status: AuthSession["status"];
-          };
+          session: RawSession;
           session_token?: string;
         }>("/v1/auth/google/mobile", {
           method: "POST",
@@ -422,6 +496,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }>
         >(`/v1/trips/${tripId}/connected-items`, token, { method: "GET" });
         return raw.map(normalizeConnectedTravelItem);
+      },
+      listTrips: async () => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        return authedRequestJson<BackendTripListItem[]>("/v1/trips", token, { method: "GET" });
+      },
+      getTrip: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to load trip details.");
+        }
+        return authedRequestJson<BackendTripRead>(`/v1/trips/${tripId}`, token, { method: "GET" });
+      },
+      getTripItinerary: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to load itinerary details.");
+        }
+        return authedRequestJson<BackendItineraryRead>(`/v1/trips/${tripId}/itinerary`, token, { method: "GET" });
+      },
+      listTripExports: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        return authedRequestJson<BackendExportJobRead[]>(`/v1/trips/${tripId}/exports`, token, { method: "GET" });
       },
     }),
     [session, status],

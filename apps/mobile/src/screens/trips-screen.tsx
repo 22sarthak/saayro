@@ -1,4 +1,4 @@
-import type { ConnectedAccount, ConnectedTravelItem } from "@saayro/types";
+import { buildTripViewModel, isPersistedTripId, type Trip } from "@saayro/types";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
@@ -13,66 +13,128 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
 import { useAuth } from "@/lib/auth";
-import { getTripsScreenData } from "@/lib/screen-data";
+import { getTripsScreenData, type TripsScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
+const fallbackTripsScreen = getTripsScreenData("partial");
+
 export function TripsScreen() {
-  const screen = getTripsScreenData();
-
-  if (screen.state === "loading") {
-    return <TripsLoadingScreen />;
-  }
-
-  if (screen.state === "empty") {
-    return <TripsEmptyScreen />;
-  }
-
-  return <TripsPopulatedScreen />;
-}
-
-function TripsPopulatedScreen() {
-  const theme = useMobileTheme();
-  const { session, status, listConnections, listTripConnectedItems } = useAuth();
-  const { data } = getTripsScreenData("partial");
-  const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(data.connectedAccounts);
-  const [connectedItems, setConnectedItems] = useState<ConnectedTravelItem[]>(data.connectedItems);
-  const trip = data.trip!;
-  const mappedRoutes = data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview);
+  const {
+    session,
+    status,
+    listConnections,
+    listTripConnectedItems,
+    listTrips,
+    getTrip,
+    getTripItinerary,
+    listTripExports,
+  } = useAuth();
+  const [viewState, setViewState] = useState<"loading" | "empty" | "ready">(status === "ready" ? "ready" : "loading");
+  const [screenData, setScreenData] = useState<TripsScreenData>(fallbackTripsScreen.data);
 
   useEffect(() => {
-    if (status !== "ready" || !session?.authenticated) {
-      setConnectedAccounts(data.connectedAccounts);
-      setConnectedItems(data.connectedItems);
+    if (status !== "ready") {
+      setViewState("loading");
+      return;
+    }
+
+    if (!session?.authenticated) {
+      setScreenData(fallbackTripsScreen.data);
+      setViewState(fallbackTripsScreen.state === "empty" ? "empty" : "ready");
       return;
     }
 
     let active = true;
-    void Promise.all([listConnections(), listTripConnectedItems(trip.id)])
-      .then(([accounts, items]) => {
+    void (async () => {
+      setViewState("loading");
+      try {
+        const tripList = await listTrips();
         if (!active) {
           return;
         }
-        setConnectedAccounts(accounts);
-        setConnectedItems(items.length > 0 ? items : data.connectedItems);
-      })
-      .catch(() => {
+
+        if (tripList.length === 0) {
+          setViewState("empty");
+          return;
+        }
+
+        const primaryTrip = tripList[0]!;
+        const [trip, itinerary, exportPacks, connectedAccounts, connectedItems] = await Promise.all([
+          getTrip(primaryTrip.id),
+          getTripItinerary(primaryTrip.id),
+          listTripExports(primaryTrip.id),
+          listConnections(),
+          isPersistedTripId(primaryTrip.id) ? listTripConnectedItems(primaryTrip.id) : Promise.resolve([]),
+        ]);
+
         if (!active) {
           return;
         }
-        setConnectedAccounts(data.connectedAccounts);
-        setConnectedItems(data.connectedItems);
-      });
+
+        const liveTrip = buildTripViewModel({
+          trip,
+          itinerary,
+          exports: exportPacks,
+          connectedAccounts,
+          connectedItems,
+        });
+
+        setScreenData({
+          trip: liveTrip,
+          itineraryDays: liveTrip.itinerary,
+          exportPacks: liveTrip.exports,
+          connectedAccounts: liveTrip.connectedAccounts,
+          connectedItems: liveTrip.connectedItems,
+          mapsPreference: liveTrip.preferences.preferredMapsApp,
+        });
+        setViewState("ready");
+      } catch {
+        if (!active) {
+          return;
+        }
+        setScreenData(fallbackTripsScreen.data);
+        setViewState("ready");
+      }
+    })();
 
     return () => {
       active = false;
     };
-  }, [listConnections, listTripConnectedItems, session?.authenticated, status, trip.id]);
+  }, [
+    getTrip,
+    getTripItinerary,
+    listConnections,
+    listTripConnectedItems,
+    listTripExports,
+    listTrips,
+    session?.authenticated,
+    status,
+  ]);
+
+  if (viewState === "loading") {
+    return <TripsLoadingScreen />;
+  }
+
+  if (viewState === "empty" || !screenData.trip) {
+    return <TripsEmptyScreen />;
+  }
+
+  return <TripsPopulatedScreen trip={screenData.trip} data={screenData} source={session?.authenticated ? "live" : "mock"} />;
+}
+
+function TripsPopulatedScreen({ trip, data, source }: { trip: Trip; data: TripsScreenData; source: "live" | "mock" }) {
+  const theme = useMobileTheme();
+  const mappedRoutes = data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview);
 
   return (
     <AppTabShell
       section="Trips"
       title="The active trip hub, tuned for mobile."
-      subtitle="Trips stays the strongest tab, but with tighter hierarchy, quicker scanning, and cleaner stacked sections."
+      subtitle={
+        source === "live"
+          ? "Trips now follows the real backend trip spine while keeping the same tighter hierarchy and quicker stacked sections."
+          : "Trips stays the strongest tab, but with tighter hierarchy, quicker scanning, and cleaner stacked sections."
+      }
     >
       <SurfaceCard tone="connected">
         <View style={{ gap: theme.spacing.md }}>
@@ -141,13 +203,13 @@ function TripsPopulatedScreen() {
       />
 
       <View style={{ gap: theme.spacing.sm }}>
-        {connectedItems.map((item) => (
+        {data.connectedItems.map((item) => (
           <ConnectedTravelCard key={item.id} item={item} />
         ))}
       </View>
 
       <View style={{ gap: theme.spacing.sm }}>
-        {connectedAccounts.map((account) => (
+        {data.connectedAccounts.map((account) => (
           <ConnectedAccountCard key={account.id} account={account} />
         ))}
       </View>

@@ -74,8 +74,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <ButtonLink href="/app/profile" variant="ghost">
                   Review profile
                 </ButtonLink>
-                <ButtonLink href="/app/trips/trip-jaipur-november" variant="ghost">
-                  Review Jaipur plan
+                <ButtonLink href="/app/trips" variant="ghost">
+                  Review trip hub
                 </ButtonLink>
                 <LogoutButton variant="secondary" />
               </div>

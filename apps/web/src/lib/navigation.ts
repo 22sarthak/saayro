@@ -19,7 +19,7 @@ export const appNavItems: NavItem[] = [
     description: "Trip-aware guidance and action prompts."
   },
   {
-    href: "/app/trips/trip-jaipur-november",
+    href: "/app/trips",
     label: "Trip Hub",
     shortLabel: "Trip",
     description: "Planner, itinerary, exports, and route context."

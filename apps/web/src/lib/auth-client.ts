@@ -11,8 +11,9 @@ import type {
   ConnectedAccount,
   ConnectedTravelItem,
 } from "@saayro/types";
+import { normalizeConnectedItemMetadata, normalizeSession } from "@/lib/auth-normalizers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
@@ -110,7 +111,7 @@ function normalizeConnectedItem(raw: {
     state: raw.state,
     confidence: raw.confidence,
     startAt: raw.start_at,
-    metadata: Object.fromEntries(Object.entries(raw.metadata_json).map(([key, value]) => [key, String(value)])),
+    metadata: normalizeConnectedItemMetadata(raw.metadata_json),
   };
   if (raw.end_at) {
     item.endAt = raw.end_at;
@@ -118,30 +119,17 @@ function normalizeConnectedItem(raw: {
   return item;
 }
 
-function normalizeSession(raw: {
-  authenticated: boolean;
-  actor: AuthSession["actor"];
-  session_id: string | null;
-  expires_at: string | null;
-  expires_in_seconds: number | null;
-  transport: AuthSession["transport"];
-  status: AuthSession["status"];
-}): AuthSession {
-  return {
-    authenticated: raw.authenticated,
-    actor: raw.actor,
-    sessionId: raw.session_id,
-    expiresAt: raw.expires_at,
-    expiresInSeconds: raw.expires_in_seconds,
-    transport: raw.transport,
-    status: raw.status,
-  };
-}
-
 export async function fetchSession(): Promise<AuthSession> {
   const raw = await requestJson<{
     authenticated: boolean;
-    actor: AuthSession["actor"];
+    actor: {
+      user_id: string;
+      email: string;
+      full_name: string;
+      auth_mode: AuthSession["actor"] extends null ? never : "google" | "otp";
+      home_base?: string | null;
+      preferences?: Record<string, unknown> | null;
+    } | null;
     session_id: string | null;
     expires_at: string | null;
     expires_in_seconds: number | null;
@@ -155,7 +143,14 @@ export async function exchangeGoogleWeb(accessToken: string): Promise<GoogleAuth
   const raw = await requestJson<{
     session: {
       authenticated: boolean;
-      actor: AuthSession["actor"];
+      actor: {
+        user_id: string;
+        email: string;
+        full_name: string;
+        auth_mode: "google" | "otp";
+        home_base?: string | null;
+        preferences?: Record<string, unknown> | null;
+      } | null;
       session_id: string | null;
       expires_at: string | null;
       expires_in_seconds: number | null;
@@ -180,7 +175,14 @@ export async function refreshSession(): Promise<RefreshSessionResponse> {
   const raw = await requestJson<{
     session: {
       authenticated: boolean;
-      actor: AuthSession["actor"];
+      actor: {
+        user_id: string;
+        email: string;
+        full_name: string;
+        auth_mode: "google" | "otp";
+        home_base?: string | null;
+        preferences?: Record<string, unknown> | null;
+      } | null;
       session_id: string | null;
       expires_at: string | null;
       expires_in_seconds: number | null;

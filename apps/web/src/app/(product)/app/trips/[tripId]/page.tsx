@@ -1,16 +1,27 @@
 import { createRouteHandoffTarget, resolveMapHandoff } from "@saayro/types";
 import { Badge, ExportTile, RoutePreviewCard, SectionHeader, TimelineItem } from "@saayro/ui";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TripConnectedLiveRail } from "@/components/connections/trip-connected-live-rail";
 import { ButtonLink } from "@/components/ui/button-link";
 import { StatePanel } from "@/components/ui/state-panel";
+import { fetchServerSession } from "@/lib/auth-server";
 import { getTripById } from "@/lib/mock-selectors";
+import { fetchServerTripBundle, fetchServerTripSummaries } from "@/lib/trip-server";
 
 export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params;
-  const trip = getTripById(tripId);
+  const session = await fetchServerSession();
+  const liveTripBundle = session?.authenticated ? await fetchServerTripBundle(tripId) : null;
+  const trip = liveTripBundle?.trip ?? getTripById(tripId);
 
   if (!trip) {
+    if (session?.authenticated) {
+      const liveTrips = await fetchServerTripSummaries();
+      const firstTrip = liveTrips?.[0];
+      if (firstTrip) {
+        redirect(`/app/trips/${firstTrip.id}`);
+      }
+    }
     notFound();
   }
 

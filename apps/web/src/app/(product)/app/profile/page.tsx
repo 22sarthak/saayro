@@ -1,16 +1,30 @@
 import { Badge, ExportTile, SectionHeader } from "@saayro/ui";
 import { LiveConnectedAccounts } from "@/components/connections/live-connected-accounts";
 import { StatePanel } from "@/components/ui/state-panel";
+import { fetchServerSession } from "@/lib/auth-server";
 import { getProfileData } from "@/lib/mock-selectors";
 
-export default function ProfilePage() {
-  const profile = getProfileData();
+export default async function ProfilePage() {
+  const fallbackProfile = getProfileData();
+  const session = await fetchServerSession();
+  const profile = {
+    ...fallbackProfile,
+    userName: session?.authenticated ? (session.actor?.fullName ?? fallbackProfile.userName) : fallbackProfile.userName,
+    homeBase: session?.authenticated ? (session.actor?.homeBase ?? fallbackProfile.homeBase) : fallbackProfile.homeBase,
+    preferences:
+      session?.authenticated && session.actor?.preferences
+        ? session.actor.preferences
+        : fallbackProfile.preferences,
+  };
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
       <div className="space-y-5">
         <section className="section-shell space-y-4">
           <SectionHeader title={profile.userName} description={`Home base: ${profile.homeBase}`} />
+          {session?.authenticated && session.actor?.email ? (
+            <p className="text-sm text-slate-600">{session.actor.email}</p>
+          ) : null}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-[24px] bg-sky-100 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Preferred maps</p>

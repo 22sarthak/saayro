@@ -1,3 +1,5 @@
+import type { UserPreferences } from "./domain";
+
 export type AuthProvider = "google" | "otp";
 export type SessionTransport = "cookie" | "bearer";
 export type SessionStatus = "authenticated" | "signed_out";
@@ -8,6 +10,8 @@ export interface AuthSessionActor {
   email: string;
   fullName: string;
   authMode: AuthProvider;
+  homeBase?: string | null;
+  preferences?: UserPreferences | null;
 }
 
 export interface AuthSession {

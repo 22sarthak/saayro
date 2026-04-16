@@ -62,6 +62,26 @@ async def get_google_connector_callback(
     return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
+@router.get("/auth/google/gmail/callback")
+async def get_google_gmail_connector_callback(
+    code: str,
+    state: str,
+    db: AsyncSession = Depends(get_db),
+) -> RedirectResponse:
+    redirect_url, _ = await complete_google_connector_callback(db, code=code, state=state)
+    return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
+@router.get("/auth/google/calendar/callback")
+async def get_google_calendar_connector_callback(
+    code: str,
+    state: str,
+    db: AsyncSession = Depends(get_db),
+) -> RedirectResponse:
+    redirect_url, _ = await complete_google_connector_callback(db, code=code, state=state)
+    return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
 @router.post("/connections/{provider}/sync", response_model=ConnectionSyncResponse)
 async def post_sync_provider(
     provider: str,

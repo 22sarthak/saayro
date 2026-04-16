@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal, cast
 
 import httpx
 from sqlalchemy import select
@@ -82,7 +83,14 @@ async def _get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
 
 
 def _serialize_actor(user: User, auth_mode: str) -> SessionActor:
-    return SessionActor(user_id=user.id, email=user.email, full_name=user.full_name, auth_mode=auth_mode)  # type: ignore[arg-type]
+    return SessionActor(
+        user_id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        auth_mode=cast(Literal["google", "otp"], auth_mode),
+        home_base=user.home_base,
+        preferences=user.preferences or {},
+    )  # type: ignore[arg-type]
 
 
 async def resolve_session_from_token(db: AsyncSession, token: str) -> SessionEnvelope | None:

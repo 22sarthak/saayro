@@ -11,6 +11,8 @@ class SessionActor(BaseModel):
     email: str
     full_name: str
     auth_mode: Literal["google", "otp"]
+    home_base: str | None = None
+    preferences: dict[str, object] = Field(default_factory=dict)
 
 
 class SessionRead(BaseModel):

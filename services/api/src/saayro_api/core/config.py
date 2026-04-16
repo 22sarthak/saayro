@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     web_app_url: str = "http://localhost:3000"
     google_connector_client_id: str = ""
     google_connector_client_secret: str = ""
-    google_connector_redirect_uri: str = "http://127.0.0.1:8000/v1/connections/google/callback"
+    google_connector_redirect_uri: str = "http://localhost:8000/v1/connections/google/callback"
     google_connector_state_secret: str = "change-me"
     google_connector_gmail_scope: str = "https://www.googleapis.com/auth/gmail.readonly"
     google_connector_calendar_scope: str = "https://www.googleapis.com/auth/calendar.events.readonly"

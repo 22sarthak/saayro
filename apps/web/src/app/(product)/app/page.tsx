@@ -20,8 +20,8 @@ export default function AppDashboardPage() {
       <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <StatePanel
           eyebrow="Discovery home"
-          title="Move from trip intent to a plan you can actually use."
-          description="The dashboard centers the active trip, quick-start actions, and the signals that make Saayro feel like a calmer travel operating layer."
+          title="Start from the trip that is already moving."
+          description="The dashboard should tell you what matters now: the active trip, what needs review, and where to go next."
           tone="raised"
           actions={
             <>
@@ -52,7 +52,7 @@ export default function AppDashboardPage() {
             ))}
           </div>
           <ButtonLink href={`/app/trips/${featuredTrip.id}`} variant="primary">
-            Open trip hub
+            Review Jaipur trip
           </ButtonLink>
         </div>
       </section>
@@ -84,12 +84,12 @@ export default function AppDashboardPage() {
           <StatePanel
             eyebrow="Fresh account state"
             title={noTripState.length === 0 ? "No trips yet, and that should still feel useful." : "Trips loaded"}
-            description="The dashboard needs a graceful first-run state instead of dropping users into an empty void."
+            description="A first-run account should still point toward a useful next move instead of feeling empty."
             tone="discovery"
-            actions={<Button variant="secondary">Start a first trip</Button>}
+            actions={<Button variant="secondary">Start a first India trip</Button>}
           />
           <StatePanel
-            eyebrow="Loading shell"
+            eyebrow="Portable output"
             title="Exports warming into view"
             description={loadingExport.description}
             tone="connected"
@@ -120,4 +120,3 @@ export default function AppDashboardPage() {
     </div>
   );
 }
-

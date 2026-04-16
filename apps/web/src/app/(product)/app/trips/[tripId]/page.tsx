@@ -78,13 +78,13 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
       <div className="space-y-5">
         <StatePanel
           eyebrow="Planner rail"
-          title="Open action points stay nearby."
-          description="Buddy, exports, and route handoffs need to remain close to the itinerary without swallowing the whole workspace."
+          title="Keep the next travel move nearby."
+          description="Buddy, exports, and route handoffs should stay close to the itinerary without swallowing the workspace."
           tone="buddy"
           actions={
             <>
-              <ButtonLink href="/app/buddy" variant="primary">Ask Buddy</ButtonLink>
-              <ButtonLink href="/app/saved" variant="secondary">Review saved</ButtonLink>
+              <ButtonLink href="/app/buddy" variant="primary">Refine with Buddy</ButtonLink>
+              <ButtonLink href="/app/saved" variant="secondary">Open saved places</ButtonLink>
             </>
           }
         />
@@ -109,4 +109,3 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     </div>
   );
 }
-

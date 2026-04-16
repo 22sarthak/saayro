@@ -52,20 +52,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header className="rounded-[28px] border border-slate-200/70 bg-white/90 px-5 py-4 shadow-soft">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Saayro web shell</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Saayro travel workspace</p>
                 <h1 className="font-['Iowan_Old_Style','Palatino_Linotype','Book_Antiqua',Georgia,serif] text-3xl text-slate-950">
                   {sectionLabel}
                 </h1>
               </div>
               <div className="flex flex-wrap gap-3">
                 <ButtonLink href="/app" variant="secondary">
-                  Create trip
+                  Start a trip
                 </ButtonLink>
                 <ButtonLink href="/app/buddy" variant="primary">
                   Ask Buddy
                 </ButtonLink>
                 <ButtonLink href="/app/trips/trip-jaipur-november" variant="ghost">
-                  Open trip
+                  Review Jaipur plan
                 </ButtonLink>
               </div>
             </div>

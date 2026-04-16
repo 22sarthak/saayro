@@ -11,7 +11,7 @@ export default function SavedPage() {
       <div className="section-shell space-y-5">
         <SectionHeader
           title="Saved places and items"
-          description="A discovery-like surface for the things worth keeping: meals, stays, culture moments, and connected travel anchors."
+          description="A curated travel shelf for the places and anchors worth keeping close while the trip is still taking shape."
         />
         <div className="grid gap-4 md:grid-cols-2">
           {savedItems.map((item) => (
@@ -30,14 +30,14 @@ export default function SavedPage() {
       <div className="space-y-5">
         <StatePanel
           eyebrow="Empty-state preview"
-          title={emptyState.length === 0 ? "Nothing saved yet can still feel intentional." : "Saved items ready"}
-          description="Fresh accounts should see guided curation instead of an abandoned-looking page."
+          title={emptyState.length === 0 ? "Nothing saved yet should still feel intentional." : "Saved items ready"}
+          description="Fresh accounts should see travel curation and direction instead of an abandoned-looking page."
           tone="discovery"
         />
         <StatePanel
-          eyebrow="Discovery direction"
-          title="Amber belongs here."
-          description="Saved is where discovery, food warmth, and keepsake-worthy places should lean into the amber side of Ivory Atlas."
+          eyebrow="Why this matters"
+          title="Saved should help shape the next travel decision."
+          description="This page works best when saved meals, stays, and cultural anchors feel ready to move back into the itinerary."
           tone="discovery"
         >
           <div className="grid gap-3">
@@ -49,4 +49,3 @@ export default function SavedPage() {
     </div>
   );
 }
-

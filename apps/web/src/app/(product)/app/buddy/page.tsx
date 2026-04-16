@@ -17,7 +17,7 @@ export default function BuddyPage() {
       <div className="section-shell space-y-5">
         <SectionHeader
           title="Buddy"
-          description="A chat shell shaped around context, actions, and calmer trip decisions rather than a generic endless conversation."
+          description="A trip-aware conversation surface for pacing, route, and handoff decisions rather than a generic endless chat."
         />
         <div className="grid gap-4">
           {messages.map((message) => (
@@ -41,8 +41,8 @@ export default function BuddyPage() {
           ))}
         </div>
         <div className="rounded-[24px] border border-slate-200/70 bg-white p-4">
-          <p className="text-sm font-semibold text-slate-900">Composer-ready state</p>
-          <div className="mt-4 rounded-[20px] bg-ivory-50 p-4 text-sm text-slate-500">Ask about pacing, route logic, exports, or a better next stop.</div>
+          <p className="text-sm font-semibold text-slate-900">Next question</p>
+          <div className="mt-4 rounded-[20px] bg-ivory-50 p-4 text-sm text-slate-500">Ask about pacing, route logic, driver handoff, exports, or a cleaner next stop.</div>
         </div>
       </div>
       <div className="space-y-5">
@@ -76,4 +76,3 @@ export default function BuddyPage() {
     </div>
   );
 }
-

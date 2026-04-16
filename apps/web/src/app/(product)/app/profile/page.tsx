@@ -40,7 +40,7 @@ export default function ProfilePage() {
         <StatePanel
           eyebrow="Partial connected state"
           title={profile.partialConnection.title}
-          description="A low-confidence connected item should feel fixable, not alarming."
+          description="A low-confidence connected item should feel reviewable and fixable, not alarming."
           tone="danger"
         >
           <div className="rounded-[22px] bg-white/70 p-4 text-sm leading-6 text-slate-700">
@@ -48,7 +48,7 @@ export default function ProfilePage() {
           </div>
         </StatePanel>
         <section className="section-shell space-y-4">
-          <SectionHeader title="Portable outputs" description="Export readiness belongs in profile too because openness is a product principle, not just a trip feature." />
+          <SectionHeader title="Portable outputs" description="Export readiness belongs in profile too because travelers often need sharable outputs beyond a single trip view." />
           <div className="grid gap-3">
             {profile.exportPacks.map((pack) => (
               <ExportTile key={pack.id} pack={pack} />
@@ -57,12 +57,11 @@ export default function ProfilePage() {
         </section>
         <StatePanel
           eyebrow="Trust and privacy"
-          title="Use clear scope, calm copy, and reversibility."
-          description="The profile shell should preview how users manage permissions and connected account confidence without implying any real live linkage yet."
+          title="Keep scope clear, calm, and reversible."
+          description="Profile should show how permissions and connected account confidence will be managed, without pretending any live linkage already exists."
           tone="raised"
         />
       </div>
     </div>
   );
 }
-

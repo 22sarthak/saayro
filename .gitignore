@@ -6,3 +6,12 @@ dist/
 apps/mobile/build/
 coverage/
 *.tsbuildinfo
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.db
+*.db-journal
+pytest-cache-files-*/
+*.pyc

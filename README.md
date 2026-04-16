@@ -33,6 +33,15 @@ Saayro helps users plan, organize, and navigate trips with a travel-first produc
 | API | FastAPI, PostgreSQL |
 | Shared | `packages/ui`, `packages/types` |
 
+## Backend basics
+- backend service lives in `services/api`
+- uses FastAPI, async SQLAlchemy, Alembic, and `uv`
+- local backend commands:
+  - `cd services/api`
+  - `uv sync --group dev`
+  - `uv run alembic upgrade head`
+  - `uv run uvicorn saayro_api.main:app --reload`
+
 ## Repository structure
 - `docs/00-overview`: product context, market framing, glossary, and success metrics
 - `docs/01-design`: brand rules, Ivory Atlas system, accessibility, motion, and content tone

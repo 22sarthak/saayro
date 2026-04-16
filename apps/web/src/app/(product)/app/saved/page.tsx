@@ -1,10 +1,14 @@
 import { getSavedScenario } from "@saayro/mock-data";
+import { createPlaceHandoffTarget, createRouteHandoffTarget, resolveMapHandoff } from "@saayro/types";
 import { Badge, SectionHeader } from "@saayro/ui";
+import { ButtonLink } from "@/components/ui/button-link";
 import { StatePanel } from "@/components/ui/state-panel";
+import { getProfileData } from "@/lib/mock-selectors";
 
 export default function SavedPage() {
   const savedScenario = getSavedScenario("populated");
   const emptyState = getSavedScenario("empty");
+  const profile = getProfileData();
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
@@ -19,6 +23,25 @@ export default function SavedPage() {
             <div className="grid gap-4 md:grid-cols-2">
               {section.items.map((item) => (
                 <div key={item.id} className="rounded-[26px] border border-slate-200/70 bg-white p-5 shadow-soft">
+                  {(() => {
+                    const handoff = item.routeStop?.routePreview
+                      ? resolveMapHandoff(
+                          createRouteHandoffTarget(item.routeStop.routePreview),
+                          profile.preferences.preferredMapsApp,
+                          item.routeStop.routePreview.mapsAppOptions
+                        )
+                      : resolveMapHandoff(
+                          createPlaceHandoffTarget({
+                            title: item.title,
+                            city: item.city,
+                            subtitle: item.subtitle
+                          }),
+                          profile.preferences.preferredMapsApp,
+                          ["google-maps", "apple-maps"]
+                        );
+
+                    return (
+                      <>
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{item.category}</p>
                   <h2 className="mt-3 text-xl font-semibold text-slate-900">{item.title}</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
@@ -26,6 +49,25 @@ export default function SavedPage() {
                     <Badge>{item.city}</Badge>
                     <span className="text-sm text-slate-500">Ready to pull back into the trip</span>
                   </div>
+                  <div className="mt-4">
+                    {handoff.externalUrl ? (
+                      <ButtonLink
+                        href={handoff.externalUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        variant="secondary"
+                      >
+                        {handoff.fallbackLabel}
+                      </ButtonLink>
+                    ) : (
+                      <div className="rounded-[18px] bg-ivory-50 px-4 py-3 text-sm text-slate-600">
+                        Copy destination: {handoff.destinationLabel}
+                      </div>
+                    )}
+                  </div>
+                      </>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

@@ -27,16 +27,22 @@ export function ButtonLink({
   href,
   children,
   variant = "primary",
-  className
+  className,
+  target,
+  rel
 }: {
   href: string;
   children: ReactNode;
   variant?: keyof typeof variantClassMap;
   className?: string;
+  target?: "_blank" | "_self";
+  rel?: string;
 }) {
   return (
     <Link
       href={href}
+      target={target}
+      rel={rel}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-[16px] px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-out",
         variantClassMap[variant],
@@ -48,4 +54,3 @@ export function ButtonLink({
     </Link>
   );
 }
-

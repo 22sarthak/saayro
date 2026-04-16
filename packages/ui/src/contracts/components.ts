@@ -43,6 +43,9 @@ export interface TimelineItemProps {
 export interface RoutePreviewProps {
   route: RoutePreview;
   ctaLabel?: string;
+  ctaHref?: string | null;
+  ctaTarget?: "_blank" | "_self";
+  fallbackLabel?: string;
 }
 
 export interface ExportTileProps {
@@ -57,4 +60,3 @@ export interface ConnectedSourceTileProps {
 export interface ConnectedTravelCardProps {
   item: ConnectedTravelItem;
 }
-

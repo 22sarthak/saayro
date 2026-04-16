@@ -25,18 +25,20 @@ const toneMap: Record<ButtonVariant, { backgroundColor: string; textColor: strin
 export function ActionButton({
   label,
   variant = "primary",
-  onPress
+  onPress,
+  disabled = false
 }: {
   label: string;
   variant?: ButtonVariant;
   onPress?: () => void;
+  disabled?: boolean;
 }) {
   const theme = useMobileTheme();
   const tone = toneMap[variant];
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
       style={{
         minHeight: 46,
         paddingHorizontal: theme.spacing.lg,
@@ -46,7 +48,8 @@ export function ActionButton({
         borderWidth: tone.borderColor ? 1 : 0,
         borderColor: tone.borderColor,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        opacity: disabled ? 0.55 : 1
       }}
     >
       <Text style={{ color: tone.textColor, fontFamily: theme.fonts.bodyMedium, fontSize: 13 }}>{label}</Text>

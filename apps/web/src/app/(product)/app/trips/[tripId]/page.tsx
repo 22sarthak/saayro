@@ -1,3 +1,4 @@
+import { createRouteHandoffTarget, resolveMapHandoff } from "@saayro/types";
 import { Badge, ConnectedSourceTile, ExportTile, RoutePreviewCard, SectionHeader, TimelineItem } from "@saayro/ui";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -13,6 +14,9 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
   }
 
   const firstRoute = trip.itinerary.flatMap((day) => day.stops).find((stop) => stop.routePreview)?.routePreview;
+  const routeHandoff = firstRoute
+    ? resolveMapHandoff(createRouteHandoffTarget(firstRoute), trip.preferences.preferredMapsApp, firstRoute.mapsAppOptions)
+    : null;
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
@@ -88,7 +92,14 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
             </>
           }
         />
-        {firstRoute ? <RoutePreviewCard route={firstRoute} ctaLabel="Open in Maps" /> : null}
+        {firstRoute && routeHandoff ? (
+          <RoutePreviewCard
+            route={firstRoute}
+            ctaLabel={routeHandoff.fallbackLabel}
+            ctaHref={routeHandoff.externalUrl}
+            fallbackLabel={`Copy destination: ${routeHandoff.destinationLabel}`}
+          />
+        ) : null}
         <div className="section-shell space-y-4">
           <SectionHeader title="Exports" description="Portable outputs stay attached to the trip hub." />
           <div className="grid gap-3">

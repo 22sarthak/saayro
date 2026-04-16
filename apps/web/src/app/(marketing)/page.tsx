@@ -1,3 +1,4 @@
+import { createRouteHandoffTarget, resolveMapHandoff } from "@saayro/types";
 import { Badge, Card, ExportTile, RoutePreviewCard, SectionHeader, TimelineItem } from "@saayro/ui";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -26,6 +27,9 @@ export default function LandingPage() {
   const buddyMessage = getBuddyThread().find((message) => message.role === "buddy");
   const firstDay = featuredTrip.itinerary[0];
   const firstRoute = featuredTrip.itinerary.flatMap((day) => day.stops).find((stop) => stop.routePreview)?.routePreview;
+  const marketingHandoff = firstRoute
+    ? resolveMapHandoff(createRouteHandoffTarget(firstRoute), featuredTrip.preferences.preferredMapsApp, firstRoute.mapsAppOptions)
+    : null;
 
   return (
     <div className="px-4 py-6 lg:px-6">
@@ -110,7 +114,14 @@ export default function LandingPage() {
                     ) : null}
                   </div>
                   <div className="space-y-4">
-                    {firstRoute ? <RoutePreviewCard route={firstRoute} ctaLabel="Open route handoff" /> : null}
+                    {firstRoute && marketingHandoff ? (
+                      <RoutePreviewCard
+                        route={firstRoute}
+                        ctaLabel={marketingHandoff.fallbackLabel}
+                        ctaHref={marketingHandoff.externalUrl}
+                        fallbackLabel={`Copy destination: ${marketingHandoff.destinationLabel}`}
+                      />
+                    ) : null}
                     <ExportTile pack={featuredTrip.exports[0]!} />
                   </div>
                 </div>

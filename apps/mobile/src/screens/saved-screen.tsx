@@ -4,8 +4,10 @@ import { EmptyStateBlock } from "@/components/layout/empty-state-block";
 import { LoadingBlock } from "@/components/layout/loading-block";
 import { RouteHandoffCard } from "@/components/layout/route-handoff-card";
 import { SectionHeader } from "@/components/layout/section-header";
+import { ActionButton } from "@/components/primitives/action-button";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
+import { openMapHandoff, resolvePlaceHandoff, resolveRouteHandoff } from "@/lib/map-handoff";
 import { getSavedScreenData, getTripsScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
@@ -26,7 +28,9 @@ export function SavedScreen() {
 function SavedPopulatedScreen() {
   const theme = useMobileTheme();
   const { data } = getSavedScreenData("populated");
-      const routes = getTripsScreenData("partial").data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview).slice(0, 1);
+  const tripsData = getTripsScreenData("partial").data;
+  const mapsPreference = tripsData.mapsPreference;
+  const routes = tripsData.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview).slice(0, 1);
 
   return (
     <AppTabShell
@@ -50,6 +54,19 @@ function SavedPopulatedScreen() {
           <SectionHeader eyebrow="Saved Places" title={section.title} description={section.description} />
           {section.items.map((item) => (
             <SurfaceCard key={item.id} tone={section.id === "saved-discoveries" ? "discovery" : section.id === "connected-travel" ? "connected" : "raised"}>
+              {(() => {
+                const handoff = item.routeStop?.routePreview
+                  ? resolveRouteHandoff(item.routeStop.routePreview, mapsPreference)
+                  : resolvePlaceHandoff(
+                      {
+                        title: item.title,
+                        city: item.city,
+                        subtitle: item.subtitle
+                      },
+                      mapsPreference
+                    );
+
+                return (
               <View style={{ gap: theme.spacing.sm }}>
                 <View style={{ gap: theme.spacing.xs }}>
                   <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>{item.title}</Text>
@@ -63,7 +80,22 @@ function SavedPopulatedScreen() {
                     <TagChip key={`${item.id}-${tag}`} option={{ id: `${item.id}-${tag}`, label: tag }} />
                   ))}
                 </View>
+                {!handoff.externalUrl ? (
+                  <Text selectable style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
+                    Destination summary: {handoff.copyableQuery}
+                  </Text>
+                ) : null}
+                <ActionButton
+                  label={handoff.fallbackLabel}
+                  variant="secondary"
+                  onPress={() => {
+                    void openMapHandoff(handoff);
+                  }}
+                  disabled={!handoff.externalUrl}
+                />
               </View>
+                );
+              })()}
             </SurfaceCard>
           ))}
         </View>
@@ -73,7 +105,7 @@ function SavedPopulatedScreen() {
         <RouteHandoffCard
           key={stop.id}
           route={stop.routePreview!}
-          preferredMapsApp={getTripsScreenData("partial").data.mapsPreference}
+          preferredMapsApp={mapsPreference}
         />
       ))}
     </AppTabShell>

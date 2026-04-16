@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,8 +17,10 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     prefix: str = "/v1"
-    database_url: str = "sqlite+aiosqlite:///./saayro_api.db"
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000", "http://localhost:8081"])
+    database_url: str = "postgresql+asyncpg://postgres:postgres@127.0.0.1:5433/saayro"
+    cors_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:8081"]
+    )
     demo_user_email: str = "demo@saayro.app"
     demo_user_name: str = "Aarohi Mehta"
 

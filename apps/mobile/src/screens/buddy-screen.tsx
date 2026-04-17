@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { router } from "expo-router";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { EmptyStateBlock } from "@/components/layout/empty-state-block";
 import { LoadingBlock } from "@/components/layout/loading-block";
@@ -118,9 +119,10 @@ function BuddyEmptyScreen() {
     >
       <EmptyStateBlock
         eyebrow="No messages yet"
-        title="Ask about pacing, exports, or route handoff"
-        description={data.composerHint}
-        actionLabel="Open first prompt"
+        title="Create a trip before opening Buddy fully"
+        description="Buddy stays travel-first in this step. Create the trip shell first, then come back for trip-aware guidance."
+        actionLabel="Open Trip Hub"
+        onAction={() => router.push("/trip-create")}
         tone="buddy"
       >
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>

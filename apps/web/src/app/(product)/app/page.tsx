@@ -80,8 +80,8 @@ export default async function AppDashboardPage() {
               <p className="text-sm leading-7 text-slate-600">
                 The signed-in workspace is live, but there is no persisted trip yet. Once one exists, this rail becomes the real trip hub entry.
               </p>
-              <ButtonLink href="/app" variant="primary">
-                Return to dashboard
+              <ButtonLink href="/app/trips?create=1" variant="primary">
+                Open Trip Hub
               </ButtonLink>
             </>
           )}
@@ -129,7 +129,7 @@ export default async function AppDashboardPage() {
             title={noTripState.length === 0 ? "No trips yet, and that should still feel useful." : "Trips loaded"}
             description="A first-run account should still point toward a useful next move instead of feeling empty."
             tone="discovery"
-            actions={<Button variant="secondary">Start first trip</Button>}
+            actions={<ButtonLink href="/app/trips?create=1" variant="secondary">Start first trip</ButtonLink>}
           />
           <StatePanel
             eyebrow="Portable output"

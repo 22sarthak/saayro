@@ -380,3 +380,34 @@ async def test_buddy_out_of_scope_redirects_and_hides_dev_metadata_in_production
         assert buddy.status_code == 201
         assert body[1]["response"]["scope_class"] == "out_of_scope"
         assert body[1]["response"]["dev_metadata"] is None
+
+
+async def test_pretrip_buddy_thread_attaches_to_created_trip(monkeypatch, client_factory) -> None:
+    monkeypatch.setenv("SAAYRO_API_AI_ENABLED", "true")
+    monkeypatch.setenv("SAAYRO_API_AI_PROVIDER", "mock")
+
+    async def pretrip_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-buddy-pretrip",
+            email="pretrip@saayro.app",
+            full_name="Pretrip Tester",
+            email_verified=True,
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", pretrip_google_profile)
+
+    async with client_factory() as client:
+        await client.post("/v1/auth/google/web", json={"access_token": "test-google-access-token"})
+        pretrip = await client.post("/v1/buddy/pre-trip/messages", json={"content": "Help me choose between Jaipur and Udaipur."})
+        assert pretrip.status_code == 201
+        assert len(pretrip.json()) == 2
+
+        trip_id = await _create_trip(client)
+        attached = await client.post("/v1/buddy/pre-trip/attach-trip", json={"trip_id": trip_id})
+        assert attached.status_code == 200
+        assert attached.json()["attached"] is True
+        assert attached.json()["migrated_message_count"] == 2
+
+        trip_thread = await client.get(f"/v1/trips/{trip_id}/buddy/messages")
+        assert trip_thread.status_code == 200
+        assert len(trip_thread.json()) == 2

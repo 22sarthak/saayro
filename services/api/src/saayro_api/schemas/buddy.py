@@ -11,6 +11,16 @@ class BuddyMessageCreate(BaseModel):
     content: str
 
 
+class BuddyAttachTripPayload(BaseModel):
+    trip_id: str
+
+
+class BuddyAttachTripRead(BaseModel):
+    attached: bool
+    trip_id: str
+    migrated_message_count: int = 0
+
+
 class BuddyActionSchema(BaseModel):
     id: str
     type: str

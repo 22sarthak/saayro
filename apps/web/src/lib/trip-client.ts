@@ -1,6 +1,6 @@
 "use client";
 
-import type { TripSummary } from "@saayro/types";
+import { normalizeBackendTripSummary, type BackendTripListItem, type BackendTripRead, type TravelerParty, type TripSummary } from "@saayro/types";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -32,9 +32,10 @@ export async function createTrip(payload: {
   title: string;
   destinationCity: string;
   destinationRegion: string;
+  destinationCountry?: string;
   startDate: string;
   endDate: string;
-  party: string;
+  party: TravelerParty;
   overview: string;
   highlights: string[];
 }): Promise<{ id: string }> {
@@ -44,7 +45,7 @@ export async function createTrip(payload: {
       title: payload.title,
       destination_city: payload.destinationCity,
       destination_region: payload.destinationRegion,
-      destination_country: "India",
+      destination_country: payload.destinationCountry ?? "India",
       start_date: payload.startDate,
       end_date: payload.endDate,
       party: payload.party,
@@ -63,5 +64,40 @@ export async function createTrip(payload: {
 }
 
 export async function fetchTrips(): Promise<TripSummary[]> {
-  return requestJson<TripSummary[]>("/v1/trips", { method: "GET" });
+  const raw = await requestJson<BackendTripListItem[]>("/v1/trips", { method: "GET" });
+  return raw.map((trip) => normalizeBackendTripSummary(trip));
+}
+
+export async function fetchTripDetail(tripId: string): Promise<BackendTripRead> {
+  return requestJson<BackendTripRead>(`/v1/trips/${tripId}`, { method: "GET" });
+}
+
+export async function updateTrip(
+  tripId: string,
+  payload: {
+    title: string;
+    destinationCity: string;
+    destinationRegion: string;
+    destinationCountry?: string;
+    startDate: string;
+    endDate: string;
+    party: TravelerParty;
+    overview: string;
+    highlights: string[];
+  },
+): Promise<{ id: string }> {
+  return requestJson<{ id: string }>(`/v1/trips/${tripId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      title: payload.title,
+      destination_city: payload.destinationCity,
+      destination_region: payload.destinationRegion,
+      destination_country: payload.destinationCountry ?? "India",
+      start_date: payload.startDate,
+      end_date: payload.endDate,
+      party: payload.party,
+      overview: payload.overview,
+      highlights: payload.highlights,
+    }),
+  });
 }

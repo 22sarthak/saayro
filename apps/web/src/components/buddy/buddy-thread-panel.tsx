@@ -4,18 +4,23 @@ import { Button, Card } from "@saayro/ui";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { BuddyMessageView } from "@/lib/buddy-client";
-import { fetchBuddyMessages, postBuddyMessage } from "@/lib/buddy-client";
+import {
+  fetchBuddyMessages,
+  fetchPreTripBuddyMessages,
+  postBuddyMessage,
+  postPreTripBuddyMessage,
+} from "@/lib/buddy-client";
 
 export function BuddyThreadPanel({
-  tripId,
+  liveTarget,
   initialMessages,
   emptyPrompts,
-  liveEnabled,
+  composerPlaceholder,
 }: {
-  tripId: string | null;
+  liveTarget: { kind: "trip"; tripId: string } | { kind: "pretrip" } | null;
   initialMessages: BuddyMessageView[];
   emptyPrompts: Array<{ id: string; label: string }>;
-  liveEnabled: boolean;
+  composerPlaceholder: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,15 +31,16 @@ export function BuddyThreadPanel({
   const [lastPromptHandled, setLastPromptHandled] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const promptToSubmit = searchParams.get("prompt");
+  const liveEnabled = liveTarget !== null;
 
   useEffect(() => {
-    if (!tripId || !liveEnabled) {
+    if (!liveTarget || !liveEnabled) {
       return;
     }
 
     let active = true;
     startTransition(() => {
-      void fetchBuddyMessages(tripId)
+      void (liveTarget.kind === "trip" ? fetchBuddyMessages(liveTarget.tripId) : fetchPreTripBuddyMessages())
         .then((nextMessages) => {
           if (!active) {
             return;
@@ -53,16 +59,16 @@ export function BuddyThreadPanel({
     return () => {
       active = false;
     };
-  }, [liveEnabled, tripId]);
+  }, [liveEnabled, liveTarget]);
 
   const submitMessage = (content: string) => {
     const trimmed = content.trim();
-    if (!tripId || !liveEnabled || !trimmed) {
+    if (!liveTarget || !liveEnabled || !trimmed) {
       return;
     }
 
     startTransition(() => {
-      void postBuddyMessage(tripId, trimmed)
+      void (liveTarget.kind === "trip" ? postBuddyMessage(liveTarget.tripId, trimmed) : postPreTripBuddyMessage(trimmed))
         .then((nextMessages) => {
           setMessages(nextMessages);
           setComposerValue("");
@@ -80,14 +86,14 @@ export function BuddyThreadPanel({
   };
 
   useEffect(() => {
-    if (!promptToSubmit || !liveEnabled || !tripId || promptToSubmit === lastPromptHandled) {
+    if (!promptToSubmit || !liveEnabled || !liveTarget || promptToSubmit === lastPromptHandled) {
       return;
     }
 
     submitMessage(promptToSubmit);
     setLastPromptHandled(promptToSubmit);
     router.replace(pathname);
-  }, [lastPromptHandled, liveEnabled, pathname, promptToSubmit, router, tripId]);
+  }, [lastPromptHandled, liveEnabled, liveTarget, pathname, promptToSubmit, router]);
 
   return (
     <>
@@ -115,9 +121,15 @@ export function BuddyThreadPanel({
               {actionItems.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {actionItems.map((action) => (
-                    <Button key={action.id} variant="secondary" disabled title="Product actions are still view-only on the web shell.">
-                      {action.label}
-                    </Button>
+                    action.type === "open_trip_hub" && liveTarget?.kind === "pretrip" ? (
+                      <Button key={action.id} variant="secondary" onClick={() => router.push("/app/trips?create=1&source=buddy")}>
+                        {action.label}
+                      </Button>
+                    ) : (
+                      <Button key={action.id} variant="secondary" disabled title="Product actions are still view-only on the web shell.">
+                        {action.label}
+                      </Button>
+                    )
                   ))}
                 </div>
               ) : null}
@@ -134,7 +146,7 @@ export function BuddyThreadPanel({
               value={composerValue}
               onChange={(event) => setComposerValue(event.target.value)}
               rows={4}
-              placeholder="Ask about pacing, Connected Travel review, route handoff, or the right Export Pack for this trip."
+              placeholder={composerPlaceholder}
               className="w-full rounded-[20px] border border-slate-200/80 bg-ivory-50 p-4 text-sm leading-6 text-slate-700 outline-none transition focus:border-violet-300 focus:bg-white"
               disabled={isPending}
             />
@@ -147,7 +159,7 @@ export function BuddyThreadPanel({
           </form>
         ) : (
           <div className="mt-4 rounded-[20px] bg-ivory-50 p-4 text-sm text-slate-500">
-            Ask about pacing, Connected Travel review, route handoff, or the right Export Pack for this trip.
+            {composerPlaceholder}
           </div>
         )}
       </div>

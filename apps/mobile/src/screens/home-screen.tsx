@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { router } from "expo-router";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedTravelCard } from "@/components/layout/connected-travel-card";
 import { EmptyStateBlock } from "@/components/layout/empty-state-block";
@@ -155,6 +156,7 @@ function HomeEmptyScreen() {
         title="Start with one premium trip shell"
         description="Create a destination, save a few travel tastes, and let the app become useful before any backend or AI layer shows up."
         actionLabel="Create first trip"
+        onAction={() => router.push("/trip-create")}
         tone="connected"
       >
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>

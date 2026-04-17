@@ -10,6 +10,7 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { ActionButton } from "@/components/primitives/action-button";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
+import { router } from "expo-router";
 import { useAuth } from "@/lib/auth";
 import { getProfileScreenData } from "@/lib/screen-data";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
@@ -96,6 +97,7 @@ function ProfilePopulatedScreen() {
               <TagChip key={interest} option={{ id: interest, label: interest }} />
             ))}
           </View>
+          <ActionButton label="Edit traveler details" variant="ghost" onPress={() => router.push("/onboarding")} />
           <ActionButton label="Sign out" variant="secondary" onPress={() => void signOut()} />
         </View>
       </SurfaceCard>

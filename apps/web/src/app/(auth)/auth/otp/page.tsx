@@ -70,7 +70,7 @@ export default function OtpPage() {
       <StatePanel
         eyebrow="OTP path"
         title="A verification flow that feels steady under pressure."
-        description="This route now calls the backend and creates a real OTP challenge object. Delivery stays provider-ready unless a live OTP provider is enabled."
+        description="This route now calls the backend and creates a real OTP challenge object. In this step it is a sign-in path, and delivery stays provider-ready unless a live OTP provider is enabled."
         tone="discovery"
       />
       <Card className="space-y-5 rounded-[30px]">

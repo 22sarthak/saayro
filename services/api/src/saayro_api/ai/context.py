@@ -20,10 +20,29 @@ from saayro_api.models.users import User
 from saayro_api.services.trips import get_trip_model_or_404
 
 
-async def build_buddy_context(db: AsyncSession, *, user_id: str, trip_id: str) -> SaayroBuddyContext:
-    trip = await get_trip_model_or_404(db, user_id, trip_id)
+async def build_buddy_context(db: AsyncSession, *, user_id: str, trip_id: str | None) -> SaayroBuddyContext:
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one()
+    if trip_id is None:
+        return SaayroBuddyContext(
+            user=BuddyUserContext(
+                user_id=user.id,
+                full_name=user.full_name,
+                email=user.email,
+                preferences=user.preferences,
+            ),
+            trip=None,
+            itinerary_days=[],
+            saved_places=[],
+            exports=[],
+            connected_travel=ConnectedTravelSummary(
+                connected_accounts=[],
+                attached_items=[],
+                summary="No trip exists yet, so Buddy should guide destination and trip-start planning first.",
+            ),
+        )
+
+    trip = await get_trip_model_or_404(db, user_id, trip_id)
     day_result = await db.execute(
         select(ItineraryDay)
         .where(ItineraryDay.trip_id == trip.id)

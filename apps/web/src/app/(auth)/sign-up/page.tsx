@@ -33,8 +33,8 @@ export default function SignUpPage() {
             <p className="mt-2 text-sm leading-6 text-slate-700">Best for reopening trips, connected travel, and a calmer return into the dashboard.</p>
           </div>
           <div className="rounded-[24px] bg-violet-100 p-5">
-            <p className="text-sm font-semibold text-slate-900">Mobile OTP path</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">Provider-ready and structured correctly, with live delivery still intentionally off by default.</p>
+            <p className="text-sm font-semibold text-slate-900">Mobile OTP sign-in lane</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">Shown honestly as a future-safe sign-in path, with live delivery still intentionally off by default.</p>
           </div>
         </div>
         <div className="rounded-[24px] bg-amber-100 p-5">

@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </h1>
               </div>
               <div className="flex flex-wrap gap-3">
-                <ButtonLink href="/app" variant="secondary">
+                <ButtonLink href="/app/trips?create=1" variant="secondary">
                   Start a trip
                 </ButtonLink>
                 <ButtonLink href="/app/buddy" variant="primary">

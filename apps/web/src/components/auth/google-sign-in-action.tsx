@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@saayro/ui";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { exchangeGoogleWeb } from "@/lib/auth-client";
@@ -26,6 +27,17 @@ declare global {
 }
 
 let googleScriptPromise: Promise<void> | null = null;
+
+function buildGoogleGuidance(message: string): { label: string; href: string } | null {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("continue signing in instead")) {
+    return { label: "Open sign in", href: "/sign-in" };
+  }
+  if (normalized.includes("verify")) {
+    return { label: "Open onboarding", href: "/app/onboarding" };
+  }
+  return null;
+}
 
 function loadGoogleIdentityScript(): Promise<void> {
   if (typeof window === "undefined") {
@@ -72,6 +84,7 @@ export function GoogleSignInAction({
   const { setSession } = useSession();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const guidance = error ? buildGoogleGuidance(error) : null;
 
   const handleSignIn = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -124,6 +137,14 @@ export function GoogleSignInAction({
         {pending ? "Connecting Google..." : label}
       </Button>
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {guidance ? (
+        <p className="text-sm text-slate-600">
+          Next step:{" "}
+          <Link href={guidance.href} className="text-slate-900 underline decoration-slate-300 underline-offset-4">
+            {guidance.label}
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

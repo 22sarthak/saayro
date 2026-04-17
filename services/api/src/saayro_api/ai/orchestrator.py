@@ -35,7 +35,7 @@ class BuddyOrchestrator:
         *,
         db: AsyncSession,
         actor: SessionActor,
-        trip_id: str,
+        trip_id: str | None,
         message: str,
     ) -> BuddyPersistedGeneration:
         context = await build_buddy_context(db, user_id=actor.user_id, trip_id=trip_id)

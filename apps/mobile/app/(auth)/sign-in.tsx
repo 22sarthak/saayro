@@ -1,7 +1,7 @@
 import * as Google from "expo-auth-session/providers/google";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { ActionButton } from "@/components/primitives/action-button";
 import { TagChip } from "@/components/primitives/tag-chip";
 import { AuthFrame } from "@/components/layout/auth-frame";
@@ -11,7 +11,7 @@ import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
 export default function SignInScreen() {
   const theme = useMobileTheme();
-  const { session, status, exchangeGoogleAccessToken } = useAuth();
+  const { session, status, exchangeGoogleAccessTokenWithIntent, signInWithEmailPassword } = useAuth();
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
@@ -20,12 +20,14 @@ export default function SignInScreen() {
   });
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (status === "ready" && session?.authenticated) {
-      router.replace("/(tabs)");
+      router.replace(session.needsOnboarding ? "/onboarding" : "/(tabs)");
     }
-  }, [session?.authenticated, status]);
+  }, [session?.authenticated, session?.needsOnboarding, status]);
 
   useEffect(() => {
     if (response?.type !== "success") {
@@ -39,9 +41,9 @@ export default function SignInScreen() {
       return;
     }
 
-    void exchangeGoogleAccessToken(accessToken)
-      .then(() => {
-        router.replace("/(tabs)");
+    void exchangeGoogleAccessTokenWithIntent(accessToken, "sign_in")
+      .then((nextSession) => {
+        router.replace(nextSession.needsOnboarding ? "/onboarding" : "/(tabs)");
       })
       .catch((requestError) => {
         setError(requestError instanceof Error ? requestError.message : "Could not complete Google sign-in.");
@@ -49,7 +51,19 @@ export default function SignInScreen() {
       .finally(() => {
         setPending(false);
       });
-  }, [exchangeGoogleAccessToken, response]);
+  }, [exchangeGoogleAccessTokenWithIntent, response]);
+
+  const inputStyle = {
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSoft,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.fonts.body,
+    fontSize: 14,
+  } as const;
 
   return (
     <AuthFrame
@@ -74,6 +88,29 @@ export default function SignInScreen() {
             disabled={pending || !request}
           />
           <ActionButton label="Continue with mobile OTP" variant="secondary" onPress={() => router.push("/otp")} />
+        </View>
+        <View style={{ gap: theme.spacing.sm }}>
+          <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={inputStyle} autoCapitalize="none" />
+          <TextInput value={password} onChangeText={setPassword} placeholder="Password" style={inputStyle} secureTextEntry />
+          <ActionButton
+            label={pending ? "Signing in..." : "Continue with Saayro account"}
+            variant="secondary"
+            onPress={() => {
+              setPending(true);
+              setError(null);
+              void signInWithEmailPassword({ email, password })
+                .then((nextSession) => {
+                  router.replace(nextSession.needsOnboarding ? "/onboarding" : "/(tabs)");
+                })
+                .catch((requestError) => {
+                  setError(requestError instanceof Error ? requestError.message : "Could not complete email sign-in.");
+                })
+                .finally(() => {
+                  setPending(false);
+                });
+            }}
+            disabled={pending}
+          />
         </View>
         {error ? (
           <Text style={{ color: "#9C3D34", fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>

@@ -49,7 +49,7 @@ export default function OtpScreen() {
     <AuthFrame
       eyebrow="OTP"
       title="A verification moment that stays calm under pressure."
-      description="This screen now talks to the backend and creates a real OTP challenge object. Delivery remains provider-ready unless a live provider is enabled."
+      description="This screen now talks to the backend and creates a real OTP challenge object. In this step, OTP is a sign-in lane and provider-ready unless a live provider is enabled."
     >
       <View style={{ gap: theme.spacing.lg }}>
         <View style={{ gap: theme.spacing.md }}>
@@ -60,7 +60,7 @@ export default function OtpScreen() {
             onPress={() => {
               setPending(true);
               setMessage(null);
-              void requestOtp(phoneNumber)
+              void requestOtp(phoneNumber, "sign_in")
                 .then((result) => {
                   setChallengeId(result.challengeId);
                   setMessage(result.message);

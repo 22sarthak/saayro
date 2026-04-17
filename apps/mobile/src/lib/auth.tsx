@@ -87,10 +87,10 @@ interface AuthContextValue {
   session: AuthSession | null;
   status: AuthStatus;
   bootstrapSession: () => Promise<void>;
-  exchangeGoogleAccessToken: (accessToken: string) => Promise<void>;
-  exchangeGoogleAccessTokenWithIntent: (accessToken: string, intent: "sign_in" | "sign_up") => Promise<void>;
-  signUpWithEmailPassword: (payload: EmailSignUpPayload) => Promise<void>;
-  signInWithEmailPassword: (payload: EmailSignInPayload) => Promise<void>;
+  exchangeGoogleAccessToken: (accessToken: string) => Promise<AuthSession>;
+  exchangeGoogleAccessTokenWithIntent: (accessToken: string, intent: "sign_in" | "sign_up") => Promise<AuthSession>;
+  signUpWithEmailPassword: (payload: EmailSignUpPayload) => Promise<AuthSession>;
+  signInWithEmailPassword: (payload: EmailSignInPayload) => Promise<AuthSession>;
   signOut: () => Promise<void>;
   requestEmailVerification: () => Promise<AuthStatusResponse>;
   confirmEmailVerification: (token: string) => Promise<AuthStatusResponse>;
@@ -105,6 +105,17 @@ interface AuthContextValue {
   disconnectConnection: (provider: "gmail" | "calendar") => Promise<void>;
   listTripConnectedItems: (tripId: string) => Promise<ConnectedTravelItem[]>;
   listTrips: () => Promise<BackendTripListItem[]>;
+  createTrip: (payload: {
+    title: string;
+    destinationCity: string;
+    destinationRegion: string;
+    destinationCountry?: string;
+    startDate: string;
+    endDate: string;
+    party: BackendTripRead["party"];
+    overview: string;
+    highlights: string[];
+  }) => Promise<BackendTripRead>;
   getTrip: (tripId: string) => Promise<BackendTripRead>;
   getTripItinerary: (tripId: string) => Promise<BackendItineraryRead>;
   listTripExports: (tripId: string) => Promise<BackendExportJobRead[]>;
@@ -385,6 +396,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setSession(result.session);
         setStatus("ready");
+        return result.session;
       },
       exchangeGoogleAccessTokenWithIntent: async (accessToken: string, intent: "sign_in" | "sign_up") => {
         const raw = await requestJson<{
@@ -402,6 +414,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setSession(result.session);
         setStatus("ready");
+        return result.session;
       },
       signUpWithEmailPassword: async (payload) => {
         const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/mobile/sign-up", {
@@ -416,6 +429,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setSession(result.session);
         setStatus("ready");
+        return result.session;
       },
       signInWithEmailPassword: async (payload) => {
         const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/mobile/sign-in", {
@@ -430,6 +444,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setSession(result.session);
         setStatus("ready");
+        return result.session;
       },
       signOut: async () => {
         const token = await getStoredSessionToken();
@@ -697,6 +712,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return [];
         }
         return authedRequestJson<BackendTripListItem[]>("/v1/trips", token, { method: "GET" });
+      },
+      createTrip: async (payload) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to create a trip.");
+        }
+        return authedRequestJson<BackendTripRead>("/v1/trips", token, {
+          method: "POST",
+          body: JSON.stringify({
+            title: payload.title,
+            destination_city: payload.destinationCity,
+            destination_region: payload.destinationRegion,
+            destination_country: payload.destinationCountry ?? "India",
+            start_date: payload.startDate,
+            end_date: payload.endDate,
+            party: payload.party,
+            overview: payload.overview,
+            highlights: payload.highlights,
+            preferences: {
+              preferred_maps_app: "google-maps",
+              travel_pace: "balanced",
+              interests: [],
+              budget_sensitivity: "medium",
+              comfort_priority: "premium",
+              notifications_enabled: true,
+            },
+          }),
+        });
       },
       getTrip: async (tripId) => {
         const token = await getStoredSessionToken();

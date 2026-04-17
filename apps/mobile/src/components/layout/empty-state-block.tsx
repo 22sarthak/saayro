@@ -9,6 +9,8 @@ export function EmptyStateBlock({
   title,
   description,
   actionLabel,
+  onAction,
+  actionDisabledReason,
   tone = "raised",
   children
 }: {
@@ -16,6 +18,8 @@ export function EmptyStateBlock({
   title: string;
   description: string;
   actionLabel?: string;
+  onAction?: () => void;
+  actionDisabledReason?: string;
   tone?: "raised" | "buddy" | "connected" | "discovery" | "danger";
   children?: ReactNode;
 }) {
@@ -32,7 +36,15 @@ export function EmptyStateBlock({
         <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 17, lineHeight: 23 }}>{title}</Text>
         <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 20 }}>{description}</Text>
         {children}
-        {actionLabel ? <ActionButton label={actionLabel} variant="secondary" /> : null}
+        {actionLabel && onAction ? <ActionButton label={actionLabel} variant="secondary" onPress={onAction} /> : null}
+        {actionLabel && !onAction && actionDisabledReason ? (
+          <View style={{ gap: theme.spacing.xs }}>
+            <ActionButton label={actionLabel} variant="secondary" disabled />
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 12, lineHeight: 18 }}>
+              {actionDisabledReason}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </SurfaceCard>
   );

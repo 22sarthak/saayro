@@ -52,6 +52,10 @@ export default function TabsLayout() {
     return <Redirect href="/sign-in" />;
   }
 
+  if (session.needsOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

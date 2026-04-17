@@ -8,5 +8,9 @@ export default function IndexPage() {
     return null;
   }
 
-  return <Redirect href={session?.authenticated ? "/(tabs)" : "/sign-in"} />;
+  if (session?.authenticated) {
+    return <Redirect href={session.needsOnboarding ? "/onboarding" : "/(tabs)"} />;
+  }
+
+  return <Redirect href="/sign-in" />;
 }

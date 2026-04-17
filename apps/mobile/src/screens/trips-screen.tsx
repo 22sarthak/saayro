@@ -1,4 +1,5 @@
 import { buildTripViewModel, isPersistedTripId, type Trip } from "@saayro/types";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
@@ -229,6 +230,7 @@ function TripsEmptyScreen() {
         title="Create a destination-led trip shell"
         description="Once a trip exists, this tab becomes the home for itinerary flow, exports, route handoff, and connected travel review."
         actionLabel="Create trip"
+        onAction={() => router.push("/trip-create")}
         tone="connected"
       />
     </AppTabShell>

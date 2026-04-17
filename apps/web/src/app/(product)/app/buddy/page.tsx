@@ -2,6 +2,7 @@ import { getBuddyScenario } from "@saayro/mock-data";
 import { Badge, SectionHeader } from "@saayro/ui";
 import Link from "next/link";
 import { BuddyThreadPanel } from "@/components/buddy/buddy-thread-panel";
+import { ButtonLink } from "@/components/ui/button-link";
 import { StatePanel } from "@/components/ui/state-panel";
 import { fetchServerSession } from "@/lib/auth-server";
 import { normalizeMockBuddyMessage } from "@/lib/buddy-client";
@@ -27,19 +28,23 @@ export default async function BuddyPage() {
           title="Buddy"
           description="A trip-aware conversation surface for pacing, route, and handoff decisions rather than a generic endless chat."
         />
-        {mode === "no_trip" ? (
-          <StatePanel
-            eyebrow="No trip context"
-            title="Buddy is ready once a live trip exists."
-            description="The signed-in workspace is active, but there is no persisted trip yet. As soon as a trip is created, Buddy will use its itinerary, exports, and connected travel context."
-            tone="buddy"
+        {mode === "fallback" ? (
+          <BuddyThreadPanel
+            liveTarget={null}
+            initialMessages={fallbackMessages}
+            emptyPrompts={emptyPrompts}
+            composerPlaceholder="Ask about pacing, Connected Travel review, route handoff, or the right Export Pack for this trip."
           />
         ) : (
           <BuddyThreadPanel
-            tripId={mode === "live" ? trip.id : null}
-            initialMessages={mode === "live" ? [] : fallbackMessages}
+            liveTarget={mode === "live" ? { kind: "trip", tripId: trip.id } : { kind: "pretrip" }}
+            initialMessages={[]}
             emptyPrompts={emptyPrompts}
-            liveEnabled={mode === "live"}
+            composerPlaceholder={
+              mode === "live"
+                ? "Ask about pacing, Connected Travel review, route handoff, or the right Export Pack for this trip."
+                : "Ask Buddy to shape a destination, pace, or first version of the trip before anything is saved yet."
+            }
           />
         )}
       </div>
@@ -47,9 +52,10 @@ export default async function BuddyPage() {
         {mode === "no_trip" ? (
           <StatePanel
             eyebrow="Active context"
-            title="No live trip yet"
-            description="Buddy will become trip-aware here once the signed-in account has a persisted trip."
+            title="Pre-trip planning mode"
+            description="Buddy can help narrow a destination and shape the first plan before the trip exists. Once you create the trip, that planning thread moves with it."
             tone="buddy"
+            actions={<ButtonLink href="/app/trips?create=1&source=buddy" variant="primary">Create trip from Buddy</ButtonLink>}
           />
         ) : (
           <StatePanel

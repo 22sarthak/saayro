@@ -62,6 +62,12 @@ export interface BuddyPageNoTripState {
   emptyPrompts: Array<{ id: string; label: string }>;
 }
 
+export interface BuddyAttachTripResult {
+  attached: boolean;
+  tripId: string;
+  migratedMessageCount: number;
+}
+
 export function normalizeMockBuddyMessage(raw: {
   id: string;
   role: string;
@@ -174,4 +180,33 @@ export async function postBuddyMessage(tripId: string, content: string): Promise
     body: JSON.stringify({ content }),
   });
   return raw.map(normalizeBuddyMessage);
+}
+
+export async function fetchPreTripBuddyMessages(): Promise<BuddyMessageView[]> {
+  const raw = await requestJson<RawBuddyMessage[]>("/v1/buddy/pre-trip/messages", { method: "GET" });
+  return raw.map(normalizeBuddyMessage);
+}
+
+export async function postPreTripBuddyMessage(content: string): Promise<BuddyMessageView[]> {
+  const raw = await requestJson<RawBuddyMessage[]>("/v1/buddy/pre-trip/messages", {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+  return raw.map(normalizeBuddyMessage);
+}
+
+export async function attachPreTripBuddyToTrip(tripId: string): Promise<BuddyAttachTripResult> {
+  const raw = await requestJson<{
+    attached: boolean;
+    trip_id: string;
+    migrated_message_count: number;
+  }>("/v1/buddy/pre-trip/attach-trip", {
+    method: "POST",
+    body: JSON.stringify({ trip_id: tripId }),
+  });
+  return {
+    attached: raw.attached,
+    tripId: raw.trip_id,
+    migratedMessageCount: raw.migrated_message_count,
+  };
 }

@@ -1,10 +1,25 @@
 "use client";
 
 import { Button } from "@saayro/ui";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "@/components/auth/session-provider";
 import { signInWithEmailWeb, signUpWithEmailWeb } from "@/lib/auth-client";
+
+function buildAuthGuidance(message: string): { label: string; href: string } | null {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("reset your password")) {
+    return { label: "Reset password", href: "/auth/forgot-password" };
+  }
+  if (normalized.includes("please sign in") || normalized.includes("continue signing in instead")) {
+    return { label: "Open sign in", href: "/sign-in" };
+  }
+  if (normalized.includes("verify")) {
+    return { label: "Open onboarding", href: "/app/onboarding" };
+  }
+  return null;
+}
 
 export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter();
@@ -14,6 +29,7 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const guidance = message ? buildAuthGuidance(message) : null;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -66,6 +82,14 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         </Button>
       </div>
       {message ? <p className="mt-3 text-sm text-rose-600">{message}</p> : null}
+      {guidance ? (
+        <p className="mt-2 text-sm text-slate-600">
+          Next step:{" "}
+          <Link href={guidance.href} className="text-slate-900 underline decoration-slate-300 underline-offset-4">
+            {guidance.label}
+          </Link>
+        </p>
+      ) : null}
     </form>
   );
 }

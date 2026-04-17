@@ -83,14 +83,30 @@ async def create_trip(db: AsyncSession, user_id: str, payload: TripCreate) -> Tr
 
 async def update_trip(db: AsyncSession, user_id: str, trip_id: str, payload: TripUpdate) -> TripRead:
     trip = await get_trip_model_or_404(db, user_id, trip_id)
+    if payload.destination_city is not None:
+        trip.destination_city = payload.destination_city
+    if payload.destination_region is not None:
+        trip.destination_region = payload.destination_region
+    if payload.destination_country is not None:
+        trip.destination_country = payload.destination_country
+    if payload.start_date is not None:
+        trip.start_date = payload.start_date
+    if payload.end_date is not None:
+        trip.end_date = payload.end_date
+    if trip.end_date < trip.start_date:
+        raise ApiException(status_code=400, code="validation_error", message="End date must be on or after start date.")
     if payload.title is not None:
         trip.title = payload.title
     if payload.status is not None:
         trip.status = payload.status
+    if payload.party is not None:
+        trip.party = payload.party
     if payload.overview is not None:
         trip.overview = payload.overview
     if payload.highlights is not None:
         trip.highlights = payload.highlights
+    if payload.preferences is not None:
+        trip.preferences = payload.preferences.model_dump()
     trip.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(trip)

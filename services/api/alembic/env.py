@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from saayro_api.core.config import get_settings
 from saayro_api.db.base import Base
-from saayro_api.models import buddy, connections, exports, itinerary, trips, users  # noqa: F401
+from saayro_api.models import auth, buddy, connections, exports, itinerary, trips, users  # noqa: F401
 
 config = context.config
 
@@ -59,4 +59,3 @@ else:
     import asyncio
 
     asyncio.run(run_migrations_online())
-

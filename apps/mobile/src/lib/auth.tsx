@@ -9,6 +9,11 @@ import type {
   ConnectedTravelItem,
   GoogleAuthExchangeResponse,
   OtpChallengeResponse,
+  AuthStatusResponse,
+  EmailSignInPayload,
+  EmailSignUpPayload,
+  ProfileRead,
+  ProfileUpdatePayload,
 } from "@saayro/types";
 import type {
   BackendExportJobRead,
@@ -83,9 +88,18 @@ interface AuthContextValue {
   status: AuthStatus;
   bootstrapSession: () => Promise<void>;
   exchangeGoogleAccessToken: (accessToken: string) => Promise<void>;
+  exchangeGoogleAccessTokenWithIntent: (accessToken: string, intent: "sign_in" | "sign_up") => Promise<void>;
+  signUpWithEmailPassword: (payload: EmailSignUpPayload) => Promise<void>;
+  signInWithEmailPassword: (payload: EmailSignInPayload) => Promise<void>;
   signOut: () => Promise<void>;
-  requestOtp: (phoneNumber: string) => Promise<OtpChallengeResponse>;
+  requestEmailVerification: () => Promise<AuthStatusResponse>;
+  confirmEmailVerification: (token: string) => Promise<AuthStatusResponse>;
+  requestPasswordReset: (email: string) => Promise<AuthStatusResponse>;
+  resetPassword: (token: string, password: string) => Promise<AuthStatusResponse>;
+  requestOtp: (phoneNumber: string, intent?: "sign_in" | "sign_up" | "verify_phone") => Promise<OtpChallengeResponse>;
   verifyOtp: (challengeId: string, code: string) => Promise<OtpChallengeResponse>;
+  getProfile: () => Promise<ProfileRead>;
+  updateProfile: (payload: ProfileUpdatePayload) => Promise<ProfileRead>;
   listConnections: () => Promise<ConnectedAccount[]>;
   syncConnection: (provider: "gmail" | "calendar") => Promise<ConnectedAccount>;
   disconnectConnection: (provider: "gmail" | "calendar") => Promise<void>;
@@ -102,8 +116,11 @@ type RawSessionActor = {
   user_id: string;
   email: string;
   full_name: string;
-  auth_mode: "google" | "otp";
+  auth_mode: "google" | "otp" | "password";
   home_base?: string | null;
+  phone_number?: string | null;
+  date_of_birth?: string | null;
+  age_range?: string | null;
   preferences?: Record<string, unknown> | null;
 };
 
@@ -115,6 +132,10 @@ type RawSession = {
   expires_in_seconds: number | null;
   transport: AuthSession["transport"];
   status: AuthSession["status"];
+  auth_outcome?: AuthSession["authOutcome"] | null;
+  needs_onboarding?: boolean;
+  email_verified?: boolean;
+  phone_verified?: boolean;
 };
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -173,6 +194,9 @@ function normalizeSession(raw: RawSession): AuthSession {
           fullName: raw.actor.full_name,
           authMode: raw.actor.auth_mode,
           homeBase: raw.actor.home_base ?? null,
+          phoneNumber: raw.actor.phone_number ?? null,
+          dateOfBirth: raw.actor.date_of_birth ?? null,
+          ageRange: raw.actor.age_range ?? null,
           preferences: normalizePreferences(raw.actor.preferences),
         }
       : null,
@@ -181,6 +205,10 @@ function normalizeSession(raw: RawSession): AuthSession {
     expiresInSeconds: raw.expires_in_seconds,
     transport: raw.transport,
     status: raw.status,
+    authOutcome: raw.auth_outcome ?? null,
+    needsOnboarding: raw.needs_onboarding ?? false,
+    emailVerified: raw.email_verified ?? false,
+    phoneVerified: raw.phone_verified ?? false,
   };
 }
 
@@ -297,6 +325,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         expiresInSeconds: null,
         transport: null,
         status: "signed_out",
+        authOutcome: null,
+        needsOnboarding: false,
+        emailVerified: false,
+        phoneVerified: false,
       });
       setStatus("ready");
       return;
@@ -318,6 +350,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         expiresInSeconds: null,
         transport: null,
         status: "signed_out",
+        authOutcome: null,
+        needsOnboarding: false,
+        emailVerified: false,
+        phoneVerified: false,
       });
     } finally {
       setStatus("ready");
@@ -339,9 +375,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           session_token?: string;
         }>("/v1/auth/google/mobile", {
           method: "POST",
-          body: JSON.stringify({ access_token: accessToken }),
+          body: JSON.stringify({ access_token: accessToken, intent: "sign_in" }),
         });
         const result: GoogleAuthExchangeResponse = raw.session_token
+          ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
+          : { session: normalizeSession(raw.session) };
+        if (result.sessionToken) {
+          await setStoredSessionToken(result.sessionToken);
+        }
+        setSession(result.session);
+        setStatus("ready");
+      },
+      exchangeGoogleAccessTokenWithIntent: async (accessToken: string, intent: "sign_in" | "sign_up") => {
+        const raw = await requestJson<{
+          session: RawSession;
+          session_token?: string;
+        }>("/v1/auth/google/mobile", {
+          method: "POST",
+          body: JSON.stringify({ access_token: accessToken, intent }),
+        });
+        const result: GoogleAuthExchangeResponse = raw.session_token
+          ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
+          : { session: normalizeSession(raw.session) };
+        if (result.sessionToken) {
+          await setStoredSessionToken(result.sessionToken);
+        }
+        setSession(result.session);
+        setStatus("ready");
+      },
+      signUpWithEmailPassword: async (payload) => {
+        const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/mobile/sign-up", {
+          method: "POST",
+          body: JSON.stringify({ email: payload.email, password: payload.password, full_name: payload.fullName }),
+        });
+        const result = raw.session_token
+          ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
+          : { session: normalizeSession(raw.session) };
+        if (result.sessionToken) {
+          await setStoredSessionToken(result.sessionToken);
+        }
+        setSession(result.session);
+        setStatus("ready");
+      },
+      signInWithEmailPassword: async (payload) => {
+        const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/mobile/sign-in", {
+          method: "POST",
+          body: JSON.stringify({ email: payload.email, password: payload.password }),
+        });
+        const result = raw.session_token
           ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
           : { session: normalizeSession(raw.session) };
         if (result.sessionToken) {
@@ -368,15 +449,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           expiresInSeconds: null,
           transport: null,
           status: "signed_out",
+          authOutcome: null,
+          needsOnboarding: false,
+          emailVerified: false,
+          phoneVerified: false,
         });
         setStatus("ready");
         router.replace("/sign-in");
       },
-      requestOtp: async (phoneNumber: string) =>
+      requestEmailVerification: async () => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to request verification.");
+        }
+        return authedRequestJson<AuthStatusResponse>("/v1/auth/email/verify/request", token, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+      },
+      confirmEmailVerification: async (token: string) =>
+        requestJson<AuthStatusResponse>("/v1/auth/email/verify/confirm", {
+          method: "POST",
+          body: JSON.stringify({ token }),
+        }),
+      requestPasswordReset: async (email: string) =>
+        requestJson<AuthStatusResponse>("/v1/auth/password/forgot", {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        }),
+      resetPassword: async (token: string, password: string) =>
+        requestJson<AuthStatusResponse>("/v1/auth/password/reset", {
+          method: "POST",
+          body: JSON.stringify({ token, password }),
+        }),
+      requestOtp: async (phoneNumber: string, intent = "sign_in") =>
         {
           const raw = await requestJson<{
             challenge_id: string;
             phone_number: string;
+            intent: OtpChallengeResponse["intent"];
             status: OtpChallengeResponse["status"];
             provider: string;
             live: boolean;
@@ -384,11 +495,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             expires_at: string | null;
           }>("/v1/auth/otp/request", {
             method: "POST",
-            body: JSON.stringify({ phone_number: phoneNumber }),
+            body: JSON.stringify({ phone_number: phoneNumber, intent }),
           });
           return {
             challengeId: raw.challenge_id,
             phoneNumber: raw.phone_number,
+            intent: raw.intent,
             status: raw.status,
             provider: raw.provider,
             live: raw.live,
@@ -401,6 +513,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const raw = await requestJson<{
             challenge_id: string;
             phone_number: string;
+            intent: OtpChallengeResponse["intent"];
             status: OtpChallengeResponse["status"];
             provider: string;
             live: boolean;
@@ -413,6 +526,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return {
             challengeId: raw.challenge_id,
             phoneNumber: raw.phone_number,
+            intent: raw.intent,
             status: raw.status,
             provider: raw.provider,
             live: raw.live,
@@ -420,6 +534,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             expiresAt: raw.expires_at,
           };
         },
+      getProfile: async () => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to load your profile.");
+        }
+        const raw = await authedRequestJson<{
+          user_id: string;
+          email: string;
+          full_name: string;
+          home_base?: string | null;
+          phone_number?: string | null;
+          date_of_birth?: string | null;
+          age_range?: string | null;
+          preferences: Record<string, unknown>;
+          email_verified: boolean;
+          phone_verified: boolean;
+          needs_onboarding: boolean;
+          onboarding_completed: boolean;
+        }>("/v1/me/profile", token, { method: "GET" });
+        return {
+          userId: raw.user_id,
+          email: raw.email,
+          fullName: raw.full_name,
+          homeBase: raw.home_base ?? null,
+          phoneNumber: raw.phone_number ?? null,
+          dateOfBirth: raw.date_of_birth ?? null,
+          ageRange: raw.age_range ?? null,
+          preferences: raw.preferences,
+          emailVerified: raw.email_verified,
+          phoneVerified: raw.phone_verified,
+          needsOnboarding: raw.needs_onboarding,
+          onboardingCompleted: raw.onboarding_completed,
+        };
+      },
+      updateProfile: async (payload) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to update your profile.");
+        }
+        const raw = await authedRequestJson<{
+          user_id: string;
+          email: string;
+          full_name: string;
+          home_base?: string | null;
+          phone_number?: string | null;
+          date_of_birth?: string | null;
+          age_range?: string | null;
+          preferences: Record<string, unknown>;
+          email_verified: boolean;
+          phone_verified: boolean;
+          needs_onboarding: boolean;
+          onboarding_completed: boolean;
+        }>("/v1/me/profile", token, {
+          method: "PATCH",
+          body: JSON.stringify({
+            full_name: payload.fullName ?? undefined,
+            home_base: payload.homeBase ?? undefined,
+            phone_number: payload.phoneNumber ?? undefined,
+            date_of_birth: payload.dateOfBirth ?? undefined,
+            age_range: payload.ageRange ?? undefined,
+            preferences: payload.preferences ?? undefined,
+            confirm_full_name: payload.confirmFullName ?? false,
+            complete_onboarding: payload.completeOnboarding ?? false,
+          }),
+        });
+        return {
+          userId: raw.user_id,
+          email: raw.email,
+          fullName: raw.full_name,
+          homeBase: raw.home_base ?? null,
+          phoneNumber: raw.phone_number ?? null,
+          dateOfBirth: raw.date_of_birth ?? null,
+          ageRange: raw.age_range ?? null,
+          preferences: raw.preferences,
+          emailVerified: raw.email_verified,
+          phoneVerified: raw.phone_verified,
+          needsOnboarding: raw.needs_onboarding,
+          onboardingCompleted: raw.onboarding_completed,
+        };
+      },
       listConnections: async () => {
         const token = await getStoredSessionToken();
         if (!token) {

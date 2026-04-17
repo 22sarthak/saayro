@@ -1,4 +1,5 @@
 import { Badge, ExportTile, SectionHeader } from "@saayro/ui";
+import { ButtonLink } from "@/components/ui/button-link";
 import { LiveConnectedAccounts } from "@/components/connections/live-connected-accounts";
 import { StatePanel } from "@/components/ui/state-panel";
 import { fetchServerSession } from "@/lib/auth-server";
@@ -22,6 +23,9 @@ export default async function ProfilePage() {
       <div className="space-y-5">
         <section className="section-shell space-y-4">
           <SectionHeader title={profile.userName} description={`Home base: ${profile.homeBase}`} />
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/app/onboarding" variant="secondary">Edit profile</ButtonLink>
+          </div>
           {session?.authenticated && session.actor?.email ? (
             <p className="text-sm text-slate-600">{session.actor.email}</p>
           ) : null}

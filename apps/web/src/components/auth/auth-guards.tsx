@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useSession } from "@/components/auth/session-provider";
 
@@ -14,13 +14,18 @@ function GateFallback({ copy }: { copy: string }) {
 
 export function AuthenticatedGate({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { session, state } = useSession();
 
   useEffect(() => {
     if (state === "ready" && !session?.authenticated) {
       router.replace("/sign-in");
+      return;
     }
-  }, [router, session?.authenticated, state]);
+    if (state === "ready" && session?.authenticated && session.needsOnboarding && !pathname.startsWith("/app/onboarding")) {
+      router.replace("/app/onboarding");
+    }
+  }, [pathname, router, session?.authenticated, session?.needsOnboarding, state]);
 
   if (state === "loading" || !session?.authenticated) {
     return <GateFallback copy="Checking your Saayro session before we reopen the workspace." />;
@@ -35,9 +40,9 @@ export function SignedOutGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (state === "ready" && session?.authenticated) {
-      router.replace("/app");
+      router.replace(session.needsOnboarding ? "/app/onboarding" : "/app");
     }
-  }, [router, session?.authenticated, state]);
+  }, [router, session?.authenticated, session?.needsOnboarding, state]);
 
   if (state === "loading") {
     return <GateFallback copy="Restoring session context and deciding where to drop you back into the trip." />;

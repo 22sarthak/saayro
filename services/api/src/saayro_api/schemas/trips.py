@@ -31,9 +31,16 @@ class TripCreate(BaseModel):
 
 class TripUpdate(BaseModel):
     title: str | None = None
+    destination_city: str | None = None
+    destination_region: str | None = None
+    destination_country: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
     status: str | None = None
+    party: str | None = None
     overview: str | None = None
     highlights: list[str] | None = None
+    preferences: UserPreferencesSchema | None = None
 
 
 class TripListItem(BaseSchema):
@@ -54,4 +61,3 @@ class TripRead(TripListItem):
     overview: str
     created_at: datetime
     updated_at: datetime
-

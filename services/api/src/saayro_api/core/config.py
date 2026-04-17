@@ -27,10 +27,16 @@ class Settings(BaseSettings):
     auth_session_ttl_hours: int = 24 * 14
     auth_refresh_ttl_hours: int = 24 * 30
     auth_cookie_secure: bool = False
+    auth_password_min_length: int = 8
     auth_google_web_client_id: str = ""
     auth_google_mobile_client_ids: Annotated[list[str], NoDecode] = Field(default_factory=list)
     otp_enabled: bool = False
     otp_provider: str = "provider-ready"
+    auth_otp_cooldown_seconds: int = 60
+    auth_email_verification_ttl_minutes: int = 60 * 24
+    auth_email_verification_cooldown_seconds: int = 90
+    auth_password_reset_ttl_minutes: int = 60
+    auth_password_reset_cooldown_seconds: int = 90
     web_app_url: str = "http://localhost:3000"
     google_connector_client_id: str = ""
     google_connector_client_secret: str = ""

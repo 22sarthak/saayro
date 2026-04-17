@@ -2,6 +2,7 @@
 
 import { Badge, Card } from "@saayro/ui";
 import Link from "next/link";
+import { EmailAuthForm } from "@/components/auth/email-auth-form";
 import { GoogleSignInAction } from "@/components/auth/google-sign-in-action";
 import { StatePanel } from "@/components/ui/state-panel";
 
@@ -15,7 +16,7 @@ export default function SignUpPage() {
         tone="connected"
         actions={
           <>
-            <GoogleSignInAction label="Create account with Google" />
+            <GoogleSignInAction label="Create account with Google" intent="sign_up" />
           </>
         }
       >
@@ -39,9 +40,10 @@ export default function SignUpPage() {
         <div className="rounded-[24px] bg-amber-100 p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500">What you get next</p>
           <p className="mt-2 text-sm leading-7 text-slate-700">
-            A discovery dashboard, a fully mock-driven trip hub, a Buddy route, and saved/profile shells that mirror the real product direction.
+            A real Saayro session, a required first-run profile confirmation step, and a trip-first workspace that no longer dead-ends when you have not created a trip yet.
           </p>
         </div>
+        <EmailAuthForm mode="sign-up" />
         <p className="text-sm text-slate-500">
           Already have an account?{" "}
           <Link href="/sign-in" className="text-slate-900 underline decoration-slate-300 underline-offset-4">

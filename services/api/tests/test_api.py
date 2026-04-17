@@ -20,6 +20,7 @@ async def _login_web(client: AsyncClient, monkeypatch) -> None:
             subject="google-subject-1",
             email="demo@saayro.app",
             full_name="Aarohi Mehta",
+            email_verified=True,
         )
 
     monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
@@ -33,6 +34,7 @@ async def _login_mobile(client: AsyncClient, monkeypatch) -> str:
             subject="google-subject-2",
             email="mobile@saayro.app",
             full_name="Ira Kapoor",
+            email_verified=True,
         )
 
     monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
@@ -115,7 +117,10 @@ async def test_auth_session_logout_refresh_and_otp_placeholder(client: AsyncClie
     assert refreshed.status_code == 200
     assert refreshed.json()["session"]["authenticated"] is True
 
-    otp_requested = await client.post("/v1/auth/otp/request", json={"phone_number": "+919876543210"})
+    otp_requested = await client.post(
+        "/v1/auth/otp/request",
+        json={"phone_number": "+919876543210", "intent": "sign_up"},
+    )
     assert otp_requested.status_code == 200
     assert otp_requested.json()["status"] == "provider_ready_non_live"
 
@@ -284,6 +289,7 @@ async def test_buddy_generation_uses_gemini_and_persists_structured_response(
             subject="google-subject-buddy-1",
             email="buddy@saayro.app",
             full_name="Buddy Tester",
+            email_verified=True,
         )
 
     monkeypatch.setattr(auth_service, "_load_google_profile", fake_google_profile)
@@ -332,6 +338,7 @@ async def test_buddy_generation_falls_back_to_ollama_when_gemini_fails(
             subject="google-subject-buddy-2",
             email="fallback@saayro.app",
             full_name="Fallback Tester",
+            email_verified=True,
         )
 
     monkeypatch.setattr(auth_service, "_load_google_profile", fallback_google_profile)
@@ -360,6 +367,7 @@ async def test_buddy_out_of_scope_redirects_and_hides_dev_metadata_in_production
             subject="google-subject-buddy-3",
             email="prod@saayro.app",
             full_name="Prod Tester",
+            email_verified=True,
         )
 
     monkeypatch.setattr(auth_service, "_load_google_profile", production_google_profile)

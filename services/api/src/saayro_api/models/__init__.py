@@ -1,4 +1,4 @@
-from saayro_api.models.auth import OtpChallenge, Session, UserIdentity
+from saayro_api.models.auth import AccountToken, OtpChallenge, OutboxMessage, Session, UserIdentity
 from saayro_api.models.buddy import BuddyMessage, BuddyThread
 from saayro_api.models.connections import ConnectedAccount, ConnectedTravelItem
 from saayro_api.models.exports import ExportJob
@@ -14,7 +14,9 @@ __all__ = [
     "ExportJob",
     "ItineraryDay",
     "ItineraryStop",
+    "AccountToken",
     "OtpChallenge",
+    "OutboxMessage",
     "Session",
     "Trip",
     "UserIdentity",

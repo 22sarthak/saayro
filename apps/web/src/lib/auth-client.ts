@@ -1,11 +1,16 @@
 "use client";
 
 import type {
+  AuthStatusResponse,
+  EmailSignInPayload,
+  EmailSignUpPayload,
   GoogleAuthExchangeResponse,
   LogoutResponse,
   OtpChallengeResponse,
   OtpRequestPayload,
   OtpVerifyPayload,
+  ProfileRead,
+  ProfileUpdatePayload,
   RefreshSessionResponse,
   AuthSession,
   ConnectedAccount,
@@ -119,52 +124,91 @@ function normalizeConnectedItem(raw: {
   return item;
 }
 
+type RawSession = {
+  authenticated: boolean;
+  actor: {
+    user_id: string;
+    email: string;
+    full_name: string;
+    auth_mode: "google" | "otp" | "password";
+    home_base?: string | null;
+    phone_number?: string | null;
+    date_of_birth?: string | null;
+    age_range?: string | null;
+    preferences?: Record<string, unknown> | null;
+  } | null;
+  session_id: string | null;
+  expires_at: string | null;
+  expires_in_seconds: number | null;
+  transport: AuthSession["transport"];
+  status: AuthSession["status"];
+  auth_outcome?: AuthSession["authOutcome"] | null;
+  needs_onboarding?: boolean;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+};
+
 export async function fetchSession(): Promise<AuthSession> {
-  const raw = await requestJson<{
-    authenticated: boolean;
-    actor: {
-      user_id: string;
-      email: string;
-      full_name: string;
-      auth_mode: AuthSession["actor"] extends null ? never : "google" | "otp";
-      home_base?: string | null;
-      preferences?: Record<string, unknown> | null;
-    } | null;
-    session_id: string | null;
-    expires_at: string | null;
-    expires_in_seconds: number | null;
-    transport: AuthSession["transport"];
-    status: AuthSession["status"];
-  }>("/v1/auth/session", { method: "GET" });
+  const raw = await requestJson<RawSession>("/v1/auth/session", { method: "GET" });
   return normalizeSession(raw);
 }
 
-export async function exchangeGoogleWeb(accessToken: string): Promise<GoogleAuthExchangeResponse> {
+export async function exchangeGoogleWeb(accessToken: string, intent: "sign_in" | "sign_up" = "sign_in"): Promise<GoogleAuthExchangeResponse> {
   const raw = await requestJson<{
-    session: {
-      authenticated: boolean;
-      actor: {
-        user_id: string;
-        email: string;
-        full_name: string;
-        auth_mode: "google" | "otp";
-        home_base?: string | null;
-        preferences?: Record<string, unknown> | null;
-      } | null;
-      session_id: string | null;
-      expires_at: string | null;
-      expires_in_seconds: number | null;
-      transport: AuthSession["transport"];
-      status: AuthSession["status"];
-    };
+    session: RawSession;
     session_token?: string;
   }>("/v1/auth/google/web", {
     method: "POST",
-    body: JSON.stringify({ access_token: accessToken }),
+    body: JSON.stringify({ access_token: accessToken, intent }),
   });
   return raw.session_token
     ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
     : { session: normalizeSession(raw.session) };
+}
+
+export async function signUpWithEmailWeb(payload: EmailSignUpPayload): Promise<GoogleAuthExchangeResponse> {
+  const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/web/sign-up", {
+    method: "POST",
+    body: JSON.stringify({ email: payload.email, password: payload.password, full_name: payload.fullName }),
+  });
+  return raw.session_token
+    ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
+    : { session: normalizeSession(raw.session) };
+}
+
+export async function signInWithEmailWeb(payload: EmailSignInPayload): Promise<GoogleAuthExchangeResponse> {
+  const raw = await requestJson<{ session: RawSession; session_token?: string }>("/v1/auth/email/web/sign-in", {
+    method: "POST",
+    body: JSON.stringify({ email: payload.email, password: payload.password }),
+  });
+  return raw.session_token
+    ? { session: normalizeSession(raw.session), sessionToken: raw.session_token }
+    : { session: normalizeSession(raw.session) };
+}
+
+export async function requestEmailVerification(): Promise<AuthStatusResponse> {
+  return requestJson<AuthStatusResponse>("/v1/auth/email/verify/request", { method: "POST", body: JSON.stringify({}) });
+}
+
+export async function confirmEmailVerification(token: string): Promise<AuthStatusResponse> {
+  return requestJson<AuthStatusResponse>("/v1/auth/email/verify/confirm", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export async function requestPasswordReset(email: string): Promise<AuthStatusResponse> {
+  return requestJson<AuthStatusResponse>("/v1/auth/password/forgot", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, password: string): Promise<AuthStatusResponse> {
+  return requestJson<AuthStatusResponse>("/v1/auth/password/reset", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
 }
 
 export async function signOut(): Promise<LogoutResponse> {
@@ -173,22 +217,7 @@ export async function signOut(): Promise<LogoutResponse> {
 
 export async function refreshSession(): Promise<RefreshSessionResponse> {
   const raw = await requestJson<{
-    session: {
-      authenticated: boolean;
-      actor: {
-        user_id: string;
-        email: string;
-        full_name: string;
-        auth_mode: "google" | "otp";
-        home_base?: string | null;
-        preferences?: Record<string, unknown> | null;
-      } | null;
-      session_id: string | null;
-      expires_at: string | null;
-      expires_in_seconds: number | null;
-      transport: AuthSession["transport"];
-      status: AuthSession["status"];
-    };
+    session: RawSession;
     session_token?: string;
   }>("/v1/auth/refresh", { method: "POST", body: JSON.stringify({}) });
   return raw.session_token
@@ -200,6 +229,7 @@ export async function requestOtp(payload: OtpRequestPayload): Promise<OtpChallen
   const raw = await requestJson<{
     challenge_id: string;
     phone_number: string;
+    intent: OtpChallengeResponse["intent"];
     status: OtpChallengeResponse["status"];
     provider: string;
     live: boolean;
@@ -207,11 +237,12 @@ export async function requestOtp(payload: OtpRequestPayload): Promise<OtpChallen
     expires_at: string | null;
   }>("/v1/auth/otp/request", {
     method: "POST",
-    body: JSON.stringify({ phone_number: payload.phoneNumber }),
+    body: JSON.stringify({ phone_number: payload.phoneNumber, intent: payload.intent ?? "sign_in" }),
   });
   return {
     challengeId: raw.challenge_id,
     phoneNumber: raw.phone_number,
+    intent: raw.intent,
     status: raw.status,
     provider: raw.provider,
     live: raw.live,
@@ -224,6 +255,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<OtpChallenge
   const raw = await requestJson<{
     challenge_id: string;
     phone_number: string;
+    intent: OtpChallengeResponse["intent"];
     status: OtpChallengeResponse["status"];
     provider: string;
     live: boolean;
@@ -236,11 +268,86 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<OtpChallenge
   return {
     challengeId: raw.challenge_id,
     phoneNumber: raw.phone_number,
+    intent: raw.intent,
     status: raw.status,
     provider: raw.provider,
     live: raw.live,
     message: raw.message,
     expiresAt: raw.expires_at,
+  };
+}
+
+export async function fetchProfile(): Promise<ProfileRead> {
+  const raw = await requestJson<{
+    user_id: string;
+    email: string;
+    full_name: string;
+    home_base?: string | null;
+    phone_number?: string | null;
+    date_of_birth?: string | null;
+    age_range?: string | null;
+    preferences: Record<string, unknown>;
+    email_verified: boolean;
+    phone_verified: boolean;
+    needs_onboarding: boolean;
+    onboarding_completed: boolean;
+  }>("/v1/me/profile", { method: "GET" });
+  return {
+    userId: raw.user_id,
+    email: raw.email,
+    fullName: raw.full_name,
+    homeBase: raw.home_base ?? null,
+    phoneNumber: raw.phone_number ?? null,
+    dateOfBirth: raw.date_of_birth ?? null,
+    ageRange: raw.age_range ?? null,
+    preferences: raw.preferences,
+    emailVerified: raw.email_verified,
+    phoneVerified: raw.phone_verified,
+    needsOnboarding: raw.needs_onboarding,
+    onboardingCompleted: raw.onboarding_completed,
+  };
+}
+
+export async function updateProfile(payload: ProfileUpdatePayload): Promise<ProfileRead> {
+  const raw = await requestJson<{
+    user_id: string;
+    email: string;
+    full_name: string;
+    home_base?: string | null;
+    phone_number?: string | null;
+    date_of_birth?: string | null;
+    age_range?: string | null;
+    preferences: Record<string, unknown>;
+    email_verified: boolean;
+    phone_verified: boolean;
+    needs_onboarding: boolean;
+    onboarding_completed: boolean;
+  }>("/v1/me/profile", {
+    method: "PATCH",
+    body: JSON.stringify({
+      full_name: payload.fullName ?? undefined,
+      home_base: payload.homeBase ?? undefined,
+      phone_number: payload.phoneNumber ?? undefined,
+      date_of_birth: payload.dateOfBirth ?? undefined,
+      age_range: payload.ageRange ?? undefined,
+      preferences: payload.preferences ?? undefined,
+      confirm_full_name: payload.confirmFullName ?? false,
+      complete_onboarding: payload.completeOnboarding ?? false,
+    }),
+  });
+  return {
+    userId: raw.user_id,
+    email: raw.email,
+    fullName: raw.full_name,
+    homeBase: raw.home_base ?? null,
+    phoneNumber: raw.phone_number ?? null,
+    dateOfBirth: raw.date_of_birth ?? null,
+    ageRange: raw.age_range ?? null,
+    preferences: raw.preferences,
+    emailVerified: raw.email_verified,
+    phoneVerified: raw.phone_verified,
+    needsOnboarding: raw.needs_onboarding,
+    onboardingCompleted: raw.onboarding_completed,
   };
 }
 

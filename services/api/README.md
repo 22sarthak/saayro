@@ -102,6 +102,6 @@ uv run uvicorn saayro_api.main:app --reload
 
 ```bash
 uv run ruff check .
-uv run mypy src
+pwsh -File ./scripts/run-mypy.ps1
 uv run pytest
 ```

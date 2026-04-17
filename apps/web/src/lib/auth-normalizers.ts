@@ -6,6 +6,9 @@ type RawSessionActor = {
   full_name: string;
   auth_mode: AuthSessionActor["authMode"];
   home_base?: string | null;
+  phone_number?: string | null;
+  date_of_birth?: string | null;
+  age_range?: string | null;
   preferences?: Record<string, unknown> | null;
 };
 
@@ -70,6 +73,9 @@ export function normalizeSessionActor(raw: RawSessionActor | null | undefined): 
     fullName: raw.full_name,
     authMode: raw.auth_mode,
     homeBase: raw.home_base ?? null,
+    phoneNumber: raw.phone_number ?? null,
+    dateOfBirth: raw.date_of_birth ?? null,
+    ageRange: raw.age_range ?? null,
     preferences: normalizePreferences(raw.preferences),
   };
 }
@@ -82,6 +88,10 @@ export function normalizeSession(raw: {
   expires_in_seconds: number | null;
   transport: AuthSession["transport"];
   status: AuthSession["status"];
+  auth_outcome?: AuthSession["authOutcome"] | null;
+  needs_onboarding?: boolean;
+  email_verified?: boolean;
+  phone_verified?: boolean;
 }): AuthSession {
   return {
     authenticated: raw.authenticated,
@@ -91,6 +101,10 @@ export function normalizeSession(raw: {
     expiresInSeconds: raw.expires_in_seconds,
     transport: raw.transport,
     status: raw.status,
+    authOutcome: raw.auth_outcome ?? null,
+    needsOnboarding: raw.needs_onboarding ?? false,
+    emailVerified: raw.email_verified ?? false,
+    phoneVerified: raw.phone_verified ?? false,
   };
 }
 

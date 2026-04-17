@@ -45,6 +45,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           expiresInSeconds: null,
           transport: null,
           status: "signed_out",
+          authOutcome: null,
+          needsOnboarding: false,
+          emailVerified: false,
+          phoneVerified: false,
         });
         setState("ready");
       });
@@ -78,6 +82,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           expiresInSeconds: null,
           transport: null,
           status: "signed_out",
+          authOutcome: null,
+          needsOnboarding: false,
+          emailVerified: false,
+          phoneVerified: false,
         });
         setState("ready");
         router.replace("/sign-in");

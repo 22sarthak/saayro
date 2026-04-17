@@ -62,9 +62,11 @@ function loadGoogleIdentityScript(): Promise<void> {
 export function GoogleSignInAction({
   label,
   variant = "primary",
+  intent = "sign_in",
 }: {
   label: string;
   variant?: "primary" | "secondary" | "ghost";
+  intent?: "sign_in" | "sign_up";
 }) {
   const router = useRouter();
   const { setSession } = useSession();
@@ -94,9 +96,9 @@ export function GoogleSignInAction({
           }
 
           try {
-            const result = await exchangeGoogleWeb(response.access_token);
+            const result = await exchangeGoogleWeb(response.access_token, intent);
             setSession(result.session);
-            router.replace("/app");
+            router.replace(result.session.needsOnboarding ? "/app/onboarding" : "/app");
           } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : "Could not complete Google sign-in.");
           } finally {

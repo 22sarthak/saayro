@@ -5,8 +5,10 @@ from saayro_api.api.routes import (
     buddy,
     connected_travel,
     connections,
+    dev,
     exports,
     itinerary,
+    profile,
     status,
     trips,
 )
@@ -20,4 +22,5 @@ api_router.include_router(exports.router, prefix="/v1")
 api_router.include_router(connections.router, prefix="/v1")
 api_router.include_router(connected_travel.router, prefix="/v1")
 api_router.include_router(auth.router, prefix="/v1")
-
+api_router.include_router(profile.router, prefix="/v1")
+api_router.include_router(dev.router, prefix="/v1")

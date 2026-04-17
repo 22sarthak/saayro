@@ -2,6 +2,7 @@
 
 import { Badge, Card } from "@saayro/ui";
 import Link from "next/link";
+import { EmailAuthForm } from "@/components/auth/email-auth-form";
 import { GoogleSignInAction } from "@/components/auth/google-sign-in-action";
 import { StatePanel } from "@/components/ui/state-panel";
 
@@ -15,7 +16,7 @@ export default function SignInPage() {
         tone="buddy"
         actions={
           <>
-            <GoogleSignInAction label="Continue with Google" />
+            <GoogleSignInAction label="Continue with Google" intent="sign_in" />
           </>
         }
       >
@@ -39,10 +40,17 @@ export default function SignInPage() {
             </Link>
           </div>
         </div>
+        <EmailAuthForm mode="sign-in" />
         <div className="rounded-[24px] bg-slate-950 px-5 py-5 text-white">
           <p className="text-xs uppercase tracking-[0.24em] text-white/65">Privacy posture</p>
           <p className="mt-2 text-sm leading-6 text-white/85">Google sign-in now issues a real Saayro session. OTP remains intentionally provider-ready until a live delivery service is switched on.</p>
         </div>
+        <p className="text-sm text-slate-500">
+          Need help with your password?{" "}
+          <Link href="/auth/forgot-password" className="text-slate-900 underline decoration-slate-300 underline-offset-4">
+            Reset it here
+          </Link>
+        </p>
         <p className="text-sm text-slate-500">
           New here? <Link href="/sign-up" className="text-slate-900 underline decoration-slate-300 underline-offset-4">Create your Saayro account</Link>
         </p>

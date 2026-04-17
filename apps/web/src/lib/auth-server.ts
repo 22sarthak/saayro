@@ -28,8 +28,11 @@ export async function fetchServerSession(): Promise<AuthSession | null> {
         user_id: string;
         email: string;
         full_name: string;
-        auth_mode: "google" | "otp";
+        auth_mode: "google" | "otp" | "password";
         home_base?: string | null;
+        phone_number?: string | null;
+        date_of_birth?: string | null;
+        age_range?: string | null;
         preferences?: Record<string, unknown> | null;
       } | null;
       session_id: string | null;
@@ -37,6 +40,10 @@ export async function fetchServerSession(): Promise<AuthSession | null> {
       expires_in_seconds: number | null;
       transport: AuthSession["transport"];
       status: AuthSession["status"];
+      auth_outcome?: AuthSession["authOutcome"] | null;
+      needs_onboarding?: boolean;
+      email_verified?: boolean;
+      phone_verified?: boolean;
     };
 
     return normalizeSession(raw);

@@ -13,7 +13,7 @@ import type {
 export const defaultPreferences: UserPreferences = {
   preferredMapsApp: "google-maps",
   travelPace: "balanced",
-  interests: ["boutique stays", "regional food", "sunrise viewpoints"],
+  interests: [],
   budgetSensitivity: "medium",
   comfortPriority: "premium",
   notificationsEnabled: true

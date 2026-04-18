@@ -47,7 +47,7 @@ def default_preferences() -> dict[str, object]:
     return {
         "preferred_maps_app": "google-maps",
         "travel_pace": "balanced",
-        "interests": ["boutique stays", "regional food", "sunrise viewpoints"],
+        "interests": [],
         "budget_sensitivity": "medium",
         "comfort_priority": "premium",
         "notifications_enabled": True,

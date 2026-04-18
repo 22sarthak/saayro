@@ -181,9 +181,9 @@ const dashboardQuickActions: ScenarioAction[] = [
 ];
 
 const buddyPromptOptions: ScenarioChip[] = [
-  { id: "pace", label: "Soften day two pacing" },
-  { id: "route", label: "Open Amber route" },
-  { id: "export", label: "Share Export Pack" }
+  { id: "pace", label: "Help me pace day two" },
+  { id: "calmer-morning", label: "Suggest a calmer morning option" },
+  { id: "pre-trip-check", label: "What should I confirm before the trip?" }
 ];
 
 const profileSupportActions: ScenarioChip[] = [

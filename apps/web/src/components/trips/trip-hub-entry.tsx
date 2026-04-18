@@ -96,13 +96,11 @@ export function TripHubEntry({ initialTrips }: { initialTrips: TripSummary[] }) 
   const applyDestination = (destination: ReturnType<typeof searchIndiaDestinations>[number]) => {
     setDraft((current) => ({
       ...current,
-      title: current.title || `${destination.city} trip`,
+      title: `${destination.city} trip`,
       destinationCity: destination.city,
       destinationRegion: destination.region,
       destinationCountry: destination.country,
-      overview:
-        current.overview ||
-        `A premium ${destination.city} plan shaped around ${destination.highlights.slice(0, 2).join(" and ")}.`,
+      overview: `A premium ${destination.city} plan shaped around ${destination.highlights.slice(0, 2).join(" and ")}.`,
       highlights: destination.highlights.slice(0, 3),
     }));
     setDestinationQuery(`${destination.city}, ${destination.region}`);

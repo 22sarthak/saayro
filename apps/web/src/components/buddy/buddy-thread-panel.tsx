@@ -110,7 +110,9 @@ export function BuddyThreadPanel({
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{message.role === "buddy" ? "Buddy" : "You"}</p>
                 {process.env.NODE_ENV === "development" && message.response?.devMetadata ? (
                   <span className="rounded-full border border-violet-200 bg-violet-100 px-3 py-1 text-[11px] font-medium text-violet-700">
-                    {message.response.devMetadata.provider} / {message.response.devMetadata.model}
+                    {message.response.devMetadata.fallbackUsed || message.response.devMetadata.provider === "mock"
+                      ? "Saayro fallback"
+                      : `${message.response.devMetadata.provider} · ${message.response.devMetadata.model}`}
                   </span>
                 ) : null}
               </div>
@@ -120,17 +122,53 @@ export function BuddyThreadPanel({
               ) : null}
               {actionItems.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {actionItems.map((action) => (
-                    action.type === "open_trip_hub" && liveTarget?.kind === "pretrip" ? (
-                      <Button key={action.id} variant="secondary" onClick={() => router.push("/app/trips?create=1&source=buddy")}>
-                        {action.label}
+                  {actionItems.map((action) => {
+                    const actionType = String(action.type);
+
+                    if (actionType === "open_trip_hub" && liveTarget?.kind === "pretrip") {
+                      return (
+                        <Button key={action.id} variant="secondary" onClick={() => router.push("/app/trips?create=1&source=buddy")}>
+                          {action.label}
+                        </Button>
+                      );
+                    }
+
+                    const isPacing = actionType === "optimize-day" || actionType === "itinerary_refine";
+                    if (isPacing && liveEnabled) {
+                      return (
+                        <Button
+                          key={action.id}
+                          variant="secondary"
+                          onClick={() => submitMessage(action.label)}
+                          disabled={isPending}
+                        >
+                          {action.label}
+                        </Button>
+                      );
+                    }
+
+                    const isExport = actionType === "draft-export" || actionType === "share_export_pack";
+                    const isMapHandoff = actionType === "open-map" || actionType === "open_in_maps";
+                    const isSaved = actionType === "review_saved_places";
+                    const tooltip = isExport
+                      ? "Exports coming later"
+                      : isMapHandoff
+                        ? "Map handoff coming later"
+                        : isSaved
+                          ? "Saved live binding coming later"
+                          : "This action is still view-only in the current web shell.";
+                    const label = isExport
+                      ? `${action.label} · coming later`
+                      : isMapHandoff
+                        ? `${action.label} · coming later`
+                        : action.label;
+
+                    return (
+                      <Button key={action.id} variant="secondary" disabled title={tooltip}>
+                        {label}
                       </Button>
-                    ) : (
-                      <Button key={action.id} variant="secondary" disabled title="Product actions are still view-only on the web shell.">
-                        {action.label}
-                      </Button>
-                    )
-                  ))}
+                    );
+                  })}
                 </div>
               ) : null}
             </Card>

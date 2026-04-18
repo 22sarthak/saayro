@@ -21,3 +21,6 @@ pytest-cache-files-*/
 # Local runtime restart/debug logs
 _tmp_*.log
 _tmp_*.err
+
+# Claude local workspace files
+.claude/

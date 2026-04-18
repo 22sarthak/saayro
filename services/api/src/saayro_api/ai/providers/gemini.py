@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import json
-
 import httpx
 
 from saayro_api.ai.prompts import build_provider_prompt, build_system_prompt
+from saayro_api.ai.providers._normalize import parse_structured_reply
 from saayro_api.ai.types import BuddyProviderRequest, BuddyProviderResponse, BuddyStructuredReply
 from saayro_api.core.errors import ApiException
 
@@ -54,5 +53,5 @@ class GeminiProvider:
             .get("parts", [{}])[0]
             .get("text", "")
         )
-        reply = BuddyStructuredReply.model_validate(json.loads(text))
+        reply = BuddyStructuredReply.model_validate(parse_structured_reply(text))
         return BuddyProviderResponse(reply=reply, provider=self.provider_name, model=self.model_name)

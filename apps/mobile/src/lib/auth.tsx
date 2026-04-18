@@ -5,8 +5,10 @@ import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type {
   AuthSession,
+  ConfidenceLabel,
   ConnectedAccount,
   ConnectedTravelItem,
+  ConnectedTravelReviewRequest,
   GoogleAuthExchangeResponse,
   OtpChallengeResponse,
   AuthStatusResponse,
@@ -47,6 +49,10 @@ function isComfortPriority(
   return value === "essential" || value === "balanced" || value === "premium";
 }
 
+function isConfidenceLabel(value: unknown): value is ConfidenceLabel {
+  return value === "high" || value === "medium" || value === "low" || value === "needs-review";
+}
+
 function normalizePreferences(raw: Record<string, unknown> | null | undefined) {
   if (!raw) {
     return null;
@@ -83,6 +89,64 @@ function normalizePreferences(raw: Record<string, unknown> | null | undefined) {
 
 type AuthStatus = "loading" | "ready";
 
+export interface BuddyActionView {
+  id: string;
+  type: string;
+  label: string;
+  payload: Record<string, unknown>;
+}
+
+export interface BuddyToolHintView {
+  tool: string;
+  reason: string;
+}
+
+export interface BuddyDevMetadataView {
+  provider: string;
+  model: string;
+  fallbackUsed: boolean;
+}
+
+export interface BuddyResponseView {
+  summary: string;
+  guidance: string;
+  confidenceLabel: string;
+  scopeClass: string;
+  actions: BuddyActionView[];
+  followUpQuestion: string | null;
+  toolHints: BuddyToolHintView[];
+  devMetadata: BuddyDevMetadataView | null;
+}
+
+export interface BuddyMessageView {
+  id: string;
+  role: "user" | "buddy";
+  content: string;
+  confidence: ConfidenceLabel | null;
+  actions: BuddyActionView[] | null;
+  response: BuddyResponseView | null;
+  scopeClass: string | null;
+  createdAt: string;
+}
+
+export interface BuddyAttachTripResult {
+  attached: boolean;
+  tripId: string;
+  migratedMessageCount: number;
+}
+
+type TripMutationPayload = {
+  title: string;
+  destinationCity: string;
+  destinationRegion: string;
+  destinationCountry?: string;
+  startDate: string;
+  endDate: string;
+  party: BackendTripRead["party"];
+  overview: string;
+  highlights: string[];
+};
+
 interface AuthContextValue {
   session: AuthSession | null;
   status: AuthStatus;
@@ -104,21 +168,19 @@ interface AuthContextValue {
   syncConnection: (provider: "gmail" | "calendar") => Promise<ConnectedAccount>;
   disconnectConnection: (provider: "gmail" | "calendar") => Promise<void>;
   listTripConnectedItems: (tripId: string) => Promise<ConnectedTravelItem[]>;
+  listConnectedTravelItems: (state?: ConnectedTravelItem["state"]) => Promise<ConnectedTravelItem[]>;
+  reviewConnectedTravelItem: (itemId: string, payload: ConnectedTravelReviewRequest) => Promise<ConnectedTravelItem>;
   listTrips: () => Promise<BackendTripListItem[]>;
-  createTrip: (payload: {
-    title: string;
-    destinationCity: string;
-    destinationRegion: string;
-    destinationCountry?: string;
-    startDate: string;
-    endDate: string;
-    party: BackendTripRead["party"];
-    overview: string;
-    highlights: string[];
-  }) => Promise<BackendTripRead>;
+  createTrip: (payload: TripMutationPayload) => Promise<BackendTripRead>;
+  updateTrip: (tripId: string, payload: TripMutationPayload) => Promise<BackendTripRead>;
   getTrip: (tripId: string) => Promise<BackendTripRead>;
   getTripItinerary: (tripId: string) => Promise<BackendItineraryRead>;
   listTripExports: (tripId: string) => Promise<BackendExportJobRead[]>;
+  fetchBuddyMessages: (tripId: string) => Promise<BuddyMessageView[]>;
+  postBuddyMessage: (tripId: string, content: string) => Promise<BuddyMessageView[]>;
+  fetchPreTripBuddyMessages: () => Promise<BuddyMessageView[]>;
+  postPreTripBuddyMessage: (content: string) => Promise<BuddyMessageView[]>;
+  attachPreTripBuddyToTrip: (tripId: string) => Promise<BuddyAttachTripResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -147,6 +209,26 @@ type RawSession = {
   needs_onboarding?: boolean;
   email_verified?: boolean;
   phone_verified?: boolean;
+};
+
+type RawBuddyMessage = {
+  id: string;
+  role: "user" | "buddy";
+  content: string;
+  confidence: string | null;
+  actions: Array<{ id: string; type: string; label: string; payload: Record<string, object> }> | null;
+  response: {
+    summary: string;
+    guidance: string;
+    confidence_label: string;
+    scope_class: string;
+    actions: Array<{ id: string; type: string; label: string; payload: Record<string, object> }>;
+    follow_up_question: string | null;
+    tool_hints: Array<{ tool: string; reason: string }>;
+    dev_metadata: { provider: string; model: string; fallback_used: boolean } | null;
+  } | null;
+  scope_class: string | null;
+  created_at: string;
 };
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -279,12 +361,15 @@ function normalizeConnectedAccount(raw: {
 function normalizeConnectedTravelItem(raw: {
   id: string;
   provider: ConnectedTravelItem["provider"];
+  account_label?: string | null;
   title: string;
   item_type: ConnectedTravelItem["itemType"];
   state: ConnectedTravelItem["state"];
   confidence: ConnectedTravelItem["confidence"];
   start_at: string;
   end_at?: string | null;
+  trip_id?: string | null;
+  trip_title?: string | null;
   metadata_json: Record<string, object>;
 }): ConnectedTravelItem {
   const item: ConnectedTravelItem = {
@@ -297,10 +382,49 @@ function normalizeConnectedTravelItem(raw: {
     startAt: raw.start_at,
     metadata: Object.fromEntries(Object.entries(raw.metadata_json).map(([key, value]) => [key, String(value)])),
   };
+  if (raw.account_label) {
+    item.accountLabel = raw.account_label;
+  }
   if (raw.end_at) {
     item.endAt = raw.end_at;
   }
+  if (raw.trip_id) {
+    item.tripId = raw.trip_id;
+  }
+  if (raw.trip_title) {
+    item.tripTitle = raw.trip_title;
+  }
   return item;
+}
+
+function normalizeBuddyMessage(raw: RawBuddyMessage): BuddyMessageView {
+  return {
+    id: raw.id,
+    role: raw.role,
+    content: raw.content,
+    confidence: isConfidenceLabel(raw.confidence) ? raw.confidence : null,
+    actions: raw.actions,
+    response: raw.response
+      ? {
+          summary: raw.response.summary,
+          guidance: raw.response.guidance,
+          confidenceLabel: raw.response.confidence_label,
+          scopeClass: raw.response.scope_class,
+          actions: raw.response.actions,
+          followUpQuestion: raw.response.follow_up_question,
+          toolHints: raw.response.tool_hints,
+          devMetadata: raw.response.dev_metadata
+            ? {
+                provider: raw.response.dev_metadata.provider,
+                model: raw.response.dev_metadata.model,
+                fallbackUsed: raw.response.dev_metadata.fallback_used,
+              }
+            : null,
+        }
+      : null,
+    scopeClass: raw.scope_class,
+    createdAt: raw.created_at,
+  };
 }
 
 async function fetchMobileSession(token: string): Promise<AuthSession> {
@@ -706,6 +830,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         >(`/v1/trips/${tripId}/connected-items`, token, { method: "GET" });
         return raw.map(normalizeConnectedTravelItem);
       },
+      listConnectedTravelItems: async (state) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        const search = state ? `?state=${encodeURIComponent(state)}` : "";
+        const raw = await authedRequestJson<
+          Array<{
+            id: string;
+            provider: ConnectedTravelItem["provider"];
+            account_label?: string | null;
+            title: string;
+            item_type: ConnectedTravelItem["itemType"];
+            state: ConnectedTravelItem["state"];
+            confidence: ConnectedTravelItem["confidence"];
+            start_at: string;
+            end_at?: string | null;
+            trip_id?: string | null;
+            trip_title?: string | null;
+            metadata_json: Record<string, object>;
+          }>
+        >(`/v1/connected-travel/items${search}`, token, { method: "GET" });
+        return raw.map(normalizeConnectedTravelItem);
+      },
+      reviewConnectedTravelItem: async (itemId, payload) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to review imported travel items.");
+        }
+        const raw = await authedRequestJson<{
+          id: string;
+          provider: ConnectedTravelItem["provider"];
+          account_label?: string | null;
+          title: string;
+          item_type: ConnectedTravelItem["itemType"];
+          state: ConnectedTravelItem["state"];
+          confidence: ConnectedTravelItem["confidence"];
+          start_at: string;
+          end_at?: string | null;
+          trip_id?: string | null;
+          trip_title?: string | null;
+          metadata_json: Record<string, object>;
+        }>(`/v1/connected-travel/items/${itemId}/review`, token, {
+          method: "POST",
+          body: JSON.stringify({
+            action: payload.action,
+            trip_id: payload.tripId,
+          }),
+        });
+        return normalizeConnectedTravelItem(raw);
+      },
       listTrips: async () => {
         const token = await getStoredSessionToken();
         if (!token) {
@@ -741,6 +916,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }),
         });
       },
+      updateTrip: async (tripId, payload) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to update a trip.");
+        }
+        return authedRequestJson<BackendTripRead>(`/v1/trips/${tripId}`, token, {
+          method: "PATCH",
+          body: JSON.stringify({
+            title: payload.title,
+            destination_city: payload.destinationCity,
+            destination_region: payload.destinationRegion,
+            destination_country: payload.destinationCountry ?? "India",
+            start_date: payload.startDate,
+            end_date: payload.endDate,
+            party: payload.party,
+            overview: payload.overview,
+            highlights: payload.highlights,
+          }),
+        });
+      },
       getTrip: async (tripId) => {
         const token = await getStoredSessionToken();
         if (!token) {
@@ -761,6 +956,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return [];
         }
         return authedRequestJson<BackendExportJobRead[]>(`/v1/trips/${tripId}/exports`, token, { method: "GET" });
+      },
+      fetchBuddyMessages: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        const raw = await authedRequestJson<RawBuddyMessage[]>(`/v1/trips/${tripId}/buddy/messages`, token, { method: "GET" });
+        return raw.map(normalizeBuddyMessage);
+      },
+      postBuddyMessage: async (tripId, content) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to talk with Buddy.");
+        }
+        const raw = await authedRequestJson<RawBuddyMessage[]>(`/v1/trips/${tripId}/buddy/messages`, token, {
+          method: "POST",
+          body: JSON.stringify({ content }),
+        });
+        return raw.map(normalizeBuddyMessage);
+      },
+      fetchPreTripBuddyMessages: async () => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          return [];
+        }
+        const raw = await authedRequestJson<RawBuddyMessage[]>("/v1/buddy/pre-trip/messages", token, { method: "GET" });
+        return raw.map(normalizeBuddyMessage);
+      },
+      postPreTripBuddyMessage: async (content) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to talk with Buddy.");
+        }
+        const raw = await authedRequestJson<RawBuddyMessage[]>("/v1/buddy/pre-trip/messages", token, {
+          method: "POST",
+          body: JSON.stringify({ content }),
+        });
+        return raw.map(normalizeBuddyMessage);
+      },
+      attachPreTripBuddyToTrip: async (tripId) => {
+        const token = await getStoredSessionToken();
+        if (!token) {
+          throw new Error("Sign in to move this planning thread into a trip.");
+        }
+        const raw = await authedRequestJson<{
+          attached: boolean;
+          trip_id: string;
+          migrated_message_count: number;
+        }>("/v1/buddy/pre-trip/attach-trip", token, {
+          method: "POST",
+          body: JSON.stringify({ trip_id: tripId }),
+        });
+        return {
+          attached: raw.attached,
+          tripId: raw.trip_id,
+          migratedMessageCount: raw.migrated_message_count,
+        };
       },
     }),
     [session, status],

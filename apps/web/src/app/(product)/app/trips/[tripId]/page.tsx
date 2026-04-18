@@ -1,7 +1,7 @@
 import { createRouteHandoffTarget, resolveMapHandoff } from "@saayro/types";
 import { Badge, ExportTile, RoutePreviewCard, SectionHeader, TimelineItem } from "@saayro/ui";
 import { notFound, redirect } from "next/navigation";
-import { TripConnectedLiveRail } from "@/components/connections/trip-connected-live-rail";
+import { TripConnectedReviewRail } from "@/components/connections/trip-connected-review-rail";
 import { ButtonLink } from "@/components/ui/button-link";
 import { StatePanel } from "@/components/ui/state-panel";
 import { fetchServerSession } from "@/lib/auth-server";
@@ -122,7 +122,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
         </div>
         <div className="section-shell space-y-4">
           <SectionHeader title="Connected travel" description="Partial and connected states sit in the same rail for quick review." />
-          <TripConnectedLiveRail tripId={trip.id} fallbackAccounts={trip.connectedAccounts} fallbackItems={trip.connectedItems} />
+          <TripConnectedReviewRail tripId={trip.id} fallbackAccounts={trip.connectedAccounts} fallbackItems={trip.connectedItems} />
         </div>
       </div>
     </div>

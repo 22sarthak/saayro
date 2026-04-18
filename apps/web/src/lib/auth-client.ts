@@ -2,6 +2,8 @@
 
 import type {
   AuthStatusResponse,
+  BackendTripListItem,
+  ConnectedTravelReviewRequest,
   EmailSignInPayload,
   EmailSignUpPayload,
   GoogleAuthExchangeResponse,
@@ -107,6 +109,9 @@ function normalizeConnectedItem(raw: {
   end_at?: string | null;
   metadata_json: Record<string, object>;
   provider?: ConnectedTravelItem["provider"];
+  account_label?: string | null;
+  trip_id?: string | null;
+  trip_title?: string | null;
 }): ConnectedTravelItem {
   const item: ConnectedTravelItem = {
     id: raw.id,
@@ -118,8 +123,17 @@ function normalizeConnectedItem(raw: {
     startAt: raw.start_at,
     metadata: normalizeConnectedItemMetadata(raw.metadata_json),
   };
+  if (raw.account_label) {
+    item.accountLabel = raw.account_label;
+  }
   if (raw.end_at) {
     item.endAt = raw.end_at;
+  }
+  if (raw.trip_id) {
+    item.tripId = raw.trip_id;
+  }
+  if (raw.trip_title) {
+    item.tripTitle = raw.trip_title;
   }
   return item;
 }
@@ -373,6 +387,10 @@ export async function fetchConnections(): Promise<ConnectedAccount[]> {
   return raw.map(normalizeConnectedAccount);
 }
 
+export async function fetchTripSummaries(): Promise<BackendTripListItem[]> {
+  return requestJson<BackendTripListItem[]>("/v1/trips", { method: "GET" });
+}
+
 export async function syncConnection(provider: ConnectedAccount["provider"]): Promise<ConnectedAccount> {
   const raw = await requestJson<{
     account: {
@@ -403,16 +421,70 @@ export async function fetchTripConnectedItems(tripId: string): Promise<Connected
   const raw = await requestJson<
     Array<{
       id: string;
+      provider?: ConnectedTravelItem["provider"];
+      account_label?: string | null;
       title: string;
       item_type: ConnectedTravelItem["itemType"];
       state: ConnectedTravelItem["state"];
       confidence: ConnectedTravelItem["confidence"];
       start_at: string;
       end_at?: string | null;
+      trip_id?: string | null;
+      trip_title?: string | null;
       metadata_json: Record<string, object>;
     }>
   >(`/v1/trips/${tripId}/connected-items`, { method: "GET" });
   return raw.map(normalizeConnectedItem);
+}
+
+export async function fetchConnectedTravelItems(
+  state?: ConnectedTravelItem["state"],
+): Promise<ConnectedTravelItem[]> {
+  const search = state ? `?state=${encodeURIComponent(state)}` : "";
+  const raw = await requestJson<
+    Array<{
+      id: string;
+      provider?: ConnectedTravelItem["provider"];
+      account_label?: string | null;
+      title: string;
+      item_type: ConnectedTravelItem["itemType"];
+      state: ConnectedTravelItem["state"];
+      confidence: ConnectedTravelItem["confidence"];
+      start_at: string;
+      end_at?: string | null;
+      trip_id?: string | null;
+      trip_title?: string | null;
+      metadata_json: Record<string, object>;
+    }>
+  >(`/v1/connected-travel/items${search}`, { method: "GET" });
+  return raw.map(normalizeConnectedItem);
+}
+
+export async function reviewConnectedTravelItem(
+  itemId: string,
+  payload: ConnectedTravelReviewRequest,
+): Promise<ConnectedTravelItem> {
+  const raw = await requestJson<{
+    id: string;
+    provider?: ConnectedTravelItem["provider"];
+    account_label?: string | null;
+    title: string;
+    item_type: ConnectedTravelItem["itemType"];
+    state: ConnectedTravelItem["state"];
+    confidence: ConnectedTravelItem["confidence"];
+    start_at: string;
+    end_at?: string | null;
+    trip_id?: string | null;
+    trip_title?: string | null;
+    metadata_json: Record<string, object>;
+  }>(`/v1/connected-travel/items/${itemId}/review`, {
+    method: "POST",
+    body: JSON.stringify({
+      action: payload.action,
+      trip_id: payload.tripId,
+    }),
+  });
+  return normalizeConnectedItem(raw);
 }
 
 export function getConnectorStartUrl(provider: "gmail" | "calendar", returnTo = "/app/profile"): string {

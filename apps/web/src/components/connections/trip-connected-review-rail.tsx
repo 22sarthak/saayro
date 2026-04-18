@@ -11,7 +11,7 @@ function isPersistedTripId(tripId: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tripId);
 }
 
-export function TripConnectedLiveRail({
+export function TripConnectedReviewRail({
   tripId,
   fallbackAccounts,
   fallbackItems,
@@ -76,19 +76,27 @@ export function TripConnectedLiveRail({
           </div>
         </div>
       ) : null}
+
       {items.length > 0 ? (
         <div className="grid gap-3">
           {items.map((item) => (
             <div key={item.id} className="rounded-[22px] bg-ivory-50 p-4 text-sm leading-6 text-slate-700">
-              <p className="font-semibold text-slate-900">{item.title}</p>
-              <p className="mt-1 capitalize text-slate-500">
-                {item.provider} · {item.state} · {item.confidence}
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold text-slate-900">{item.title}</p>
+                <span className="rounded-full bg-mint-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                  Attached to trip
+                </span>
+              </div>
+              <p className="mt-1 text-slate-500">
+                {item.accountLabel ?? item.provider.toUpperCase()} · {item.itemType} · {item.confidence}
               </p>
               {item.metadata.extraction_reason ? <p className="mt-2">{item.metadata.extraction_reason}</p> : null}
+              {item.metadata.summary ? <p className="mt-2 text-slate-600">{item.metadata.summary}</p> : null}
             </div>
           ))}
         </div>
       ) : null}
+
       <div className="grid gap-3">
         {accounts.map((account) => (
           <ConnectedSourceTile

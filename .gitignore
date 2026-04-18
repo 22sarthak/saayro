@@ -17,3 +17,7 @@ pytest-cache-files-*/
 *.pyc
 .env
 .env.local
+
+# Local runtime restart/debug logs
+_tmp_*.log
+_tmp_*.err

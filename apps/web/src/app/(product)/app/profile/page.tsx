@@ -1,4 +1,5 @@
 import { Badge, ExportTile, SectionHeader } from "@saayro/ui";
+import { ConnectedTravelReview } from "@/components/connections/connected-travel-review";
 import { ButtonLink } from "@/components/ui/button-link";
 import { LiveConnectedAccounts } from "@/components/connections/live-connected-accounts";
 import { StatePanel } from "@/components/ui/state-panel";
@@ -50,9 +51,10 @@ export default async function ProfilePage() {
           <SectionHeader title="Connected accounts" description="Profile needs to express both confidence and partial connection states clearly." />
           <LiveConnectedAccounts fallbackAccounts={profile.connectedAccounts} />
         </section>
+        {session?.authenticated ? <ConnectedTravelReview /> : null}
       </div>
       <div className="space-y-5">
-        {profile.partialConnection ? (
+        {!session?.authenticated && profile.partialConnection ? (
           <StatePanel
             eyebrow="Partial connected state"
             title={profile.partialConnection.title}

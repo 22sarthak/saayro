@@ -103,12 +103,15 @@ export interface ConnectedAccount {
 export interface ConnectedTravelItem {
   id: EntityId;
   provider: ConnectionProvider;
+  accountLabel?: string;
   title: string;
   itemType: "flight" | "hotel" | "event" | "reservation";
   state: "candidate" | "attached" | "ignored";
   confidence: ConfidenceLabel;
   startAt: ISODateTimeString;
   endAt?: ISODateTimeString;
+  tripId?: EntityId;
+  tripTitle?: string;
   metadata: Record<string, string>;
 }
 

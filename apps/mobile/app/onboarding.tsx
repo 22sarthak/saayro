@@ -73,7 +73,7 @@ export default function OnboardingScreen() {
                 })
                   .then(async () => {
                     await bootstrapSession();
-                    router.replace(session?.needsOnboarding ? "/trip-create" : "/(tabs)/profile");
+                    router.replace(session?.needsOnboarding ? "/trip-create?create=1&source=onboarding" : "/(tabs)/profile");
                   })
                   .catch((error) => {
                     setMessage(error instanceof Error ? error.message : "Could not complete setup.");
@@ -98,7 +98,7 @@ export default function OnboardingScreen() {
                 })
                   .then(async () => {
                     await bootstrapSession();
-                    router.replace(session?.needsOnboarding ? "/trip-create" : "/(tabs)/profile");
+                    router.replace(session?.needsOnboarding ? "/trip-create?create=1&source=onboarding" : "/(tabs)/profile");
                   })
                   .catch((error) => {
                     setMessage(error instanceof Error ? error.message : "Could not continue yet.");

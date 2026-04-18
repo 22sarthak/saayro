@@ -32,20 +32,27 @@ export function LiveConnectedAccounts({
     }
 
     let active = true;
-    void fetchConnections()
-      .then((nextAccounts) => {
-        if (active) {
-          setAccounts(nextAccounts);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setAccounts(fallbackAccounts);
-        }
-      });
+    const refreshAccounts = () => {
+      void fetchConnections()
+        .then((nextAccounts) => {
+          if (active) {
+            setAccounts(nextAccounts);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setAccounts(fallbackAccounts);
+          }
+        });
+    };
+
+    refreshAccounts();
+    const handleRefresh = () => refreshAccounts();
+    globalThis.window.addEventListener("connected-travel:refresh", handleRefresh);
 
     return () => {
       active = false;
+      globalThis.window.removeEventListener("connected-travel:refresh", handleRefresh);
     };
   }, [fallbackAccounts, session?.authenticated, state]);
 

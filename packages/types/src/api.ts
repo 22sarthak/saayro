@@ -79,3 +79,11 @@ export interface ConnectedTravelResponse {
   items: ConnectedTravelItem[];
 }
 
+export interface ConnectedTravelReviewRequest {
+  action: "attach" | "ignore";
+  tripId?: string;
+}
+
+export interface ConnectedTravelReviewResponse {
+  item: ConnectedTravelItem;
+}

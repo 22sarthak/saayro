@@ -93,12 +93,15 @@ export interface BackendConnectedAccountRead {
 export interface BackendConnectedTravelItemRead {
   id: string;
   provider?: ConnectedTravelItem["provider"];
+  account_label?: string | null;
   title: string;
   item_type: ConnectedTravelItem["itemType"];
   state: ConnectedTravelItem["state"];
   confidence: ConnectedTravelItem["confidence"];
   start_at: string;
   end_at?: string | null;
+  trip_id?: string | null;
+  trip_title?: string | null;
   metadata_json: Record<string, object>;
 }
 
@@ -247,8 +250,17 @@ export function normalizeBackendConnectedTravelItem(raw: BackendConnectedTravelI
     metadata: normalizeMetadata(raw.metadata_json),
   };
 
+  if (raw.account_label) {
+    item.accountLabel = raw.account_label;
+  }
   if (raw.end_at) {
     item.endAt = raw.end_at;
+  }
+  if (raw.trip_id) {
+    item.tripId = raw.trip_id;
+  }
+  if (raw.trip_title) {
+    item.tripTitle = raw.trip_title;
   }
 
   return item;

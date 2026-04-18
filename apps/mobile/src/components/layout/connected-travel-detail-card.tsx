@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/primitives/status-badge";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { useMobileTheme } from "@/theme/mobile-theme-provider";
 
-export function ConnectedTravelCard({
+export function ConnectedTravelDetailCard({
   item,
   children,
 }: {
@@ -16,7 +16,9 @@ export function ConnectedTravelCard({
   const tone = item.confidence === "needs-review" ? "danger" : item.state === "attached" ? "connected" : "raised";
   const summary =
     item.metadata.extraction_reason || item.metadata.summary || item.metadata.location || "Imported travel context ready for review.";
-  const supportingMetadata = Object.entries(item.metadata).filter(([key]) => !["extraction_reason", "summary"].includes(key)).slice(0, 3);
+  const supportingMetadata = Object.entries(item.metadata)
+    .filter(([key]) => !["extraction_reason", "summary"].includes(key))
+    .slice(0, 3);
   const stateLabel =
     item.state === "candidate" ? "Needs review" : item.state === "attached" ? `Attached${item.tripTitle ? ` · ${item.tripTitle}` : ""}` : "Ignored";
 
@@ -33,15 +35,17 @@ export function ConnectedTravelCard({
           <StatusBadge confidence={item.confidence} />
         </View>
         <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 12, lineHeight: 18 }}>
-          {item.itemType} · {item.state}
+          {item.itemType} · {stateLabel}
         </Text>
+        <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 12, lineHeight: 18 }}>{summary}</Text>
         <View style={{ gap: 4 }}>
-          {Object.entries(item.metadata).map(([key, value]) => (
+          {supportingMetadata.map(([key, value]) => (
             <Text key={key} style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 11 }}>
               {key}: {value}
             </Text>
           ))}
         </View>
+        {children}
       </View>
     </SurfaceCard>
   );

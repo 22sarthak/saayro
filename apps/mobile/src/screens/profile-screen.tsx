@@ -1,9 +1,9 @@
-import type { ConnectedAccount, ConnectedTravelItem } from "@saayro/types";
-import { useEffect, useState } from "react";
+import type { BackendTripListItem, ConnectedAccount, ConnectedTravelItem } from "@saayro/types";
+import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedAccountCard } from "@/components/layout/connected-account-card";
-import { ConnectedTravelCard } from "@/components/layout/connected-travel-card";
+import { ConnectedTravelDetailCard } from "@/components/layout/connected-travel-detail-card";
 import { ExportShareTile } from "@/components/layout/export-share-tile";
 import { LoadingBlock } from "@/components/layout/loading-block";
 import { SectionHeader } from "@/components/layout/section-header";
@@ -27,10 +27,23 @@ export function ProfileScreen() {
 
 function ProfilePopulatedScreen() {
   const theme = useMobileTheme();
-  const { signOut, session, status, listConnections } = useAuth();
+  const {
+    signOut,
+    session,
+    status,
+    listConnections,
+    listConnectedTravelItems,
+    listTrips,
+    reviewConnectedTravelItem,
+  } = useAuth();
   const { data } = getProfileScreenData("populated");
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(data.connectedAccounts);
   const [partialConnection, setPartialConnection] = useState<ConnectedTravelItem | undefined>(data.partialConnection);
+  const [connectedTravelItems, setConnectedTravelItems] = useState<ConnectedTravelItem[]>([]);
+  const [tripOptions, setTripOptions] = useState<BackendTripListItem[]>([]);
+  const [selectedTripIds, setSelectedTripIds] = useState<Record<string, string>>({});
+  const [pendingReviewKey, setPendingReviewKey] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
   const actor = status === "ready" && session?.authenticated ? session.actor : null;
   const profileName = actor?.fullName?.trim() || data.userName;
   const homeBase = actor?.homeBase?.trim() || data.homeBase;
@@ -39,46 +52,74 @@ function ProfilePopulatedScreen() {
   useEffect(() => {
     if (status !== "ready" || !session?.authenticated) {
       setConnectedAccounts(data.connectedAccounts);
+      setConnectedTravelItems([]);
+      setTripOptions([]);
+      setSelectedTripIds({});
       setPartialConnection(data.partialConnection);
       return;
     }
 
     let active = true;
-    void listConnections()
-      .then((accounts) => {
+    void Promise.all([listConnections(), listConnectedTravelItems(), listTrips()])
+      .then(([accounts, items, trips]) => {
         if (!active) {
           return;
         }
         setConnectedAccounts(accounts);
-        if (accounts.some((account) => (account.reviewNeededItemCount ?? 0) > 0)) {
-          setPartialConnection(
-            data.partialConnection
-              ? {
-                  ...data.partialConnection,
-                  title: "Connected Travel review queue",
-                  metadata: {
-                    ...data.partialConnection.metadata,
-                    reason: "Imported travel context needs a quick review before it attaches more confidently.",
-                  },
-                }
-              : data.partialConnection,
-          );
-        } else {
-          setPartialConnection(undefined);
-        }
+        setConnectedTravelItems(items);
+        setTripOptions(trips);
+        setSelectedTripIds(
+          Object.fromEntries(
+            items
+              .filter((item) => item.state === "candidate" && trips[0]?.id)
+              .map((item) => [item.id, trips[0]!.id]),
+          ),
+        );
+        setPartialConnection(undefined);
+        setReviewError(null);
       })
       .catch(() => {
         if (!active) {
           return;
         }
         setConnectedAccounts(data.connectedAccounts);
+        setConnectedTravelItems([]);
+        setTripOptions([]);
         setPartialConnection(data.partialConnection);
       });
 
     return () => {
       active = false;
     };
-  }, [listConnections, session?.authenticated, status]);
+  }, [listConnectedTravelItems, listConnections, listTrips, session?.authenticated, status]);
+
+  const candidateItems = useMemo(() => connectedTravelItems.filter((item) => item.state === "candidate"), [connectedTravelItems]);
+  const attachedItems = useMemo(() => connectedTravelItems.filter((item) => item.state === "attached"), [connectedTravelItems]);
+  const ignoredItems = useMemo(() => connectedTravelItems.filter((item) => item.state === "ignored"), [connectedTravelItems]);
+
+  const handleReview = async (itemId: string, action: "attach" | "ignore") => {
+    setPendingReviewKey(`${itemId}:${action}`);
+    setReviewError(null);
+    try {
+      if (action === "attach") {
+        const tripId = selectedTripIds[itemId];
+        if (!tripId) {
+          setReviewError("Choose a trip before attaching this imported travel item.");
+          return;
+        }
+        await reviewConnectedTravelItem(itemId, { action, tripId });
+      } else {
+        await reviewConnectedTravelItem(itemId, { action });
+      }
+      const [accounts, items] = await Promise.all([listConnections(), listConnectedTravelItems()]);
+      setConnectedAccounts(accounts);
+      setConnectedTravelItems(items);
+    } catch (error) {
+      setReviewError(error instanceof Error ? error.message : "Connected Travel review could not save this choice.");
+    } finally {
+      setPendingReviewKey(null);
+    }
+  };
 
   return (
     <AppTabShell
@@ -129,14 +170,116 @@ function ProfilePopulatedScreen() {
         ))}
       </View>
 
-      {partialConnection ? (
+      {status === "ready" && session?.authenticated ? (
+        <>
+          <SectionHeader
+            eyebrow="Connected Travel review"
+            title="Review imported travel before it shapes a trip"
+            description="Attach the relevant items to a trip, or ignore them intentionally. Imported travel should stay reviewable before it becomes planning truth."
+          />
+
+          {candidateItems.length > 0 ? (
+            <View style={{ gap: theme.spacing.md }}>
+              {candidateItems.map((item) => {
+                const attachDisabled = tripOptions.length === 0 || !selectedTripIds[item.id];
+                return (
+                  <SurfaceCard key={item.id} tone="connected">
+                    <View style={{ gap: theme.spacing.sm }}>
+                      <ConnectedTravelDetailCard item={item}>
+                        {tripOptions.length > 0 ? (
+                          <View style={{ gap: theme.spacing.sm }}>
+                            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 12 }}>
+                              Attach to an existing trip
+                            </Text>
+                            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
+                              {tripOptions.map((trip) => (
+                                <TagChip
+                                  key={`${item.id}:${trip.id}`}
+                                  option={{
+                                    id: trip.id,
+                                    label: trip.title,
+                                    active: selectedTripIds[item.id] === trip.id,
+                                  }}
+                                  onPress={() => setSelectedTripIds((current) => ({ ...current, [item.id]: trip.id }))}
+                                />
+                              ))}
+                            </View>
+                          </View>
+                        ) : (
+                          <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 12, lineHeight: 18 }}>
+                            Create a trip in Trip Hub before attaching imported travel context.
+                          </Text>
+                        )}
+                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
+                          {tripOptions.length > 0 ? (
+                            <ActionButton
+                              label={pendingReviewKey === `${item.id}:attach` ? "Attaching..." : "Attach to trip"}
+                              variant="primary"
+                              disabled={attachDisabled || pendingReviewKey === `${item.id}:attach`}
+                              onPress={() => void handleReview(item.id, "attach")}
+                            />
+                          ) : (
+                            <ActionButton
+                              label="Create trip in Trip Hub"
+                              variant="primary"
+                              onPress={() => router.push("/trip-create?create=1")}
+                            />
+                          )}
+                          <ActionButton
+                            label={pendingReviewKey === `${item.id}:ignore` ? "Ignoring..." : "Ignore item"}
+                            variant="secondary"
+                            disabled={pendingReviewKey === `${item.id}:ignore`}
+                            onPress={() => void handleReview(item.id, "ignore")}
+                          />
+                        </View>
+                      </ConnectedTravelDetailCard>
+                    </View>
+                  </SurfaceCard>
+                );
+              })}
+            </View>
+          ) : (
+            <SurfaceCard tone="connected">
+              <Text style={{ color: theme.colors.textSecondary, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
+                No review-needed imported travel items are waiting right now.
+              </Text>
+            </SurfaceCard>
+          )}
+
+          {attachedItems.length > 0 ? (
+            <View style={{ gap: theme.spacing.md }}>
+              <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.2 }}>
+                ATTACHED TO TRIPS
+              </Text>
+              {attachedItems.map((item) => (
+                <ConnectedTravelDetailCard key={item.id} item={item} />
+              ))}
+            </View>
+          ) : null}
+
+          {ignoredItems.length > 0 ? (
+            <View style={{ gap: theme.spacing.md }}>
+              <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.bodyMedium, fontSize: 11, letterSpacing: 1.2 }}>
+                REVIEWED AND IGNORED
+              </Text>
+              {ignoredItems.map((item) => (
+                <ConnectedTravelDetailCard key={item.id} item={item} />
+              ))}
+            </View>
+          ) : null}
+
+          {reviewError ? (
+            <Text style={{ color: theme.colors.statusDanger, fontFamily: theme.fonts.body, fontSize: 12 }}>{reviewError}</Text>
+          ) : null}
+        </>
+      ) : partialConnection ? (
         <SurfaceCard tone="danger">
           <View style={{ gap: theme.spacing.sm }}>
             <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>Needs review</Text>
             <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
               Connected Travel keeps low-confidence items calm and reviewable instead of treating them like failures.
             </Text>
-            <ConnectedTravelCard item={partialConnection} />
+            <ConnectedTravelDetailCard item={partialConnection} />
           </View>
         </SurfaceCard>
       ) : null}

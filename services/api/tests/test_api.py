@@ -10,6 +10,7 @@ from saayro_api.ai.types import BuddyAction, BuddyProviderResponse, BuddyStructu
 from saayro_api.core.config import get_settings
 from saayro_api.core.errors import ApiException
 from saayro_api.core.secrets import seal_payload
+from saayro_api.models.users import User
 from saayro_api.services import auth as auth_service
 from saayro_api.services import google_connectors
 
@@ -78,6 +79,12 @@ async def test_health_and_status(client: AsyncClient) -> None:
     assert health.json() == {"status": "ok"}
     assert status.status_code == 200
     assert status.json()["service"] == "Saayro API"
+
+
+async def test_user_auth_completion_timestamps_are_timezone_aware() -> None:
+    assert User.__table__.c.email_verified_at.type.timezone is True
+    assert User.__table__.c.phone_verified_at.type.timezone is True
+    assert User.__table__.c.onboarding_completed_at.type.timezone is True
 
 
 async def test_trip_crud_and_related_placeholders_with_real_session(client: AsyncClient, monkeypatch) -> None:

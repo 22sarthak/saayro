@@ -1,16 +1,17 @@
 import { buildTripViewModel, isPersistedTripId, type Trip } from "@saayro/types";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { AppTabShell } from "@/components/layout/app-tab-shell";
 import { ConnectedAccountCard } from "@/components/layout/connected-account-card";
-import { ConnectedTravelCard } from "@/components/layout/connected-travel-card";
+import { ConnectedTravelDetailCard } from "@/components/layout/connected-travel-detail-card";
 import { EmptyStateBlock } from "@/components/layout/empty-state-block";
 import { ExportShareTile } from "@/components/layout/export-share-tile";
 import { ItineraryTimelineItem } from "@/components/layout/itinerary-timeline-item";
 import { LoadingBlock } from "@/components/layout/loading-block";
 import { RouteHandoffCard } from "@/components/layout/route-handoff-card";
 import { SectionHeader } from "@/components/layout/section-header";
+import { ActionButton } from "@/components/primitives/action-button";
 import { SurfaceCard } from "@/components/primitives/surface-card";
 import { TagChip } from "@/components/primitives/tag-chip";
 import { useAuth } from "@/lib/auth";
@@ -30,6 +31,13 @@ export function TripsScreen() {
     getTripItinerary,
     listTripExports,
   } = useAuth();
+  const params = useLocalSearchParams<{ tripId?: string | string[] }>();
+  const selectedTripId = useMemo(() => {
+    if (Array.isArray(params.tripId)) {
+      return params.tripId[0] ?? null;
+    }
+    return params.tripId ?? null;
+  }, [params.tripId]);
   const [viewState, setViewState] = useState<"loading" | "empty" | "ready">(status === "ready" ? "ready" : "loading");
   const [screenData, setScreenData] = useState<TripsScreenData>(fallbackTripsScreen.data);
 
@@ -59,7 +67,7 @@ export function TripsScreen() {
           return;
         }
 
-        const primaryTrip = tripList[0]!;
+        const primaryTrip = tripList.find((trip) => trip.id === selectedTripId) ?? tripList[0]!;
         const [trip, itinerary, exportPacks, connectedAccounts, connectedItems] = await Promise.all([
           getTrip(primaryTrip.id),
           getTripItinerary(primaryTrip.id),
@@ -108,6 +116,7 @@ export function TripsScreen() {
     listTripConnectedItems,
     listTripExports,
     listTrips,
+    selectedTripId,
     session?.authenticated,
     status,
   ]);
@@ -126,6 +135,7 @@ export function TripsScreen() {
 function TripsPopulatedScreen({ trip, data, source }: { trip: Trip; data: TripsScreenData; source: "live" | "mock" }) {
   const theme = useMobileTheme();
   const mappedRoutes = data.itineraryDays.flatMap((day) => day.stops).filter((stop) => stop.routePreview);
+  const reviewNeededCount = data.connectedAccounts.reduce((total, account) => total + (account.reviewNeededItemCount ?? 0), 0);
 
   return (
     <AppTabShell
@@ -151,6 +161,7 @@ function TripsPopulatedScreen({ trip, data, source }: { trip: Trip; data: TripsS
               <TagChip key={highlight} option={{ id: highlight, label: highlight }} />
             ))}
           </View>
+          <ActionButton label="Edit in Trip Hub" variant="secondary" onPress={() => router.push(`/trip-create?tripId=${encodeURIComponent(trip.id)}`)} />
         </View>
       </SurfaceCard>
 
@@ -203,9 +214,23 @@ function TripsPopulatedScreen({ trip, data, source }: { trip: Trip; data: TripsS
         description="Partial sync and review-needed states should remain legible and calm."
       />
 
+      {reviewNeededCount > 0 ? (
+        <SurfaceCard tone="discovery">
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text style={{ color: theme.colors.textPrimary, fontFamily: theme.fonts.bodyMedium, fontSize: 16 }}>
+              {reviewNeededCount} imported travel item{reviewNeededCount === 1 ? "" : "s"} still need review
+            </Text>
+            <Text style={{ color: theme.colors.textMuted, fontFamily: theme.fonts.body, fontSize: 13, lineHeight: 19 }}>
+              Review them in Profile before they influence this trip more confidently.
+            </Text>
+            <ActionButton label="Review in Profile" variant="secondary" onPress={() => router.push("/(tabs)/profile")} />
+          </View>
+        </SurfaceCard>
+      ) : null}
+
       <View style={{ gap: theme.spacing.sm }}>
         {data.connectedItems.map((item) => (
-          <ConnectedTravelCard key={item.id} item={item} />
+          <ConnectedTravelDetailCard key={item.id} item={item} />
         ))}
       </View>
 
@@ -230,7 +255,7 @@ function TripsEmptyScreen() {
         title="Create a destination-led trip shell"
         description="Once a trip exists, this tab becomes the home for itinerary flow, exports, route handoff, and connected travel review."
         actionLabel="Create trip"
-        onAction={() => router.push("/trip-create")}
+        onAction={() => router.push("/trip-create?create=1")}
         tone="connected"
       />
     </AppTabShell>

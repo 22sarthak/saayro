@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -27,13 +28,21 @@ class ConnectedAccountRead(BaseSchema):
 class ConnectedTravelItemRead(BaseSchema):
     id: str
     provider: str
+    account_label: str | None = None
     title: str
     item_type: str
     state: str
     confidence: str
     start_at: datetime
     end_at: datetime | None
+    trip_id: str | None = None
+    trip_title: str | None = None
     metadata_json: dict[str, object]
+
+
+class ConnectedTravelReviewRequest(BaseModel):
+    action: Literal["attach", "ignore"]
+    trip_id: str | None = None
 
 
 class ConnectionStatusRead(BaseModel):

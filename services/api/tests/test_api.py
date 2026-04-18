@@ -214,6 +214,18 @@ async def test_google_connector_callback_sync_and_disconnect_flow(monkeypatch, c
                 location="Udaipur",
                 metadata={"source_id": "gmail-msg-2", "sender": "Hotel"},
             ),
+            google_connectors.ImportCandidate(
+                external_id="gmail-msg-3",
+                provider="gmail",
+                source_kind="gmail_message",
+                title="Dinner booking to review",
+                item_type="reservation",
+                start_at=datetime(2026, 11, 21, 19, 30, tzinfo=timezone.utc),
+                end_at=datetime(2026, 11, 21, 21, 0, tzinfo=timezone.utc),
+                summary="A restaurant booking that should stay review-ready before it attaches anywhere.",
+                location="Udaipur",
+                metadata={"source_id": "gmail-msg-3", "sender": "Restaurant"},
+            ),
         ]
 
     monkeypatch.setattr(google_connectors, "exchange_google_connector_code", fake_exchange)
@@ -243,20 +255,137 @@ async def test_google_connector_callback_sync_and_disconnect_flow(monkeypatch, c
         gmail_account = next(item for item in listed.json() if item["provider"] == "gmail")
         assert gmail_account["state"] == "partial"
         assert gmail_account["attached_item_count"] == 1
-        assert gmail_account["review_needed_item_count"] == 1
+        assert gmail_account["review_needed_item_count"] == 2
 
         items = await client.get(f"/v1/trips/{trip_id}/connected-items")
         assert items.status_code == 200
         assert len(items.json()) == 1
         assert items.json()[0]["provider"] == "gmail"
 
+        review_queue = await client.get("/v1/connected-travel/items")
+        assert review_queue.status_code == 200
+        assert [item["state"] for item in review_queue.json()[:2]] == ["candidate", "candidate"]
+        attach_candidate = next(item for item in review_queue.json() if item["title"] == "Hotel confirmation waiting for review")
+        ignore_candidate = next(item for item in review_queue.json() if item["title"] == "Dinner booking to review")
+
+        attached = await client.post(
+            f"/v1/connected-travel/items/{attach_candidate['id']}/review",
+            json={"action": "attach", "trip_id": trip_id},
+        )
+        assert attached.status_code == 200
+        assert attached.json()["state"] == "attached"
+        assert attached.json()["trip_id"] == trip_id
+
+        ignored = await client.post(
+            f"/v1/connected-travel/items/{ignore_candidate['id']}/review",
+            json={"action": "ignore"},
+        )
+        assert ignored.status_code == 200
+        assert ignored.json()["state"] == "ignored"
+        assert ignored.json()["trip_id"] is None
+
+        updated_items = await client.get(f"/v1/trips/{trip_id}/connected-items")
+        assert updated_items.status_code == 200
+        assert len(updated_items.json()) == 2
+
+        updated_accounts = await client.get("/v1/connections")
+        updated_gmail_account = next(item for item in updated_accounts.json() if item["provider"] == "gmail")
+        assert updated_gmail_account["attached_item_count"] == 2
+        assert updated_gmail_account["review_needed_item_count"] == 0
+
         refreshed = await client.post("/v1/connections/gmail/sync")
         assert refreshed.status_code == 200
-        assert refreshed.json()["review_needed_count"] == 1
+        assert refreshed.json()["review_needed_count"] == 2
 
         disconnected = await client.delete("/v1/connections/gmail")
         assert disconnected.status_code == 200
         assert disconnected.json()["disconnected"] is True
+
+
+async def test_connected_travel_review_rejects_other_users(monkeypatch, client_factory) -> None:
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_ID", "connector-client")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_CLIENT_SECRET", "connector-secret")
+    monkeypatch.setenv("SAAYRO_API_GOOGLE_CONNECTOR_STATE_SECRET", "connector-state")
+    monkeypatch.setenv("SAAYRO_API_WEB_APP_URL", "http://localhost:3000")
+
+    async def fake_exchange(settings, code):
+        return google_connectors.ConnectorTokens(
+            access_token="gmail-access-token",
+            refresh_token="gmail-refresh-token",
+            scopes=["openid", "email", "profile", settings.google_connector_gmail_scope],
+            expires_at=None,
+        )
+
+    async def fake_identity(settings, access_token):
+        return google_connectors.GoogleConnectorIdentity(
+            subject="google-connector-subject",
+            email="connector@saayro.app",
+            full_name="Connector Tester",
+        )
+
+    async def fake_gmail(settings, access_token):
+        return [
+            google_connectors.ImportCandidate(
+                external_id="gmail-msg-review-1",
+                provider="gmail",
+                source_kind="gmail_message",
+                title="Rail ticket to review",
+                item_type="reservation",
+                start_at=datetime(2026, 11, 18, 9, 0, tzinfo=timezone.utc),
+                end_at=datetime(2026, 11, 18, 12, 0, tzinfo=timezone.utc),
+                summary="A ticket that should remain review-ready.",
+                location="Delhi",
+                metadata={"source_id": "gmail-msg-review-1", "sender": "IRCTC"},
+            ),
+        ]
+
+    monkeypatch.setattr(google_connectors, "exchange_google_connector_code", fake_exchange)
+    monkeypatch.setattr(google_connectors, "fetch_google_identity", fake_identity)
+    monkeypatch.setattr(google_connectors, "fetch_gmail_candidates", fake_gmail)
+
+    async def owner_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-connected-owner",
+            email="owner@saayro.app",
+            full_name="Owner Tester",
+            email_verified=True,
+        )
+
+    async def other_google_profile(settings, access_token, id_token):
+        return auth_service.GoogleIdentity(
+            subject="google-subject-connected-other",
+            email="other@saayro.app",
+            full_name="Other Tester",
+            email_verified=True,
+        )
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", owner_google_profile)
+
+    async with client_factory() as owner_client:
+        response = await owner_client.post("/v1/auth/google/web", json={"access_token": "owner-google-access-token"})
+        assert response.status_code == 200
+        settings = get_settings()
+        state = seal_payload(
+            {
+                "user_id": (await owner_client.get("/v1/auth/session")).json()["actor"]["user_id"],
+                "provider": "gmail",
+                "return_to": "/app/profile",
+                "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+            },
+            settings.google_connector_state_secret,
+        )
+        callback = await owner_client.get(f"/v1/connections/google/callback?code=test-code&state={state}", follow_redirects=False)
+        assert callback.status_code == 307
+        queue = await owner_client.get("/v1/connected-travel/items")
+        item_id = queue.json()[0]["id"]
+
+    monkeypatch.setattr(auth_service, "_load_google_profile", other_google_profile)
+    async with client_factory() as other_client:
+        response = await other_client.post("/v1/auth/google/web", json={"access_token": "other-google-access-token"})
+        assert response.status_code == 200
+        blocked = await other_client.post(f"/v1/connected-travel/items/{item_id}/review", json={"action": "ignore"})
+        assert blocked.status_code == 404
+        assert blocked.json()["error"]["code"] == "not_found"
 
 
 

@@ -55,3 +55,11 @@ class ConnectedTravelItem(IdTimestampMixin, Base):
     @property
     def provider(self) -> str:
         return self.connected_account.provider if self.connected_account is not None else "gmail"
+
+    @property
+    def account_label(self) -> str | None:
+        return self.connected_account.label if self.connected_account is not None else None
+
+    @property
+    def trip_title(self) -> str | None:
+        return self.trip.title if self.trip is not None else None

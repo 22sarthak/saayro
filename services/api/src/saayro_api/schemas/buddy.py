@@ -39,6 +39,19 @@ class BuddyDevMetadataSchema(BaseModel):
     fallback_used: bool = False
 
 
+class BuddyTripDraftSchema(BaseModel):
+    title: str | None = None
+    destination_city: str | None = None
+    destination_region: str | None = None
+    destination_country: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    party: str | None = None
+    overview: str | None = None
+    highlights: list[str] = Field(default_factory=list)
+    ready: bool = False
+
+
 class BuddyResponseSchema(BaseModel):
     summary: str
     guidance: str
@@ -48,6 +61,9 @@ class BuddyResponseSchema(BaseModel):
     follow_up_question: str | None = None
     tool_hints: list[BuddyToolHintSchema] = Field(default_factory=list)
     dev_metadata: BuddyDevMetadataSchema | None = None
+    options: list[str] = Field(default_factory=list)
+    planning_state: dict[str, object] = Field(default_factory=dict)
+    trip_draft: BuddyTripDraftSchema | None = None
 
 
 class BuddyMessageRead(BaseSchema):

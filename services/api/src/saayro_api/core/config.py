@@ -48,13 +48,24 @@ class Settings(BaseSettings):
     google_connector_token_url: str = "https://oauth2.googleapis.com/token"
     google_connector_sync_window_days: int = 365
     ai_enabled: bool = True
-    ai_provider: Literal["auto", "gemini", "ollama", "mock"] = "auto"
+    ai_provider: Literal[
+        "auto", "gemini", "groq", "ollama_cloud", "ollama_local", "mock"
+    ] = "auto"
     ai_gemini_api_key: str = ""
     ai_gemini_model: str = "gemini-2.5-flash"
     ai_gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
-    ai_ollama_base_url: str = "http://127.0.0.1:11434"
-    ai_ollama_model: str = "llama3"
-    ai_timeout_seconds: float = 20.0
+    ai_groq_api_key: str = ""
+    ai_groq_base_url: str = "https://api.groq.com/openai/v1"
+    ai_groq_model: str = "llama-3.3-70b-versatile"
+    ai_groq_fallback_model: str = "llama-3.1-8b-instant"
+    ai_ollama_cloud_enabled: bool = True
+    ai_ollama_cloud_base_url: str = "https://ollama.com/api"
+    ai_ollama_cloud_model: str = "gpt-oss:120b-cloud"
+    ai_ollama_cloud_api_key: str = ""
+    ai_ollama_local_enabled: bool = False
+    ai_ollama_local_base_url: str = "http://127.0.0.1:11434"
+    ai_ollama_local_model: str = "llama3:latest"
+    ai_timeout_seconds: float = 90.0
     ai_dev_provider_badge: bool = True
 
     @field_validator("cors_origins", mode="before")

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient
 
 from saayro_api.ai.providers.gemini import GeminiProvider
-from saayro_api.ai.providers.ollama import OllamaProvider
+from saayro_api.ai.providers.groq import GroqProvider
 from saayro_api.ai.types import BuddyAction, BuddyProviderResponse, BuddyStructuredReply
 from saayro_api.core.config import get_settings
 from saayro_api.core.errors import ApiException
@@ -442,33 +442,36 @@ async def test_buddy_generation_uses_gemini_and_persists_structured_response(
         assert body[1]["response"]["dev_metadata"]["fallback_used"] is False
 
 
-async def test_buddy_generation_falls_back_to_ollama_when_gemini_fails(
+async def test_buddy_generation_falls_back_to_groq_when_gemini_fails(
     monkeypatch,
     client_factory,
 ) -> None:
     monkeypatch.setenv("SAAYRO_API_AI_ENABLED", "true")
     monkeypatch.setenv("SAAYRO_API_AI_PROVIDER", "auto")
     monkeypatch.setenv("SAAYRO_API_AI_GEMINI_API_KEY", "test-key")
+    monkeypatch.setenv("SAAYRO_API_AI_GROQ_API_KEY", "test-groq-key")
+    monkeypatch.setenv("SAAYRO_API_AI_OLLAMA_CLOUD_ENABLED", "false")
+    monkeypatch.setenv("SAAYRO_API_AI_OLLAMA_LOCAL_ENABLED", "false")
     monkeypatch.setenv("SAAYRO_API_AI_DEV_PROVIDER_BADGE", "true")
 
     async def failing_gemini(self, request):
-        raise ApiException(status_code=503, code="provider_unavailable", message="Rate limited.", retryable=True)
+        raise ApiException(status_code=503, code="gemini_rate_limited", message="Rate limited.", retryable=True)
 
-    async def fake_ollama_generate(self, request):
+    async def fake_groq_generate(self, request):
         return BuddyProviderResponse(
-            provider="Ollama",
-            model="llama3",
+            provider="Groq",
+            model="llama-3.3-70b-versatile",
             reply=BuddyStructuredReply(
                 summary="Here is a calmer pacing option for this trip.",
                 guidance="Keep one anchor stop, one meal, and one flexible discovery block.",
                 confidence_label="medium",
                 scope_class="in_scope_travel",
-                actions=[BuddyAction(id="share-export", type="share_export_pack", label="Share Export Pack")],
+                actions=[BuddyAction(id="refine-day", type="itinerary_refine", label="Refine this itinerary")],
             ),
         )
 
     monkeypatch.setattr(GeminiProvider, "generate", failing_gemini)
-    monkeypatch.setattr(OllamaProvider, "generate", fake_ollama_generate)
+    monkeypatch.setattr(GroqProvider, "generate", fake_groq_generate)
     async def fallback_google_profile(settings, access_token, id_token):
         return auth_service.GoogleIdentity(
             subject="google-subject-buddy-2",
@@ -486,7 +489,8 @@ async def test_buddy_generation_falls_back_to_ollama_when_gemini_fails(
         buddy = await client.post(f"/v1/trips/{trip_id}/buddy/messages", json={"content": "Help me refine this itinerary pacing."})
         body = buddy.json()
         assert buddy.status_code == 201
-        assert body[1]["response"]["dev_metadata"]["provider"] == "Ollama"
+        assert body[1]["response"]["dev_metadata"]["provider"] == "Groq"
+        assert body[1]["response"]["dev_metadata"]["provider"] != "mock"
         assert body[1]["response"]["dev_metadata"]["fallback_used"] is True
 
 

@@ -17,6 +17,7 @@ class BuddyAction(BaseModel):
         "share_export_pack",
         "open_in_maps",
         "review_connected_travel",
+        "plan_itinerary",
     ]
     label: str
     payload: dict[str, object] = Field(default_factory=dict)
@@ -33,6 +34,19 @@ class BuddyDevMetadata(BaseModel):
     fallback_used: bool = False
 
 
+class BuddyTripDraft(BaseModel):
+    title: str | None = None
+    destination_city: str | None = None
+    destination_region: str | None = None
+    destination_country: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    party: str | None = None
+    overview: str | None = None
+    highlights: list[str] = Field(default_factory=list)
+    ready: bool = False
+
+
 class BuddyStructuredReply(BaseModel):
     summary: str
     guidance: str
@@ -42,6 +56,9 @@ class BuddyStructuredReply(BaseModel):
     follow_up_question: str | None = None
     tool_hints: list[ToolHint] = Field(default_factory=list)
     dev_metadata: BuddyDevMetadata | None = None
+    options: list[str] = Field(default_factory=list)
+    planning_state: dict[str, object] = Field(default_factory=dict)
+    trip_draft: BuddyTripDraft | None = None
 
 
 class BuddyUserContext(BaseModel):
@@ -118,10 +135,17 @@ class SaayroBuddyContext(BaseModel):
     connected_travel: ConnectedTravelSummary | None = None
 
 
+class BuddyConversationTurn(BaseModel):
+    role: Literal["user", "buddy"]
+    content: str
+
+
 class BuddyProviderRequest(BaseModel):
     message: str
     context: SaayroBuddyContext
     scope_class: ScopeClass
+    conversation_history: list[BuddyConversationTurn] = Field(default_factory=list)
+    planning_state: dict[str, object] = Field(default_factory=dict)
 
 
 class BuddyProviderResponse(BaseModel):
@@ -140,6 +164,7 @@ class BuddyPersistedGeneration(BaseModel):
     provider: str
     model: str
     fallback_used: bool = False
+    created_trip_id: str | None = None
 
 
 class ConnectedTravelItemContext(BaseModel):

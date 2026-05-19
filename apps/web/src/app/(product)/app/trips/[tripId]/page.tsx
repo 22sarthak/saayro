@@ -70,24 +70,41 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
           <SectionHeader
             title="Itinerary"
             description="A route-aware planner shell with visible day structure, timing assumptions, and room for refinement."
-            actionSlot={<ButtonLink href="/app/buddy" variant="secondary">Ask Buddy</ButtonLink>}
+            actionSlot={<ButtonLink href={`/app/buddy?trip=${trip.id}`} variant="secondary">Ask Buddy</ButtonLink>}
           />
-          <div className="grid gap-5">
-            {trip.itinerary.map((day) => (
-              <div key={day.id} className="space-y-4 rounded-[28px] border border-slate-200/70 bg-white p-5">
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Day {day.dayNumber} · {day.date}</p>
-                  <h2 className="editorial-title text-3xl text-slate-950">{day.title}</h2>
-                  <p className="text-sm leading-7 text-slate-600">{day.summary}</p>
+          {trip.itinerary.length === 0 ? (
+            <StatePanel
+              eyebrow="Itinerary"
+              title="Your trip shell is ready."
+              description="Ask Buddy to draft a day-wise itinerary. Nothing is saved yet — Buddy will propose a text outline you can refine."
+              tone="buddy"
+              actions={
+                <ButtonLink
+                  href={`/app/buddy?trip=${trip.id}&prompt=${encodeURIComponent("Plan the itinerary for this trip")}`}
+                  variant="primary"
+                >
+                  Ask Buddy to draft itinerary
+                </ButtonLink>
+              }
+            />
+          ) : (
+            <div className="grid gap-5">
+              {trip.itinerary.map((day) => (
+                <div key={day.id} className="space-y-4 rounded-[28px] border border-slate-200/70 bg-white p-5">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Day {day.dayNumber} · {day.date}</p>
+                    <h2 className="editorial-title text-3xl text-slate-950">{day.title}</h2>
+                    <p className="text-sm leading-7 text-slate-600">{day.summary}</p>
+                  </div>
+                  <div className="grid gap-3">
+                    {day.stops.map((stop) => (
+                      <TimelineItem key={stop.id} stop={stop} />
+                    ))}
+                  </div>
                 </div>
-                <div className="grid gap-3">
-                  {day.stops.map((stop) => (
-                    <TimelineItem key={stop.id} stop={stop} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
 
@@ -99,7 +116,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
           tone="buddy"
           actions={
             <>
-              <ButtonLink href="/app/buddy" variant="primary">Ask Buddy</ButtonLink>
+              <ButtonLink href={`/app/buddy?trip=${trip.id}`} variant="primary">Ask Buddy</ButtonLink>
               <ButtonLink href="/app/saved" variant="secondary">Review Saved Places</ButtonLink>
             </>
           }

@@ -20,6 +20,19 @@ export interface BuddyDevMetadataView {
   fallbackUsed: boolean;
 }
 
+export interface BuddyTripDraftView {
+  title: string | null;
+  destinationCity: string | null;
+  destinationRegion: string | null;
+  destinationCountry: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  party: string | null;
+  overview: string | null;
+  highlights: string[];
+  ready: boolean;
+}
+
 export interface BuddyResponseView {
   summary: string;
   guidance: string;
@@ -29,6 +42,9 @@ export interface BuddyResponseView {
   followUpQuestion: string | null;
   toolHints: BuddyToolHintView[];
   devMetadata: BuddyDevMetadataView | null;
+  options: string[];
+  planningState: Record<string, unknown>;
+  tripDraft: BuddyTripDraftView | null;
 }
 
 export interface BuddyMessageView {
@@ -95,6 +111,19 @@ export function normalizeMockBuddyMessage(raw: {
   };
 }
 
+type RawBuddyTripDraft = {
+  title: string | null;
+  destination_city: string | null;
+  destination_region: string | null;
+  destination_country: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  party: string | null;
+  overview: string | null;
+  highlights: string[];
+  ready: boolean;
+};
+
 type RawBuddyMessage = {
   id: string;
   role: string;
@@ -110,6 +139,9 @@ type RawBuddyMessage = {
     follow_up_question: string | null;
     tool_hints: Array<{ tool: string; reason: string }>;
     dev_metadata: { provider: string; model: string; fallback_used: boolean } | null;
+    options?: string[];
+    planning_state?: Record<string, unknown>;
+    trip_draft?: RawBuddyTripDraft | null;
   } | null;
   scope_class: string | null;
   created_at: string;
@@ -160,6 +192,22 @@ function normalizeBuddyMessage(raw: RawBuddyMessage): BuddyMessageView {
                 provider: raw.response.dev_metadata.provider,
                 model: raw.response.dev_metadata.model,
                 fallbackUsed: raw.response.dev_metadata.fallback_used,
+              }
+            : null,
+          options: raw.response.options ?? [],
+          planningState: raw.response.planning_state ?? {},
+          tripDraft: raw.response.trip_draft
+            ? {
+                title: raw.response.trip_draft.title,
+                destinationCity: raw.response.trip_draft.destination_city,
+                destinationRegion: raw.response.trip_draft.destination_region,
+                destinationCountry: raw.response.trip_draft.destination_country,
+                startDate: raw.response.trip_draft.start_date,
+                endDate: raw.response.trip_draft.end_date,
+                party: raw.response.trip_draft.party,
+                overview: raw.response.trip_draft.overview,
+                highlights: raw.response.trip_draft.highlights,
+                ready: raw.response.trip_draft.ready,
               }
             : null,
         }

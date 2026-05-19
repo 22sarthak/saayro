@@ -11,6 +11,24 @@ import {
   postPreTripBuddyMessage,
 } from "@/lib/buddy-client";
 
+const UNSUPPORTED_OPTION_PATTERNS = [
+  "export",
+  "share export",
+  "export pack",
+  "saved place",
+  "saved",
+  "open in map",
+  "open in maps",
+  "open map",
+  "open route",
+  "route handoff",
+];
+
+function isUnsupportedOption(label: string): boolean {
+  const lower = label.toLowerCase();
+  return UNSUPPORTED_OPTION_PATTERNS.some((pattern) => lower.includes(pattern));
+}
+
 export function BuddyThreadPanel({
   liveTarget,
   initialMessages,
@@ -61,14 +79,19 @@ export function BuddyThreadPanel({
     };
   }, [liveEnabled, liveTarget]);
 
-  const submitMessage = (content: string) => {
+  const submitMessage = (content: string, pinnedTripId?: string) => {
     const trimmed = content.trim();
     if (!liveTarget || !liveEnabled || !trimmed) {
       return;
     }
+    const effectiveTripId =
+      pinnedTripId ?? (liveTarget.kind === "trip" ? liveTarget.tripId : undefined);
 
     startTransition(() => {
-      void (liveTarget.kind === "trip" ? postBuddyMessage(liveTarget.tripId, trimmed) : postPreTripBuddyMessage(trimmed))
+      const request = effectiveTripId
+        ? postBuddyMessage(effectiveTripId, trimmed)
+        : postPreTripBuddyMessage(trimmed);
+      void request
         .then((nextMessages) => {
           setMessages(nextMessages);
           setComposerValue("");
@@ -92,7 +115,9 @@ export function BuddyThreadPanel({
 
     submitMessage(promptToSubmit);
     setLastPromptHandled(promptToSubmit);
-    router.replace(pathname);
+    const nextUrl =
+      liveTarget.kind === "trip" ? `${pathname}?trip=${liveTarget.tripId}` : pathname;
+    router.replace(nextUrl);
   }, [lastPromptHandled, liveEnabled, liveTarget, pathname, promptToSubmit, router]);
 
   return (
@@ -108,26 +133,81 @@ export function BuddyThreadPanel({
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{message.role === "buddy" ? "Buddy" : "You"}</p>
-                {process.env.NODE_ENV === "development" && message.response?.devMetadata ? (
-                  <span className="rounded-full border border-violet-200 bg-violet-100 px-3 py-1 text-[11px] font-medium text-violet-700">
-                    {message.response.devMetadata.fallbackUsed || message.response.devMetadata.provider === "mock"
-                      ? "Saayro fallback"
-                      : `${message.response.devMetadata.provider} · ${message.response.devMetadata.model}`}
-                  </span>
-                ) : null}
+                {process.env.NODE_ENV === "development" && message.response?.devMetadata ? (() => {
+                  const metadata = message.response.devMetadata;
+                  const deterministicProviders = new Set(["mock", "saayro-fallback", "Saayro fallback"]);
+                  const isDeterministicFallback = deterministicProviders.has(metadata.provider);
+                  const label = isDeterministicFallback
+                    ? "Saayro fallback"
+                    : `${metadata.provider} · ${metadata.model}${metadata.fallbackUsed ? " · via fallback" : ""}`;
+                  return (
+                    <span className="rounded-full border border-violet-200 bg-violet-100 px-3 py-1 text-[11px] font-medium text-violet-700">
+                      {label}
+                    </span>
+                  );
+                })() : null}
               </div>
               <p className="mt-3 text-sm leading-7 text-slate-700">{message.content}</p>
               {message.response?.guidance ? (
                 <p className="mt-3 text-sm leading-7 text-slate-500">{message.response.guidance}</p>
               ) : null}
+              {liveEnabled && message.role === "buddy" && message.response?.options?.length ? (() => {
+                const safeOptions = message.response.options.filter((option) => !isUnsupportedOption(option));
+                if (!safeOptions.length) {
+                  return null;
+                }
+                return (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {safeOptions.map((option, index) => (
+                      <button
+                        key={`${message.id}-option-${index}`}
+                        type="button"
+                        onClick={() => submitMessage(option)}
+                        disabled={isPending}
+                        className="rounded-[18px] bg-amber-100 px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })() : null}
               {actionItems.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {actionItems.map((action) => {
                     const actionType = String(action.type);
 
-                    if (actionType === "open_trip_hub" && liveTarget?.kind === "pretrip") {
+                    const actionPayload = action.payload as { trip_id?: string } | undefined;
+                    const payloadTripId =
+                      typeof actionPayload?.trip_id === "string" && actionPayload.trip_id
+                        ? actionPayload.trip_id
+                        : undefined;
+                    const liveTripId =
+                      liveTarget && liveTarget.kind === "trip" ? liveTarget.tripId : undefined;
+                    const effectiveTripId = payloadTripId ?? liveTripId;
+
+                    if (actionType === "open_trip_hub") {
+                      const href = effectiveTripId
+                        ? `/app/trips/${effectiveTripId}`
+                        : "/app/trips?create=1&source=buddy";
                       return (
-                        <Button key={action.id} variant="secondary" onClick={() => router.push("/app/trips?create=1&source=buddy")}>
+                        <Button key={action.id} variant="secondary" onClick={() => router.push(href)}>
+                          {action.label}
+                        </Button>
+                      );
+                    }
+
+                    if (actionType === "plan_itinerary") {
+                      if (effectiveTripId) {
+                        const href = `/app/buddy?trip=${effectiveTripId}&prompt=${encodeURIComponent("Plan the itinerary for this trip")}`;
+                        return (
+                          <Button key={action.id} variant="primary" onClick={() => router.push(href)}>
+                            {action.label}
+                          </Button>
+                        );
+                      }
+                      return (
+                        <Button key={action.id} variant="primary" disabled title="No active trip to plan.">
                           {action.label}
                         </Button>
                       );
@@ -135,11 +215,18 @@ export function BuddyThreadPanel({
 
                     const isPacing = actionType === "optimize-day" || actionType === "itinerary_refine";
                     if (isPacing && liveEnabled) {
+                      if (!effectiveTripId) {
+                        return (
+                          <Button key={action.id} variant="secondary" disabled title="No active trip to refine.">
+                            {action.label}
+                          </Button>
+                        );
+                      }
                       return (
                         <Button
                           key={action.id}
                           variant="secondary"
-                          onClick={() => submitMessage(action.label)}
+                          onClick={() => submitMessage(action.label, effectiveTripId)}
                           disabled={isPending}
                         >
                           {action.label}
@@ -206,17 +293,19 @@ export function BuddyThreadPanel({
         <div className="rounded-[24px] border border-dashed border-slate-200/80 bg-ivory-50 p-4">
           <p className="text-sm font-semibold text-slate-900">Start with a trip-aware prompt</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {emptyPrompts.map((prompt) => (
-              <button
-                key={prompt.id}
-                type="button"
-                onClick={() => submitMessage(prompt.label)}
-                className="rounded-[18px] bg-amber-100 px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isPending}
-              >
-                {prompt.label}
-              </button>
-            ))}
+            {emptyPrompts
+              .filter((prompt) => !isUnsupportedOption(prompt.label))
+              .map((prompt) => (
+                <button
+                  key={prompt.id}
+                  type="button"
+                  onClick={() => submitMessage(prompt.label)}
+                  className="rounded-[18px] bg-amber-100 px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isPending}
+                >
+                  {prompt.label}
+                </button>
+              ))}
           </div>
         </div>
       ) : null}

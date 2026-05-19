@@ -37,6 +37,8 @@ TRAVEL_KEYWORDS = {
     "jaipur",
     "goa",
     "delhi",
+    "pacing",
+    "refine",
 }
 PARTIAL_KEYWORDS = {
     "weather",

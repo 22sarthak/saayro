@@ -13,63 +13,61 @@ from saayro_api.ai.types import BuddyProviderRequest, BuddyProviderResponse, Bud
 from saayro_api.core.errors import ApiException
 
 
-class GeminiProvider:
-    provider_name = "Gemini"
+class OllamaCloudProvider:
+    provider_name = "Ollama Cloud"
 
-    def __init__(self, *, api_key: str, model_name: str, timeout_seconds: float, base_url: str) -> None:
+    def __init__(
+        self, *, api_key: str, model_name: str, timeout_seconds: float, base_url: str
+    ) -> None:
         self.api_key = api_key
         self.model_name = model_name
         self.timeout_seconds = timeout_seconds
         self.base_url = base_url.rstrip("/")
 
+    def _generate_url(self) -> str:
+        if self.base_url.endswith("/api"):
+            return f"{self.base_url}/generate"
+        return f"{self.base_url}/api/generate"
+
     async def generate(self, request: BuddyProviderRequest) -> BuddyProviderResponse:
         if not self.api_key:
             raise ApiException(
                 status_code=503,
-                code="gemini_auth_error",
-                message="Gemini API key missing.",
+                code="ollama_cloud_auth_error",
+                message="Ollama Cloud API key missing.",
                 retryable=False,
             )
 
-        url = f"{self.base_url}/models/{self.model_name}:generateContent"
         payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {"text": build_system_prompt()},
-                        {"text": build_provider_prompt(request)},
-                    ],
-                }
-            ],
-            "generationConfig": {
-                "temperature": 0.3,
-                "responseMimeType": "application/json",
-            },
+            "model": self.model_name,
+            "prompt": f"{build_system_prompt()}\n\n{build_provider_prompt(request)}",
+            "stream": False,
+            "format": "json",
+            "options": {"temperature": 0.3},
+        }
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
         }
         try:
             async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-                response = await client.post(url, params={"key": self.api_key}, json=payload)
+                response = await client.post(self._generate_url(), json=payload, headers=headers)
         except httpx.HTTPError as exc:
-            raise classify_transport_error(provider="gemini", exc=exc) from exc
+            raise classify_transport_error(provider="ollama_cloud", exc=exc) from exc
 
         if response.status_code >= 400:
             raise classify_http_error(
-                provider="gemini",
+                provider="ollama_cloud",
                 status_code=response.status_code,
                 body_snippet=response.text,
             )
 
         try:
             data = response.json()
-            text = (
-                data.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
+            reply = BuddyStructuredReply.model_validate(
+                parse_structured_reply(data.get("response", "{}"))
             )
-            reply = BuddyStructuredReply.model_validate(parse_structured_reply(text))
         except Exception as exc:  # noqa: BLE001
-            raise classify_schema_error(provider="gemini", exc=exc) from exc
+            raise classify_schema_error(provider="ollama_cloud", exc=exc) from exc
 
         return BuddyProviderResponse(reply=reply, provider=self.provider_name, model=self.model_name)

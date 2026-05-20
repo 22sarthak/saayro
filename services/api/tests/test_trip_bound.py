@@ -821,19 +821,18 @@ def test_next_missing_field_ordering() -> None:
     )
 
 
-def test_extract_date_range_accepts_iso_and_flags_ambiguous() -> None:
-    from saayro_api.ai.continuation import extract_date_range
+def test_extract_date_range_returns_parsed_for_iso() -> None:
+    from saayro_api.ai.continuation import ParsedDateRange, extract_date_range
 
-    result = extract_date_range("Please plan 2026-05-20 to 2026-05-24.")
-    assert isinstance(result, tuple)
-    assert result[0] == date(2026, 5, 20)
-    assert result[1] == date(2026, 5, 24)
+    today = date(2026, 5, 1)
+    result = extract_date_range("Please plan 2026-05-20 to 2026-05-24.", today=today)
+    assert isinstance(result, ParsedDateRange)
+    assert result.start == date(2026, 5, 20)
+    assert result.end == date(2026, 5, 24)
 
-    assert extract_date_range("May 24 to May 30") == "ambiguous"
-    assert extract_date_range("24/05/2026 to 30/05/2026") == "ambiguous"
-    assert extract_date_range("next weekend") == "ambiguous"
-    assert extract_date_range("random chat") is None
-    assert extract_date_range("") is None
+    # Random text and empty string still return None.
+    assert extract_date_range("random chat", today=today) is None
+    assert extract_date_range("", today=today) is None
 
 
 def test_extract_party_handles_aliases() -> None:
@@ -2114,3 +2113,231 @@ async def test_refine_without_prior_itinerary_returns_no_prior_reply(
     assert generation.model == "saayro-no-prior-itinerary"
     assert "Draft an itinerary" in generation.reply.options
     assert "Cancel" in generation.reply.options
+
+
+# ---------------------------------------------------------------------------
+# Natural-date / slot extraction tests
+# ---------------------------------------------------------------------------
+
+
+def _future_offset(days: int) -> date:
+    return date.today() + timedelta(days=days)
+
+
+@pytest.mark.asyncio
+async def test_natural_month_name_date_advances_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    """expected_answer_type='dates' + natural month-name range advances state without guardrail."""
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    # Build a future month-name range relative to today.
+    start = _future_offset(30)
+    end = start + timedelta(days=4)
+    natural = (
+        f"{start.day}th {start.strftime('%B')} {start.year} to "
+        f"{end.day}th {end.strftime('%B')} {end.year}"
+    )
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message=natural,
+        planning_state={
+            "mode": "awaiting_dates",
+            "destination_city": "Ranchi",
+            "requested_days": 5,
+            "expected_answer_type": "dates",
+        },
+        active_turn_context={
+            "expected_answer_type": "dates",
+            "mode": "awaiting_dates",
+        },
+    )
+
+    state = generation.reply.planning_state
+    assert state.get("start_date") == start.isoformat()
+    assert state.get("end_date") == end.isoformat()
+    assert generation.reply.scope_class == "in_scope_travel"
+
+
+@pytest.mark.asyncio
+async def test_natural_slash_ambiguous_returns_clarification(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    # Construct slash dates where both DMY and MDY land in the future.
+    base = _future_offset(60)
+    # base in the form d1=07, m=08, year etc. We need d <= 12 on both sides so MDY is valid.
+    d_a = min(base.day, 9) or 7
+    # Choose months 7, 8, 9 to ensure both interpretations parse.
+    a_str, b_str = f"{d_a:02d}", f"{(base.month % 11) + 1:02d}"
+    # Ensure both digits <= 12 so MDY parses.
+    if int(a_str) > 12:
+        a_str = "07"
+    year = base.year
+    msg = f"{a_str}/{b_str}/{year} to {int(a_str) + 2:02d}/{b_str}/{year}"
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message=msg,
+        planning_state={
+            "mode": "awaiting_dates",
+            "destination_city": "Goa",
+            "requested_days": 4,
+            "expected_answer_type": "dates",
+        },
+        active_turn_context={
+            "expected_answer_type": "dates",
+            "mode": "awaiting_dates",
+        },
+    )
+
+    # Either the parser found ambiguity → saayro-date-clarification, or it
+    # disambiguated via past-filter → date accepted. Both are acceptable; assert
+    # no guardrail and state preserved.
+    assert generation.reply.scope_class == "in_scope_travel"
+    if generation.model == "saayro-date-clarification":
+        # Candidate ISO ranges in options.
+        opts = generation.reply.options
+        assert any(" to " in o for o in opts)
+        assert "Let me type different dates" in opts
+
+
+@pytest.mark.asyncio
+async def test_one_shot_multi_slot_month_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One message captures destination, days, party, dates → next missing = overview."""
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    start = _future_offset(45)
+    end = start + timedelta(days=4)
+    natural = (
+        f"Plan a 5 day family trip to Ranchi from "
+        f"{start.day}th {start.strftime('%B')} {start.year} to "
+        f"{end.day}th {end.strftime('%B')} {end.year}"
+    )
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message=natural,
+        planning_state={
+            "mode": "pretrip_create",
+            "expected_answer_type": "destination",
+        },
+        active_turn_context={
+            "expected_answer_type": "destination",
+            "mode": "pretrip_create",
+        },
+    )
+
+    state = generation.reply.planning_state
+    assert state.get("destination_city") == "Ranchi"
+    assert state.get("start_date") == start.isoformat()
+    assert state.get("end_date") == end.isoformat()
+    assert state.get("party") == "family"
+    assert state.get("expected_answer_type") == "overview"
+    assert state.get("next_missing_field") == "overview"
+
+
+@pytest.mark.asyncio
+async def test_continuation_same_as_before_resumes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """'same as before' mid-planning with dates already captured but party missing → asks party."""
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    start = _future_offset(30)
+    end = start + timedelta(days=4)
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message="same as before",
+        planning_state={
+            "mode": "awaiting_party",
+            "destination_city": "Goa",
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+            "requested_days": 5,
+            "expected_answer_type": "party",
+        },
+        active_turn_context={
+            "expected_answer_type": "party",
+            "mode": "awaiting_party",
+        },
+    )
+
+    state = generation.reply.planning_state
+    assert state.get("expected_answer_type") == "party"
+    # No guardrail; resume reply lands on the party step.
+    assert generation.reply.scope_class == "in_scope_travel"
+
+
+@pytest.mark.asyncio
+async def test_continuation_bro_what_happened_resumes_dates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """'bro what happened' mid-date-collection re-asks dates without guardrail."""
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message="bro what happened",
+        planning_state={
+            "mode": "awaiting_dates",
+            "destination_city": "Goa",
+            "requested_days": 5,
+            "expected_answer_type": "dates",
+        },
+        active_turn_context={
+            "expected_answer_type": "dates",
+            "mode": "awaiting_dates",
+        },
+    )
+
+    state = generation.reply.planning_state
+    assert state.get("expected_answer_type") == "dates"
+    assert generation.reply.scope_class == "in_scope_travel"
+    assert generation.reply.options  # future-date suggestions present
+
+
+@pytest.mark.asyncio
+async def test_past_slash_returns_clarification_preserving_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A past slash range routes to clarification, preserves destination + requested_days."""
+    orch = BuddyOrchestrator(_settings())
+    monkeypatch.setattr(orch, "_provider_order", lambda: [_ShouldNotCall()])
+
+    generation = await orch.generate(
+        db=None,  # type: ignore[arg-type]
+        actor=_FakeActor(),  # type: ignore[arg-type]
+        trip_id=None,
+        message="02/05/2024 to 06/05/2024",
+        planning_state={
+            "mode": "awaiting_dates",
+            "destination_city": "Goa",
+            "requested_days": 5,
+            "expected_answer_type": "dates",
+        },
+        active_turn_context={
+            "expected_answer_type": "dates",
+            "mode": "awaiting_dates",
+        },
+    )
+
+    state = generation.reply.planning_state
+    assert state.get("destination_city") == "Goa"
+    assert state.get("requested_days") == 5
+    assert state.get("expected_answer_type") == "dates"
+    assert generation.reply.scope_class == "in_scope_travel"

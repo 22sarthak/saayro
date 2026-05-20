@@ -12,6 +12,10 @@ from saayro_api.ai.classification import classify_buddy_scope, make_guardrail_su
 from saayro_api.ai.config import provider_badge_enabled
 from saayro_api.ai.context import build_buddy_context
 from saayro_api.ai.continuation import (
+    AmbiguousDateRange,
+    InvalidDateRange,
+    ParsedDateRange,
+    UnsupportedDateRange,
     extract_date_range,
     extract_party,
     extract_requested_destination,
@@ -176,22 +180,42 @@ def _merge_planning_state(
 
 
 def _capture_fields_from_message(
-    message: str, *, expected_answer_type: str | None = None
+    message: str,
+    *,
+    expected_answer_type: str | None = None,
+    today: date | None = None,
+    state_requested_days: int | None = None,
+    state_start_date: str | None = None,
+    state_end_date: str | None = None,
 ) -> dict[str, object]:
-    """Extract planning fields from a user message."""
+    """Extract planning fields from a user message.
+
+    The caller may pass current planning_state context (today, requested_days,
+    prior start/end) so relative phrases like "next month" or
+    "same duration next month" can resolve.
+    """
     captured: dict[str, object] = {}
+    today = today or date.today()
     destination = extract_requested_destination(message)
     if destination:
         captured["destination_city"] = destination
     days = extract_trip_length_days(message)
     if days is not None:
         captured["requested_days"] = days
-    date_range = extract_date_range(message)
-    if isinstance(date_range, tuple):
-        start, end = date_range
-        if start >= date.today() and end >= start:
-            captured["start_date"] = start.isoformat()
-            captured["end_date"] = end.isoformat()
+    # Effective requested_days for the date parser: explicit in this turn > state > None.
+    effective_days = days if days is not None else state_requested_days
+    prior_start = _parse_iso_date(state_start_date)
+    prior_end = _parse_iso_date(state_end_date)
+    date_result = extract_date_range(
+        message,
+        today=today,
+        requested_days=effective_days,
+        prior_start=prior_start,
+        prior_end=prior_end,
+    )
+    if isinstance(date_result, ParsedDateRange):
+        captured["start_date"] = date_result.start.isoformat()
+        captured["end_date"] = date_result.end.isoformat()
     party = extract_party(message)
     if party:
         captured["party"] = party
@@ -442,8 +466,16 @@ class BuddyOrchestrator:
 
         prior_expected_raw = planning_state.get("expected_answer_type")
         prior_expected = prior_expected_raw if isinstance(prior_expected_raw, str) else None
+        state_days_raw = planning_state.get("requested_days")
+        state_start_raw = planning_state.get("start_date")
+        state_end_raw = planning_state.get("end_date")
         captured_fields = _capture_fields_from_message(
-            message, expected_answer_type=prior_expected
+            message,
+            expected_answer_type=prior_expected,
+            today=date.today(),
+            state_requested_days=state_days_raw if isinstance(state_days_raw, int) else None,
+            state_start_date=state_start_raw if isinstance(state_start_raw, str) else None,
+            state_end_date=state_end_raw if isinstance(state_end_raw, str) else None,
         )
         for key, value in captured_fields.items():
             if _is_empty(planning_state.get(key)):
@@ -1491,29 +1523,53 @@ class BuddyOrchestrator:
                 return self._build_custom_dates_reply(planning_state=planning_state)
             if _is_custom_dates_choice(message):
                 return self._build_custom_dates_reply(planning_state=planning_state)
-            date_range = extract_date_range(message)
-            if isinstance(date_range, tuple):
-                start, end = date_range
-                if start < date.today():
-                    return self._build_date_clarification_from_state(planning_state)
-                if end < start:
-                    return self._build_date_clarification_from_state(planning_state)
+            # If capture already wrote future dates into state, advance.
+            existing_start = planning_state.get("start_date")
+            existing_end = planning_state.get("end_date")
+            if (
+                isinstance(existing_start, str)
+                and isinstance(existing_end, str)
+                and existing_start
+                and existing_end
+            ):
                 return self._build_dates_accepted_reply(
                     planning_state=planning_state,
                     effective_trip_id=effective_trip_id,
                 )
+
+            state_days_raw = planning_state.get("requested_days")
+            state_start_raw = planning_state.get("start_date")
+            state_end_raw = planning_state.get("end_date")
+            date_result = extract_date_range(
+                message,
+                today=date.today(),
+                requested_days=state_days_raw if isinstance(state_days_raw, int) else None,
+                prior_start=_parse_iso_date(state_start_raw if isinstance(state_start_raw, str) else None),
+                prior_end=_parse_iso_date(state_end_raw if isinstance(state_end_raw, str) else None),
+            )
+            if isinstance(date_result, ParsedDateRange):
+                planning_state["start_date"] = date_result.start.isoformat()
+                planning_state["end_date"] = date_result.end.isoformat()
+                return self._build_dates_accepted_reply(
+                    planning_state=planning_state,
+                    effective_trip_id=effective_trip_id,
+                )
+            if isinstance(date_result, AmbiguousDateRange):
+                return self._build_ambiguous_date_clarification_reply(
+                    planning_state=planning_state, ambiguous=date_result
+                )
+            if isinstance(date_result, InvalidDateRange):
+                return self._build_date_clarification_from_state(planning_state)
             if matched_option is not None:
-                option_range = extract_date_range(matched_option)
-                if isinstance(option_range, tuple):
-                    start, end = option_range
-                    if start >= date.today() and end >= start:
-                        planning_state["start_date"] = start.isoformat()
-                        planning_state["end_date"] = end.isoformat()
-                        return self._build_dates_accepted_reply(
-                            planning_state=planning_state,
-                            effective_trip_id=effective_trip_id,
-                        )
-            if date_range == "ambiguous":
+                option_result = extract_date_range(matched_option, today=date.today())
+                if isinstance(option_result, ParsedDateRange):
+                    planning_state["start_date"] = option_result.start.isoformat()
+                    planning_state["end_date"] = option_result.end.isoformat()
+                    return self._build_dates_accepted_reply(
+                        planning_state=planning_state,
+                        effective_trip_id=effective_trip_id,
+                    )
+            if isinstance(date_result, UnsupportedDateRange):
                 return self._build_ambiguous_date_reply(planning_state=planning_state)
             return None
 
@@ -1836,23 +1892,59 @@ class BuddyOrchestrator:
         self, *, planning_state: dict[str, object]
     ) -> BuddyPersistedGeneration:
         summary = (
-            "I can read ISO ranges like 2026-05-10 to 2026-05-13 right now. "
-            "Could you type it in that shape?"
+            "I couldn't read that as a date. Could you write it a bit clearer? "
+            "For example: 24 May 2026 to 30 May 2026, or 2026-05-24 to 2026-05-30."
         )
-        guidance = "Stick to YYYY-MM-DD on both sides and separate with 'to'."
+        guidance = "I understand ISO (YYYY-MM-DD), month names (24 May 2026), or duration like 'from May 24 for 5 days'."
+        days_raw = planning_state.get("requested_days")
+        days = days_raw if isinstance(days_raw, int) else None
+        options = _future_date_options(date.today(), days) + ["Let me pick custom dates"]
         planning_state["expected_answer_type"] = "dates"
         planning_state["next_missing_field"] = "dates"
         planning_state["current_question"] = summary
-        planning_state["options"] = []
+        planning_state["options"] = list(options)
         reply = self._deterministic_reply(
             summary=summary,
             guidance=guidance,
-            options=[],
+            options=options,
             planning_state=planning_state,
             model="saayro-ambiguous-dates",
         )
         return BuddyPersistedGeneration(
             reply=reply, provider="mock", model="saayro-ambiguous-dates", fallback_used=False
+        )
+
+    def _build_ambiguous_date_clarification_reply(
+        self,
+        *,
+        planning_state: dict[str, object],
+        ambiguous: AmbiguousDateRange,
+    ) -> BuddyPersistedGeneration:
+        candidate_options: list[str] = []
+        for start, end in ambiguous.candidates:
+            if start == end:
+                candidate_options.append(start.isoformat())
+            else:
+                candidate_options.append(f"{start.isoformat()} to {end.isoformat()}")
+        candidate_options.append("Let me type different dates")
+        summary = ambiguous.question
+        guidance = "Pick the one you meant, or type a clearer date range."
+        planning_state["expected_answer_type"] = "dates"
+        planning_state["next_missing_field"] = "dates"
+        planning_state["current_question"] = summary
+        planning_state["options"] = list(candidate_options)
+        reply = self._deterministic_reply(
+            summary=summary,
+            guidance=guidance,
+            options=candidate_options,
+            planning_state=planning_state,
+            model="saayro-date-clarification",
+        )
+        return BuddyPersistedGeneration(
+            reply=reply,
+            provider="mock",
+            model="saayro-date-clarification",
+            fallback_used=False,
         )
 
     def _build_date_clarification_from_state(

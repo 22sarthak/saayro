@@ -26,12 +26,13 @@ Still out of scope unless explicitly requested:
 - complex RAG stack
 
 ## Approved design direction
-Use the Ivory Atlas design system with subtle hues.
+Use the Ivory Atlas design system (porcelain edition) with subtle hues. Tokens live in `packages/tokens`.
 
 Design rules:
 - bright, premium, editorial
-- soft ivory and white base
-- slate text and borders
+- cool porcelain (#F7F8FA) base with pure white cards; no warm beige/sand backgrounds
+- slate text and borders; headline emphasis is a lighter slate tone, never orange or gradient text
+- display font Bricolage Grotesque (no italics), body Plus Jakarta Sans
 - subtle accent hues
 - sky = maps, movement, flights
 - violet/lilac = Buddy AI, intelligence, suggestions

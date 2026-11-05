@@ -4,6 +4,7 @@ import { DestinationsGallery } from "@/components/marketing/destinations-gallery
 import { FeatureBento } from "@/components/marketing/feature-bento";
 import { GatherSection } from "@/components/marketing/gather-section";
 import { Hero } from "@/components/marketing/hero";
+import { TripStory } from "@/components/marketing/trip-story";
 
 export default function LandingPage() {
   return (
@@ -11,6 +12,7 @@ export default function LandingPage() {
       <Hero />
       <DestinationMarquee />
       <GatherSection />
+      <TripStory />
       <FeatureBento />
       <DestinationsGallery />
       <ClosingSection />

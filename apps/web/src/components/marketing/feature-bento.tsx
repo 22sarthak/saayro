@@ -1,41 +1,305 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { Check, MapPin, ThumbsUp } from "lucide-react";
+import { ArrowRight, Bike, Check, Clock, CloudRain, Fuel, MapPin, Navigation, PlaneLanding, Star, UtensilsCrossed } from "lucide-react";
 import { BuddyMark } from "@/components/brand/buddy-mark";
 import { Reveal } from "@/components/motion/reveal";
-import { BoardingPass } from "./trip-artifacts";
+import { northGoaMap } from "@/lib/north-goa-route";
+import { DayRouteMap } from "./day-route-map";
+import { AvatarStack, BoardingPass } from "./trip-artifacts";
 
-function Tile({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+function Tile({ children, className = "", delay = 0, dark = false }: { children: ReactNode; className?: string; delay?: number; dark?: boolean }) {
+  const surface = dark ? "bg-ink-950 border-ink-900" : "bg-white border-sand-200";
   return (
     <Reveal delay={delay} className={className}>
-      <div className="group relative h-full overflow-hidden rounded-[32px] border border-sand-200 bg-white p-7 shadow-soft transition duration-leisurely ease-entrance hover:-translate-y-1 hover:shadow-elevated">
+      <div className={`group relative h-full overflow-hidden rounded-[32px] border p-7 shadow-soft transition duration-leisurely ease-entrance hover:-translate-y-1 hover:shadow-elevated ${surface}`}>
         {children}
       </div>
     </Reveal>
   );
 }
 
-function TileHeading({ eyebrow, title, tone }: { eyebrow: string; title: string; tone: string }) {
+function TileHeading({ eyebrow, title, tone, light = false }: { eyebrow: string; title: string; tone: string; light?: boolean }) {
   return (
     <div>
       <p className={`eyebrow ${tone}`}>{eyebrow}</p>
-      <h3 className="display mt-3 text-3xl text-ink-950 lg:text-[2.4rem]">{title}</h3>
+      <h3 className={`display mt-3 text-3xl lg:text-[2.4rem] ${light ? "text-white" : "text-ink-950"}`}>{title}</h3>
     </div>
   );
 }
 
-const places = [
-  { name: "Fort Aguada", image: "/destinations/goa-aguada.jpg", votes: 5, note: "Go before 5pm, crowds after" },
-  { name: "Dudhsagar Falls", image: "/destinations/goa-dudhsagar.jpg", votes: 4, note: "Jeep safari from Mollem" },
-  { name: "Palolem Beach", image: "/destinations/goa-palolem.jpg", votes: 6, note: "Kayak to Butterfly Island" }
+const dayStops = [
+  { time: "10:00", place: "Casa Saudade, Assagao", note: "Scooters ready at the gate", leg: "18 min" },
+  { time: "11:00", place: "Anjuna Beach", note: "Late breakfast at a shack", leg: "9 min" },
+  { time: "15:00", place: "Vagator", note: "Cliff views, swim if calm", leg: "4 min" },
+  { time: "17:30", place: "Chapora Fort", note: "Sunset around 6:10 pm" }
 ];
 
-const routeStops = [
-  { label: "Anjuna", x: 120, y: 70 },
-  { label: "Vagator", x: 230, y: 120 },
-  { label: "Chapora Fort", x: 330, y: 92 },
-  { label: "Thalassa", x: 440, y: 160 }
+function DayPlannerTile() {
+  return (
+    <Tile className="lg:col-span-6">
+      <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <TileHeading eyebrow="Day planner" title="Days that flow, not zig-zag." tone="text-sunset-600" />
+          <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
+            Places are grouped by area and travel time, then every leg hands off to Google Maps, Apple Maps or a cab app.
+          </p>
+
+          <div className="mt-7 rounded-[22px] border border-sand-200 p-5">
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-semibold text-ink-900">Day 2 · Mon 28 Dec</p>
+              <p className="font-mono text-[11px] text-ink-400">
+                {northGoaMap.distanceKm} km · {northGoaMap.durationMin} min riding
+              </p>
+            </div>
+            <ol className="mt-4">
+              {dayStops.map((stop, index) => (
+                <li key={stop.place} className="relative flex gap-4 pb-4 last:pb-0">
+                  {index < dayStops.length - 1 ? <span className="absolute left-[13px] top-7 h-[calc(100%-20px)] w-px bg-sand-300" /> : null}
+                  <span
+                    className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
+                      index === 0 ? "bg-ink-950" : "bg-sunset-500"
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-semibold text-ink-900">{stop.place}</p>
+                      <p className="font-mono text-xs text-ink-500">{stop.time}</p>
+                    </div>
+                    <p className="text-xs text-ink-500">{stop.note}</p>
+                    {stop.leg ? (
+                      <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-sand-100 px-2 py-0.5 text-[11px] text-ink-600">
+                        <Bike className="h-3 w-3" /> {stop.leg}
+                      </p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {["Google Maps", "Apple Maps", "Uber"].map((app) => (
+              <span key={app} className="inline-flex items-center gap-1.5 rounded-full border border-sand-300 px-3.5 py-1.5 text-xs font-medium text-ink-700">
+                <Navigation className="h-3 w-3" /> {app}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="min-h-[420px] lg:min-h-0">
+          <DayRouteMap />
+        </div>
+      </div>
+    </Tile>
+  );
+}
+
+function PlacesTile() {
+  return (
+    <Tile className="lg:col-span-3" delay={0.1}>
+      <TileHeading eyebrow="Places & votes" title="Every reel, ranked by your crew." tone="text-marigold-600" />
+
+      <div className="mt-7 overflow-hidden rounded-[22px] border border-sand-200">
+        <div className="relative h-44">
+          <Image src="/destinations/goa-aguada.jpg" alt="Fort Aguada lighthouse" fill sizes="(min-width: 1024px) 600px, 100vw" className="object-cover" />
+          <span className="absolute left-3 top-3 rounded-full bg-palm-500 px-2.5 py-1 text-[11px] font-semibold text-white">Locked in · Day 3</span>
+        </div>
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-base font-semibold text-ink-900">Fort Aguada</p>
+              <p className="text-xs text-ink-500">Fort & lighthouse · Candolim</p>
+            </div>
+            <div className="text-right">
+              <p className="flex items-center justify-end gap-1 text-sm font-semibold text-ink-900">
+                4.5 <Star className="h-3.5 w-3.5 fill-marigold-400 text-marigold-400" />
+              </p>
+              <p className="flex items-center gap-1 text-[11px] text-palm-600">
+                <Clock className="h-3 w-3" /> Open · closes 5:30 pm
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 rounded-[14px] bg-sand-50 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">From reviews & Reddit</p>
+            <p className="mt-1 text-[13px] leading-5 text-ink-700">Best before 5 pm, weekends get crowded, and the lighthouse closes early. Pair with Sinquerim beach.</p>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <AvatarStack names={["Sara", "Kabir", "Meera", "Rohan", "Aarav"]} size="sm" />
+            <p className="text-xs text-ink-600">
+              <span className="font-semibold text-ink-900">5 of 6</span> want to go
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-2">
+        {[
+          { name: "Dudhsagar Falls", kind: "Waterfall · Mollem", votes: "4 of 6", image: "/destinations/goa-dudhsagar.jpg" },
+          { name: "Palolem Beach", kind: "Beach · Canacona", votes: "6 of 6", image: "/destinations/goa-palolem.jpg" }
+        ].map((place) => (
+          <div key={place.name} className="flex items-center gap-3 rounded-[16px] border border-sand-200 p-2 pr-4">
+            <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px]">
+              <Image src={place.image} alt="" fill sizes="48px" className="object-cover" />
+            </span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-ink-900">{place.name}</p>
+              <p className="text-xs text-ink-500">{place.kind}</p>
+            </div>
+            <span className="text-xs text-ink-500">{place.votes} votes</span>
+          </div>
+        ))}
+      </div>
+    </Tile>
+  );
+}
+
+function WalletTile() {
+  return (
+    <Tile className="lg:col-span-3">
+      <TileHeading eyebrow="Bookings wallet" title="Drop a ticket. Get a boarding pass." tone="text-lagoon-600" />
+      <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
+        Flights, trains, buses, stays, rentals and cruises, read from PDFs, screenshots or your inbox. Available offline.
+      </p>
+      <div className="mt-7 space-y-3">
+        <div className="transition duration-leisurely group-hover:-rotate-1">
+          <BoardingPass variant="paper" />
+        </div>
+        <div className="flex items-center gap-4 rounded-[22px] border border-sand-200 p-3 pr-4">
+          <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-[14px]">
+            <Image src="/destinations/goa-anjuna.jpg" alt="" fill sizes="96px" className="object-cover object-[50%_70%]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-rose-500">Airbnb · confirmed from email</p>
+            <p className="truncate text-base font-semibold text-ink-900">Casa Saudade, Assagao</p>
+            <p className="text-xs text-ink-500">Check-in Sun 27 Dec, 2 pm · 5 nights · 4BR</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between rounded-[18px] bg-sand-50 px-4 py-3">
+          <span className="flex items-center gap-2 text-sm text-ink-800">
+            <Bike className="h-4 w-4 text-ink-500" /> 3 × scooters, pickup at the villa
+          </span>
+          <span className="font-mono text-xs text-ink-500">27 Dec 11:00</span>
+        </div>
+        <div className="flex items-center justify-between rounded-[18px] bg-sand-50 px-4 py-3">
+          <span className="flex items-center gap-2 text-sm text-ink-800">
+            <PlaneLanding className="h-4 w-4 text-ink-500" /> Return · 6E 5318 · GOI → BLR
+          </span>
+          <span className="font-mono text-xs text-ink-500">1 Jan 21:40</span>
+        </div>
+      </div>
+    </Tile>
+  );
+}
+
+function BuddyTile() {
+  return (
+    <Tile className="lg:col-span-2" dark delay={0}>
+      <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-sunset-500/30 blur-3xl" />
+      <div className="relative">
+        <TileHeading eyebrow="Buddy" title="Guides, not just answers." tone="text-sunset-300" light />
+        <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white/80">
+          <CloudRain className="h-3.5 w-3.5" /> Forecast for Wed 30 Dec · 80% rain
+        </p>
+        <div className="mt-4 flex gap-2.5">
+          <BuddyMark size={28} className="ring-1 ring-white/20" />
+          <p className="text-[13px] leading-5 text-white/85">Rain is likely on your beach day. I&apos;d swap it with something covered nearby:</p>
+        </div>
+        <div className="mt-4 rounded-[18px] bg-white p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Day 4 · Wed 30 Dec</p>
+          <p className="mt-2 text-sm text-ink-400 line-through">Palolem beach day</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+            <ArrowRight className="h-3.5 w-3.5 text-sunset-500" /> Fontainhas walk + Goa Chitra
+          </p>
+          <div className="mt-4 flex gap-2">
+            <span className="flex-1 rounded-full bg-ink-950 py-2 text-center text-xs font-semibold text-white">Swap it</span>
+            <span className="flex-1 rounded-full border border-sand-300 py-2 text-center text-xs font-medium text-ink-700">Keep plan</span>
+          </div>
+        </div>
+      </div>
+    </Tile>
+  );
+}
+
+const expenses = [
+  { label: "Thalassa dinner", meta: "Kabir paid · split 6", amount: "₹9,600", Icon: UtensilsCrossed },
+  { label: "Scooters × 3", meta: "Rohan paid · split 6", amount: "₹2,700", Icon: Bike },
+  { label: "Petrol", meta: "You paid · split 3", amount: "₹600", Icon: Fuel }
 ];
+
+function MoneyTile() {
+  return (
+    <Tile className="lg:col-span-2" delay={0.08}>
+      <TileHeading eyebrow="Money" title="Split it. Settle in one tap." tone="text-palm-600" />
+      <div className="mt-6 divide-y divide-sand-200">
+        {expenses.map(({ label, meta, amount, Icon }) => (
+          <div key={label} className="flex items-center gap-3 py-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-sand-100 text-ink-600">
+              <Icon className="h-4 w-4" />
+            </span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink-900">{label}</p>
+              <p className="text-[11px] text-ink-500">{meta}</p>
+            </div>
+            <span className="font-mono text-sm text-ink-900">{amount}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 rounded-[18px] bg-palm-100 p-4">
+        <div className="flex items-baseline justify-between">
+          <p className="text-sm text-palm-700">Sara owes you</p>
+          <p className="font-mono text-lg font-semibold text-palm-700">₹1,240</p>
+        </div>
+        <p className="mt-3 rounded-full bg-ink-950 py-2.5 text-center text-xs font-semibold text-white">Request via UPI</p>
+        <p className="mt-2 text-center text-[11px] text-palm-700/80">Opens GPay, PhonePe or Paytm</p>
+      </div>
+    </Tile>
+  );
+}
+
+function OnTripTile() {
+  return (
+    <Tile className="lg:col-span-2" delay={0.16}>
+      <TileHeading eyebrow="On the trip" title="It knows where you are." tone="text-lagoon-600" />
+      <div className="relative mt-6 overflow-hidden rounded-[24px]">
+        <Image src="/destinations/goa-palolem.jpg" alt="" fill sizes="(min-width: 1024px) 400px, 100vw" className="object-cover" />
+        <div className="absolute inset-0 bg-ink-950/45" />
+        <div className="relative px-4 pb-4 pt-5 text-center text-white">
+          <p className="text-[11px] text-white/75">Monday, 28 December</p>
+          <p className="display text-5xl">17:48</p>
+          <div className="glass-strong mt-4 rounded-[18px] p-3 text-left">
+            <div className="flex items-center gap-2 text-[11px] text-ink-500">
+              <span className="flex h-4 w-4 items-center justify-center rounded-[5px] bg-golden-hour text-[9px] italic text-white">S</span>
+              SAAYRO · now
+            </div>
+            <p className="mt-1.5 text-sm font-semibold text-ink-900">You&apos;re at Chapora Fort</p>
+            <p className="text-xs text-ink-600">Sunset in 22 minutes. Mark it visited?</p>
+            <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-xs font-semibold">
+              <span className="flex items-center justify-center gap-1 rounded-[10px] bg-lagoon-500 py-1.5 text-white">
+                <Check className="h-3.5 w-3.5" /> Visited
+              </span>
+              <span className="rounded-[10px] bg-ink-950/5 py-1.5 text-center text-ink-700">Later</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <div className="flex -space-x-2">
+          {["goa-aguada", "goa-anjuna", "goa-dudhsagar"].map((slug) => (
+            <span key={slug} className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-white">
+              <Image src={`/destinations/${slug}.jpg`} alt="" fill sizes="36px" className="object-cover" />
+            </span>
+          ))}
+        </div>
+        <p className="flex items-center gap-1 text-xs text-ink-600">
+          <MapPin className="h-3.5 w-3.5 text-lagoon-500" />
+          <span className="font-semibold text-ink-900">9 of 14</span> places visited
+        </p>
+      </div>
+    </Tile>
+  );
+}
 
 export function FeatureBento() {
   return (
@@ -46,178 +310,12 @@ export function FeatureBento() {
       </Reveal>
 
       <div className="grid gap-5 lg:grid-cols-6">
-        <Tile className="lg:col-span-3" delay={0}>
-          <TileHeading eyebrow="Bookings wallet" title="Drop a ticket. Get a boarding pass." tone="text-lagoon-600" />
-          <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
-            Flights, trains, buses, stays, car rentals and cruises, read from PDFs, screenshots or your inbox. Works offline.
-          </p>
-          <div className="mt-8 space-y-4">
-            <div className="transition duration-leisurely group-hover:-rotate-1">
-              <BoardingPass variant="paper" />
-            </div>
-            <div className="flex items-center gap-4 rounded-[24px] bg-sand-50 p-3 pr-5">
-              <div className="relative h-20 w-28 overflow-hidden rounded-[16px]">
-                <Image src="/destinations/goa-palolem.jpg" alt="" fill sizes="112px" className="object-cover" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-rose-500">Airbnb · Assagao</p>
-                <p className="truncate text-base font-semibold text-ink-900">Casa Saudade, 4BR villa with pool</p>
-                <p className="text-xs text-ink-500">Check-in 27 Dec, 2pm · 5 nights</p>
-              </div>
-              <span className="rounded-full bg-palm-100 px-3 py-1 text-xs font-semibold text-palm-700">Confirmed</span>
-            </div>
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-3" delay={0.1}>
-          <TileHeading eyebrow="Places & votes" title="Every reel, ranked by your crew." tone="text-marigold-600" />
-          <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
-            Photos, ratings and hours for any place in India, plus what Reddit and reviewers actually say.
-          </p>
-          <div className="mt-8 grid grid-cols-3 gap-3">
-            {places.map((place, index) => (
-              <div
-                key={place.name}
-                className="relative aspect-[3/4] overflow-hidden rounded-[22px] transition duration-leisurely ease-entrance group-hover:-translate-y-2"
-                style={{ transitionDelay: `${index * 60}ms` }}
-              >
-                <Image src={place.image} alt={place.name} fill sizes="(min-width: 1024px) 220px, 33vw" className="object-cover" />
-                <div className="absolute inset-0 bg-photo-scrim" />
-                <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink-900">
-                  <ThumbsUp className="h-3 w-3" /> {place.votes}
-                </span>
-                <div className="absolute inset-x-3 bottom-3 text-white">
-                  <p className="text-sm font-semibold leading-tight">{place.name}</p>
-                  <p className="mt-1 text-[11px] leading-4 text-white/75">{place.note}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-4" delay={0}>
-          <TileHeading eyebrow="Day planner" title="Days that flow, not zig-zag." tone="text-sunset-600" />
-          <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
-            Buddy groups places by area and travel time, then hands each leg to Google Maps, Apple Maps or a cab app.
-          </p>
-          <div className="relative mt-8 overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,#e2f6f5,#fbf4ea_60%)]">
-            <svg viewBox="0 0 560 230" preserveAspectRatio="xMidYMid meet" className="h-[260px] w-full">
-              <path d="M0 200 C 80 170, 60 120, 140 110 S 260 60, 300 40 S 420 10, 560 0 L 560 0 L 0 0 Z" fill="#b8ebe7" opacity="0.7" />
-              <path
-                d="M120 70 C 160 90, 190 130, 230 120 S 300 80, 330 92 S 410 150, 440 160"
-                fill="none"
-                stroke="#f25f3a"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray="8 8"
-                className="animate-dash"
-              />
-              {routeStops.map((stop, index) => (
-                <g key={stop.label}>
-                  <circle cx={stop.x} cy={stop.y} r="16" fill="#ffffff" stroke="#f25f3a" strokeWidth="3" />
-                  <text x={stop.x} y={stop.y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#131021">
-                    {index + 1}
-                  </text>
-                  <text x={stop.x} y={stop.y + 38} textAnchor="middle" fontSize="13" fill="#3c3654">
-                    {stop.label}
-                  </text>
-                </g>
-              ))}
-            </svg>
-            <div className="glass absolute right-4 top-4 rounded-[16px] px-4 py-2.5">
-              <p className="text-xs font-semibold text-ink-900">Day 2 · North Goa</p>
-              <p className="text-[11px] text-ink-500">4 stops · 18 km · ends at sunset</p>
-            </div>
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-2" delay={0.1}>
-          <div className="absolute inset-0 bg-ink-950" />
-          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-sunset-500/35 blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-dusk-500/25 blur-3xl" />
-          <div className="relative">
-            <p className="eyebrow text-sunset-200">Buddy</p>
-            <h3 className="display mt-3 text-3xl text-white lg:text-[2.4rem]">Guides, not just answers.</h3>
-            <div className="mt-7 space-y-3">
-              <div className="ml-auto w-fit max-w-[85%] rounded-[18px] rounded-br-md bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur">
-                rainy day backup for the 30th?
-              </div>
-              <div className="flex gap-2.5">
-                <BuddyMark size={30} className="ring-1 ring-white/20" />
-                <div className="rounded-[18px] rounded-tl-md bg-white px-4 py-3 text-[13px] leading-5 text-ink-800">
-                  Swap the beach for Fontainhas walks and Goa Chitra museum. Both indoors-ish, 15 min apart. Shall I update Day 4?
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["Update Day 4", "Show on map", "Ask the group"].map((chip) => (
-                <span key={chip} className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs text-white backdrop-blur">
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <p className="mt-8 text-xs leading-5 text-white/50">
-              Knows your bookings, budget, group votes and the weather. Speaks Hinglish too.
-            </p>
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-3" delay={0}>
-          <TileHeading eyebrow="Money" title="Split it. Settle in one tap." tone="text-palm-600" />
-          <div className="mt-7 space-y-2.5">
-            {[
-              { who: "Sara owes you", amount: "₹1,240", tone: "text-palm-600" },
-              { who: "You owe Kabir", amount: "₹860", tone: "text-rose-500" },
-              { who: "Meera owes Rohan", amount: "₹2,100", tone: "text-ink-500" }
-            ].map((row) => (
-              <div key={row.who} className="flex items-center justify-between rounded-[18px] bg-sand-50 px-4 py-3">
-                <span className="text-sm text-ink-800">{row.who}</span>
-                <span className={`font-mono text-sm font-semibold ${row.tone}`}>{row.amount}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center justify-between rounded-[18px] bg-ink-950 px-4 py-3 text-white">
-            <span className="text-sm">Settle ₹1,240 with Sara</span>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink-950">Pay via UPI</span>
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-3" delay={0.1}>
-          <TileHeading eyebrow="On the trip" title="It knows where you are." tone="text-lagoon-600" />
-          <p className="mt-3 max-w-md text-sm leading-6 text-ink-600">
-            Arrive somewhere you saved and Saayro asks if you made it, ready for photos and memories.
-          </p>
-          <div className="relative mt-7 flex items-center gap-4 rounded-[24px] border border-sand-200 p-4">
-            <span className="relative flex h-14 w-14 items-center justify-center">
-              <span className="absolute inset-0 animate-ping rounded-full bg-lagoon-300/60" />
-              <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-lagoon-500 text-white">
-                <MapPin className="h-5 w-5" />
-              </span>
-            </span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-ink-900">You&apos;re at Fort Aguada</p>
-              <p className="text-xs text-ink-500">Mark it visited and add a photo?</p>
-            </div>
-            <span className="rounded-full bg-lagoon-500 px-4 py-2 text-xs font-semibold text-white">
-              <span className="flex items-center gap-1">
-                Visited <Check className="h-3.5 w-3.5" />
-              </span>
-            </span>
-          </div>
-          <div className="mt-5">
-            <div className="flex items-baseline justify-between text-xs text-ink-500">
-              <span>Trip progress</span>
-              <span>
-                <span className="font-semibold text-ink-900">9</span> of 14 places
-              </span>
-            </div>
-            <div className="mt-2 flex gap-1">
-              {Array.from({ length: 14 }, (_, index) => (
-                <span key={index} className={`h-2 flex-1 rounded-full ${index < 9 ? "bg-lagoon-400" : "bg-ink-100"}`} />
-              ))}
-            </div>
-          </div>
-        </Tile>
+        <WalletTile />
+        <PlacesTile />
+        <DayPlannerTile />
+        <BuddyTile />
+        <MoneyTile />
+        <OnTripTile />
       </div>
     </section>
   );

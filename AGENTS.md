@@ -66,6 +66,13 @@ Design rules:
 7. AI layer
 8. integrations
 
+## Git workflow
+- `main` is always releasable; never commit work-in-progress directly to it
+- branch per unit of work: `v2/<area>`, `fix/<topic>`, `chore/<topic>`
+- merge to `main` only after typecheck and tests pass
+- commit messages are one short Conventional Commits line, e.g. `feat(mobile): add bookings wallet screen`
+- author identity for this repo: 22sarthak <sarthak22kr@gmail.com>
+
 ## Working style
 - keep code modular and readable
 - create reusable components

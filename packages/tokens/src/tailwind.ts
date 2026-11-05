@@ -1,7 +1,10 @@
-import { colorScale, layout, motion, radius, shadows, spacing, typography } from "./raw.js";
+import { colorScale, layout, legacyColorAliases, motion, radius, shadows, spacing, typography } from "./raw.js";
+
+// Tailwind's built-in `white` stays intact so `bg-white/80` style opacity utilities keep working.
+const { white: _white, ...tailwindColors } = colorScale;
 
 export const tailwindThemeExtension = {
-  colors: colorScale,
+  colors: { ...legacyColorAliases, ...tailwindColors },
   borderRadius: radius,
   spacing,
   boxShadow: shadows,
@@ -10,4 +13,3 @@ export const tailwindThemeExtension = {
   transitionDuration: motion.duration,
   transitionTimingFunction: motion.easing
 } as const;
-

@@ -24,3 +24,6 @@ _tmp_*.err
 
 # Claude local workspace files
 .claude/
+
+# Raw media drops (processed copies live in apps/*/public)
+assets-raw/

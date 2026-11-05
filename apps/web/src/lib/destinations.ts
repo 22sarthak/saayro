@@ -60,21 +60,25 @@ export const destinationShowcase: DestinationShowcase[] = [
   }
 ];
 
-export const marqueeDestinations = [
-  "Goa",
-  "Ladakh",
-  "Kerala",
-  "Jaipur",
-  "Varanasi",
-  "Hampi",
-  "Spiti",
-  "Pondicherry",
-  "Meghalaya",
-  "Rishikesh",
-  "Udaipur",
-  "Gokarna",
-  "Coorg",
-  "Andaman",
-  "Darjeeling",
-  "Kutch"
+export type MarqueeDestination = {
+  name: string;
+  latitude: string;
+  image?: string;
+};
+
+export const marqueeDestinations: MarqueeDestination[] = [
+  { name: "Goa", latitude: "15.3° N", image: "/destinations/goa-anjuna.jpg" },
+  { name: "Ladakh", latitude: "34.2° N", image: "/destinations/ladakh-pangong.jpg" },
+  { name: "Kerala", latitude: "9.9° N", image: "/destinations/kerala-backwaters.jpg" },
+  { name: "Jaipur", latitude: "26.9° N", image: "/destinations/jaipur-hawa-mahal.jpg" },
+  { name: "Spiti", latitude: "32.2° N" },
+  { name: "Varanasi", latitude: "25.3° N", image: "/destinations/varanasi-ghats.jpg" },
+  { name: "Pondicherry", latitude: "11.9° N" },
+  { name: "Hampi", latitude: "15.3° N", image: "/destinations/hampi-virupaksha.jpg" },
+  { name: "Meghalaya", latitude: "25.6° N" },
+  { name: "Udaipur", latitude: "24.6° N" },
+  { name: "Gokarna", latitude: "14.6° N" },
+  { name: "Andaman", latitude: "11.6° N" },
+  { name: "Darjeeling", latitude: "27.0° N" },
+  { name: "Kutch", latitude: "23.2° N" }
 ];

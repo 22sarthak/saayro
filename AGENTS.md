@@ -31,7 +31,8 @@ Use the Ivory Atlas design system (porcelain edition) with subtle hues. Tokens l
 Design rules:
 - bright, premium, editorial
 - cool porcelain (#F7F8FA) base with pure white cards; no warm beige/sand backgrounds
-- slate text and borders; headline emphasis is a lighter slate tone, never orange or gradient text
+- slate/near-black text and borders; headline emphasis uses multi-hue gradients from the palette (per-section hue families), never flat grey or orange text
+- keep it colourful, not monotone: hue washes on cards, hued accents, hero hues follow the active destination clip
 - display font Bricolage Grotesque (no italics), body Plus Jakarta Sans
 - subtle accent hues
 - sky = maps, movement, flights

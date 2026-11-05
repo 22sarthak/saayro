@@ -12,7 +12,7 @@ export function ClosingSection() {
           <div className="absolute bottom-0 left-1/3 h-72 w-72 animate-aurora-drift rounded-full bg-lagoon-400/30 blur-[100px] [animation-delay:-4s]" />
           <div className="relative">
             <h2 className="display mx-auto max-w-4xl text-balance text-5xl text-white lg:text-8xl">
-              Your next trip deserves a <em className="text-gradient-golden pr-2">smarter half.</em>
+              Your next trip deserves a <em className="text-sunset-300">smarter half.</em>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-white/70">
               Bring the crew, bring the chaos. Saayro turns it into the trip you&apos;ll talk about for years.

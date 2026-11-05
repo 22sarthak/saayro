@@ -1,7 +1,9 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { Check, MapPin, ThumbsUp } from "lucide-react";
+import { BuddyMark } from "@/components/brand/buddy-mark";
 import { Reveal } from "@/components/motion/reveal";
-import { BoardingPass, BuddySpark } from "./trip-artifacts";
+import { BoardingPass } from "./trip-artifacts";
 
 function Tile({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   return (
@@ -81,8 +83,8 @@ export function FeatureBento() {
               >
                 <Image src={place.image} alt={place.name} fill sizes="(min-width: 1024px) 220px, 33vw" className="object-cover" />
                 <div className="absolute inset-0 bg-photo-scrim" />
-                <span className="absolute right-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink-900">
-                  👍 {place.votes}
+                <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink-900">
+                  <ThumbsUp className="h-3 w-3" /> {place.votes}
                 </span>
                 <div className="absolute inset-x-3 bottom-3 text-white">
                   <p className="text-sm font-semibold leading-tight">{place.name}</p>
@@ -130,17 +132,18 @@ export function FeatureBento() {
         </Tile>
 
         <Tile className="lg:col-span-2" delay={0.1}>
-          <div className="absolute inset-0 bg-[linear-gradient(160deg,#1e1a30,#4a35a0_70%,#7e62ec)]" />
-          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-sunset-400/40 blur-3xl" />
+          <div className="absolute inset-0 bg-ink-950" />
+          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-sunset-500/35 blur-3xl" />
+          <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-dusk-500/25 blur-3xl" />
           <div className="relative">
-            <p className="eyebrow text-dusk-200">Buddy</p>
+            <p className="eyebrow text-sunset-200">Buddy</p>
             <h3 className="display mt-3 text-3xl text-white lg:text-[2.4rem]">Guides, not just answers.</h3>
             <div className="mt-7 space-y-3">
               <div className="ml-auto w-fit max-w-[85%] rounded-[18px] rounded-br-md bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur">
                 rainy day backup for the 30th?
               </div>
               <div className="flex gap-2.5">
-                <BuddySpark className="shrink-0" />
+                <BuddyMark size={30} className="ring-1 ring-white/20" />
                 <div className="rounded-[18px] rounded-tl-md bg-white px-4 py-3 text-[13px] leading-5 text-ink-800">
                   Swap the beach for Fontainhas walks and Goa Chitra museum. Both indoors-ish, 15 min apart. Shall I update Day 4?
                 </div>
@@ -153,7 +156,7 @@ export function FeatureBento() {
                 </span>
               ))}
             </div>
-            <p className="mt-8 text-xs leading-5 text-dusk-200">
+            <p className="mt-8 text-xs leading-5 text-white/50">
               Knows your bookings, budget, group votes and the weather. Speaks Hinglish too.
             </p>
           </div>
@@ -187,13 +190,19 @@ export function FeatureBento() {
           <div className="relative mt-7 flex items-center gap-4 rounded-[24px] border border-sand-200 p-4">
             <span className="relative flex h-14 w-14 items-center justify-center">
               <span className="absolute inset-0 animate-ping rounded-full bg-lagoon-300/60" />
-              <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-lagoon-500 text-white">◉</span>
+              <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-lagoon-500 text-white">
+                <MapPin className="h-5 w-5" />
+              </span>
             </span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-ink-900">You&apos;re at Fort Aguada</p>
               <p className="text-xs text-ink-500">Mark it visited and add a photo?</p>
             </div>
-            <span className="rounded-full bg-lagoon-500 px-4 py-2 text-xs font-semibold text-white">Visited ✓</span>
+            <span className="rounded-full bg-lagoon-500 px-4 py-2 text-xs font-semibold text-white">
+              <span className="flex items-center gap-1">
+                Visited <Check className="h-3.5 w-3.5" />
+              </span>
+            </span>
           </div>
           <div className="mt-5">
             <div className="flex items-baseline justify-between text-xs text-ink-500">

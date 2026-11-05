@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
+import { BuddyMark } from "@/components/brand/buddy-mark";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
-import { AvatarStack, BoardingPass, BudgetMeter, BuddySpark } from "./trip-artifacts";
+import { AvatarStack, BoardingPass, BudgetMeter } from "./trip-artifacts";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -123,7 +124,7 @@ export function Hero() {
               className="glass-strong absolute -left-10 top-[200px] w-[300px] rounded-[22px] p-4 [animation-delay:-2s] animate-float"
             >
               <div className="flex items-start gap-3">
-                <BuddySpark />
+                <BuddyMark size={30} />
                 <div>
                   <p className="text-sm font-semibold text-ink-900">Buddy</p>
                   <p className="mt-0.5 text-[13px] leading-5 text-ink-600">

@@ -1,6 +1,13 @@
 /** Small, presentational trip objects reused across the landing page. */
+import { Plane } from "lucide-react";
 
-const avatarColors = ["bg-sunset-400", "bg-lagoon-400", "bg-dusk-400", "bg-marigold-400", "bg-palm-400"];
+const avatarTones = [
+  "bg-sunset-200 text-sunset-800",
+  "bg-lagoon-200 text-lagoon-700",
+  "bg-marigold-200 text-marigold-700",
+  "bg-dusk-200 text-dusk-700",
+  "bg-palm-200 text-palm-700"
+];
 
 export function AvatarStack({ names, size = "md" }: { names: string[]; size?: "sm" | "md" }) {
   const dimension = size === "sm" ? "h-7 w-7 text-[11px]" : "h-9 w-9 text-xs";
@@ -9,7 +16,8 @@ export function AvatarStack({ names, size = "md" }: { names: string[]; size?: "s
       {names.map((name, index) => (
         <span
           key={name}
-          className={`${dimension} ${avatarColors[index % avatarColors.length]} flex items-center justify-center rounded-full font-semibold text-white ring-2 ring-white`}
+          title={name}
+          className={`${dimension} ${avatarTones[index % avatarTones.length]} flex items-center justify-center rounded-full font-semibold ring-2 ring-white`}
         >
           {name.slice(0, 1)}
         </span>
@@ -33,7 +41,7 @@ export function BoardingPass({ variant = "glass" }: { variant?: "glass" | "paper
         </div>
         <div className="mb-3 flex flex-1 items-center gap-2 px-4">
           <span className="h-px flex-1 border-t border-dashed border-ink-300" />
-          <span className="text-lg text-sunset-500">✈</span>
+          <Plane className="h-4 w-4 text-sunset-500" strokeWidth={2.2} />
           <span className="h-px flex-1 border-t border-dashed border-ink-300" />
         </div>
         <div className="text-right">
@@ -78,17 +86,11 @@ export function BudgetMeter({ spent, total }: { spent: number; total: number }) 
           <span className="font-semibold text-ink-900">{format(spent)}</span> of {format(total)}
         </span>
       </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
-        <div className="h-full rounded-full bg-golden-hour" style={{ width: `${percent}%` }} />
+      <div className="mt-2 flex h-2 gap-0.5 overflow-hidden rounded-full bg-ink-100">
+        <div className="h-full bg-sunset-400" style={{ width: `${percent * 0.45}%` }} />
+        <div className="h-full bg-marigold-400" style={{ width: `${percent * 0.35}%` }} />
+        <div className="h-full bg-lagoon-400" style={{ width: `${percent * 0.2}%` }} />
       </div>
     </div>
-  );
-}
-
-export function BuddySpark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-buddy-sheen text-sm text-white shadow-buddyGlow ${className}`}>
-      ✦
-    </span>
   );
 }

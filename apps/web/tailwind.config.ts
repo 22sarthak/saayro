@@ -41,10 +41,6 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" }
         },
-        marquee: {
-          from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-50%)" }
-        },
         dash: {
           to: { strokeDashoffset: "-64" }
         },
@@ -60,7 +56,6 @@ const config: Config = {
       animation: {
         "ken-burns": "ken-burns 7s ease-out both",
         "reel-progress": "reel-progress 5s linear both",
-        marquee: "marquee 48s linear infinite",
         dash: "dash 1.6s linear infinite",
         "aurora-drift": "aurora-drift 18s ease-in-out infinite",
         "rise-in": "rise-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both",

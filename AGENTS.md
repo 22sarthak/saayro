@@ -8,16 +8,22 @@ Brand:
 - Tagline: Your trip's smarter half
 
 ## Current phase
-Build the front-end shell first with mock data.
+Saayro v2 rebuild. See `docs/02-product/v2-plan.md`.
+- Mobile-first group trip app for anywhere in India
+- First real-world test: founder's Goa group trip on 2026-12-27; build freeze 2026-12-20
+- Keep monorepo, FastAPI, Postgres and auth; replace the rule-based Buddy orchestrator with a tool-calling agent; refresh the visual design
 
-Do not implement yet unless explicitly requested:
-- real payments
-- production auth backend wiring
-- real email parsing
-- real calendar syncing
+Now in scope (explicitly requested for v2):
+- ticket and booking extraction from PDFs, images and confirmation emails
+- calendar export and Google Calendar sync
+- Google Places data, web search and review summaries
+- group trips, chat, expenses and budget
+- location check-ins
+
+Still out of scope unless explicitly requested:
+- real payments (UPI settle-up is a deep-link handoff only)
 - video understanding pipeline
 - complex RAG stack
-- model orchestration beyond basic placeholders
 
 ## Approved design direction
 Use the Ivory Atlas design system with subtle hues.

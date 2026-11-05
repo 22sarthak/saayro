@@ -14,23 +14,23 @@ import {
 
 export const semanticTokens = {
   surface: {
-    base: colorScale.sand[50],
-    canvas: colorScale.sand[100],
+    base: colorScale.porcelain[100],
+    canvas: colorScale.porcelain[200],
     raised: colorScale.white[100],
     muted: colorScale.white[200],
-    inverse: colorScale.ink[950],
-    accentSky: colorScale.lagoon[100],
-    accentBuddy: colorScale.dusk[100],
-    accentConnected: colorScale.palm[100],
-    accentDiscovery: colorScale.marigold[100],
-    accentBrand: colorScale.sunset[100],
+    inverse: colorScale.slate[900],
+    accentSky: colorScale.sky[100],
+    accentBuddy: colorScale.violet[100],
+    accentConnected: colorScale.mint[100],
+    accentDiscovery: colorScale.amber[100],
+    accentBrand: colorScale.sky[100],
     danger: colorScale.rose[100]
   },
   text: {
-    primary: colorScale.ink[950],
-    secondary: colorScale.ink[800],
-    muted: colorScale.ink[600],
-    subtle: colorScale.ink[400],
+    primary: colorScale.slate[900],
+    secondary: colorScale.slate[700],
+    muted: colorScale.slate[500],
+    subtle: colorScale.slate[400],
     inverted: colorScale.white[100]
   },
   border: {
@@ -38,20 +38,20 @@ export const semanticTokens = {
     emphasis: borders.emphasis
   },
   brand: {
-    primary: colorScale.sunset[500],
-    primaryPressed: colorScale.sunset[600],
-    soft: colorScale.sunset[100]
+    primary: colorScale.slate[900],
+    primaryPressed: colorScale.slate[800],
+    soft: colorScale.slate[100]
   },
   accent: {
-    maps: colorScale.lagoon[500],
-    buddy: colorScale.dusk[500],
-    connected: colorScale.palm[500],
-    discovery: colorScale.marigold[500]
+    maps: colorScale.sky[500],
+    buddy: colorScale.violet[500],
+    connected: colorScale.mint[500],
+    discovery: colorScale.amber[500]
   },
   status: {
-    info: colorScale.lagoon[500],
-    success: colorScale.palm[500],
-    warning: colorScale.marigold[500],
+    info: colorScale.sky[500],
+    success: colorScale.mint[500],
+    warning: colorScale.amber[500],
     danger: colorScale.rose[500]
   },
   gradients,

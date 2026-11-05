@@ -1,11 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { BuddyMark } from "@/components/brand/buddy-mark";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
+import { heroClips } from "@/lib/hero-reel";
+import { HeroReel, HeroReelCaption } from "./hero-reel";
 import { AvatarStack, BoardingPass, BudgetMeter } from "./trip-artifacts";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -16,21 +17,16 @@ export function Hero() {
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const [clipIndex, setClipIndex] = useState(0);
+  const advance = useCallback(() => setClipIndex((current) => (current + 1) % heroClips.length), []);
 
   return (
     <section ref={ref} className="relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-ink-950">
       <motion.div className="absolute inset-0 -z-10" style={{ y: imageY }}>
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.18 }}
-          animate={{ scale: 1.04 }}
-          transition={{ duration: 2.6, ease }}
-        >
-          <Image src="/destinations/goa-anjuna.jpg" alt="Anjuna beach in Goa at golden hour" fill priority sizes="100vw" className="object-cover" />
-        </motion.div>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,16,33,0.55)_0%,rgba(19,16,33,0.05)_32%,rgba(242,95,58,0.18)_62%,rgba(19,16,33,0.9)_100%)]" />
-        <div className="absolute -left-40 top-1/3 h-[38rem] w-[38rem] animate-aurora-drift rounded-full bg-sunset-400/30 blur-[120px]" />
-        <div className="absolute -right-20 bottom-0 h-[30rem] w-[30rem] animate-aurora-drift rounded-full bg-dusk-500/30 blur-[120px] [animation-delay:-6s]" />
+        <HeroReel index={clipIndex} onAdvance={advance} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,16,33,0.6)_0%,rgba(19,16,33,0.1)_30%,rgba(19,16,33,0.25)_60%,rgba(19,16,33,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,rgba(242,95,58,0.22),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(19,16,33,0.55)_0%,rgba(19,16,33,0.2)_40%,transparent_65%)]" />
       </motion.div>
 
       <nav className="absolute inset-x-0 top-0 z-20 px-4 pt-4 lg:px-8 lg:pt-6">
@@ -54,6 +50,10 @@ export function Hero() {
           </div>
         </div>
       </nav>
+
+      <div className="absolute right-5 top-28 z-10 lg:right-[max(2rem,calc((100vw-1400px)/2+2rem))] lg:top-32">
+        <HeroReelCaption index={clipIndex} onSelect={setClipIndex} />
+      </div>
 
       <motion.div style={{ y: contentY, opacity: fade }} className="relative z-10 mx-auto flex h-full max-w-[1400px] items-end px-5 pb-16 lg:px-8 lg:pb-24">
         <div className="grid w-full items-end gap-12 lg:grid-cols-[1.25fr_0.75fr]">

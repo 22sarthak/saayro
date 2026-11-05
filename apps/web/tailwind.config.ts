@@ -50,9 +50,19 @@ const config: Config = {
         },
         dash: {
           to: { strokeDashoffset: "-64" }
+        },
+        "ken-burns": {
+          from: { transform: "scale(1.12)" },
+          to: { transform: "scale(1.02)" }
+        },
+        "reel-progress": {
+          from: { width: "0%" },
+          to: { width: "100%" }
         }
       },
       animation: {
+        "ken-burns": "ken-burns 7s ease-out both",
+        "reel-progress": "reel-progress 5s linear both",
         marquee: "marquee 48s linear infinite",
         dash: "dash 1.6s linear infinite",
         "aurora-drift": "aurora-drift 18s ease-in-out infinite",

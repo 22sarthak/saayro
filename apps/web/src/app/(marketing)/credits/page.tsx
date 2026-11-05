@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
-import credits from "../../../../public/destinations/credits.json";
+import photoCredits from "../../../../public/destinations/credits.json";
+import videoCredits from "../../../../public/hero/credits.json";
 
 export const metadata: Metadata = {
   title: "Photo credits — Saayro"
@@ -10,13 +11,16 @@ export const metadata: Metadata = {
 type Credit = { title: string; author: string; license: string; source: string };
 
 export default function CreditsPage() {
-  const entries = Object.entries(credits as Record<string, Credit>);
+  const entries = [
+    ...Object.entries(photoCredits as Record<string, Credit>),
+    ...Object.entries(videoCredits as Record<string, Credit>)
+  ];
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
       <SaayroLogo />
       <h1 className="display mt-12 text-5xl text-ink-950">Photo credits</h1>
-      <p className="mt-4 text-ink-600">Destination photography from Wikimedia Commons contributors, used under the licences below.</p>
+      <p className="mt-4 text-ink-600">Destination photography from Wikimedia Commons contributors and video from Pexels contributors, used under the licences below.</p>
       <ul className="mt-10 divide-y divide-sand-200">
         {entries.map(([slug, credit]) => (
           <li key={slug} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between">

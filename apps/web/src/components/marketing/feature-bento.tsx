@@ -7,12 +7,23 @@ import { northGoaMap } from "@/lib/north-goa-route";
 import { DayRouteMap } from "./day-route-map";
 import { AvatarStack, BoardingPass } from "./trip-artifacts";
 
-function Tile({ children, className = "", delay = 0, tone = "plain" }: { children: ReactNode; className?: string; delay?: number; tone?: "plain" | "buddy" }) {
-  const surface = tone === "buddy" ? "bg-violet-50 border-violet-100" : "bg-white border-porcelain-200";
+/** Corner washes keyed to each tile's meaning: sky = maps/flights, amber = discovery, violet = Buddy, mint = money/success. */
+const washes = {
+  sky: "radial-gradient(120% 90% at 100% 0%, rgba(90, 175, 226, 0.22), transparent 55%)",
+  amber: "radial-gradient(120% 90% at 100% 0%, rgba(245, 176, 46, 0.2), transparent 55%)",
+  violet: "radial-gradient(120% 90% at 100% 0%, rgba(162, 139, 244, 0.32), transparent 60%)",
+  mint: "radial-gradient(120% 90% at 100% 0%, rgba(71, 190, 147, 0.22), transparent 55%)",
+  dusk: "radial-gradient(120% 90% at 100% 0%, rgba(90, 175, 226, 0.2), transparent 50%), radial-gradient(90% 70% at 0% 100%, rgba(162, 139, 244, 0.16), transparent 60%)"
+} as const;
+
+type TileProps = { children: ReactNode; className?: string; delay?: number; wash: keyof typeof washes };
+
+function Tile({ children, className = "", delay = 0, wash }: TileProps) {
   return (
     <Reveal delay={delay} className={className}>
-      <div className={`group relative h-full overflow-hidden rounded-[32px] border p-7 shadow-soft transition duration-leisurely ease-entrance hover:-translate-y-1 hover:shadow-elevated ${surface}`}>
-        {children}
+      <div className="group relative h-full overflow-hidden rounded-[32px] border border-porcelain-200 bg-white p-7 shadow-soft transition duration-leisurely ease-entrance hover:-translate-y-1 hover:shadow-elevated">
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: washes[wash] }} />
+        <div className="relative h-full">{children}</div>
       </div>
     </Reveal>
   );
@@ -36,7 +47,7 @@ const dayStops = [
 
 function DayPlannerTile() {
   return (
-    <Tile className="lg:col-span-6">
+    <Tile className="lg:col-span-6" wash="sky">
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <TileHeading eyebrow="Day planner" title="Days that flow, not zig-zag." tone="text-sky-700" />
@@ -98,7 +109,7 @@ function DayPlannerTile() {
 
 function PlacesTile() {
   return (
-    <Tile className="lg:col-span-3" delay={0.1}>
+    <Tile className="lg:col-span-3" delay={0.1} wash="amber">
       <TileHeading eyebrow="Places & votes" title="Every reel, ranked by your crew." tone="text-amber-600" />
 
       <div className="mt-7 overflow-hidden rounded-[22px] border border-porcelain-200">
@@ -157,7 +168,7 @@ function PlacesTile() {
 
 function WalletTile() {
   return (
-    <Tile className="lg:col-span-3">
+    <Tile className="lg:col-span-3" wash="sky">
       <TileHeading eyebrow="Bookings wallet" title="Drop a ticket. Get a boarding pass." tone="text-sky-600" />
       <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
         Flights, trains, buses, stays, rentals and cruises, read from PDFs, screenshots or your inbox. Available offline.
@@ -195,7 +206,7 @@ function WalletTile() {
 
 function BuddyTile() {
   return (
-    <Tile className="lg:col-span-2" tone="buddy" delay={0}>
+    <Tile className="lg:col-span-2" delay={0} wash="violet">
       <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-200/60 blur-3xl" />
       <div className="relative">
         <TileHeading eyebrow="Buddy" title="Guides, not just answers." tone="text-violet-600" />
@@ -230,7 +241,7 @@ const expenses = [
 
 function MoneyTile() {
   return (
-    <Tile className="lg:col-span-2" delay={0.08}>
+    <Tile className="lg:col-span-2" delay={0.08} wash="mint">
       <TileHeading eyebrow="Money" title="Split it. Settle in one tap." tone="text-mint-600" />
       <div className="mt-6 divide-y divide-porcelain-200">
         {expenses.map(({ label, meta, amount, Icon }) => (
@@ -260,7 +271,7 @@ function MoneyTile() {
 
 function OnTripTile() {
   return (
-    <Tile className="lg:col-span-2" delay={0.16}>
+    <Tile className="lg:col-span-2" delay={0.16} wash="dusk">
       <TileHeading eyebrow="On the trip" title="It knows where you are." tone="text-sky-600" />
       <div className="relative mt-6 overflow-hidden rounded-[24px]">
         <Image src="/destinations/goa-palolem.jpg" alt="" fill sizes="(min-width: 1024px) 400px, 100vw" className="object-cover" />
@@ -306,7 +317,9 @@ export function FeatureBento() {
     <section id="features" className="mx-auto max-w-[1400px] px-5 pb-28 lg:px-8 lg:pb-36">
       <Reveal className="mb-14 max-w-3xl">
         <p className="eyebrow text-sky-600">Everything for the trip</p>
-        <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">From the first idea to the last settle-up.</h2>
+        <h2 className="hues-fresh display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">
+          From the first idea to <em>the last settle-up.</em>
+        </h2>
       </Reveal>
 
       <div className="grid gap-5 lg:grid-cols-6">

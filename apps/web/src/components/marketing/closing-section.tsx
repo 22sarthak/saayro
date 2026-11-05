@@ -7,10 +7,11 @@ export function ClosingSection() {
   return (
     <section className="mx-auto max-w-[1400px] px-5 pb-10 lg:px-8">
       <Reveal>
-        <div className="relative overflow-hidden rounded-[40px] border border-porcelain-300 bg-white px-8 py-20 text-center shadow-soft lg:py-28">
-          <div className="absolute -left-24 -top-24 h-96 w-96 animate-aurora-drift rounded-full bg-sky-200/70 blur-[110px]" />
-          <div className="absolute -bottom-32 right-0 h-[28rem] w-[28rem] animate-aurora-drift rounded-full bg-violet-200/70 blur-[120px] [animation-delay:-8s]" />
-          <div className="absolute bottom-0 left-1/3 h-72 w-72 animate-aurora-drift rounded-full bg-mint-200/60 blur-[100px] [animation-delay:-4s]" />
+        <div className="relative overflow-hidden rounded-[40px] border border-white bg-[linear-gradient(135deg,#e9f4fd_0%,#ffffff_42%,#f3efff_100%)] px-8 py-20 text-center shadow-elevated lg:py-28">
+          <div className="absolute -left-24 -top-24 h-96 w-96 animate-aurora-drift rounded-full bg-sky-300/70 blur-[100px]" />
+          <div className="absolute -bottom-32 right-0 h-[28rem] w-[28rem] animate-aurora-drift rounded-full bg-violet-300/70 blur-[110px] [animation-delay:-8s]" />
+          <div className="absolute -right-20 -top-24 h-80 w-80 animate-aurora-drift rounded-full bg-rose-200/70 blur-[100px] [animation-delay:-12s]" />
+          <div className="absolute bottom-0 left-1/3 h-72 w-72 animate-aurora-drift rounded-full bg-mint-300/60 blur-[100px] [animation-delay:-4s]" />
           <div className="relative">
             <h2 className="display mx-auto max-w-4xl text-balance text-5xl text-slate-900 lg:text-8xl">
               Your next trip deserves a <em>smarter half.</em>

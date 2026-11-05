@@ -99,10 +99,10 @@ export function HeroReelCaption({ index, onSelect }: { index: number; onSelect: 
           >
             <span
               key={clipIndex === index ? `active-${index}` : item.slug}
-              className={`block h-full rounded-full bg-white ${
-                clipIndex < index ? "w-full" : clipIndex === index ? "animate-reel-progress" : "w-0"
+              className={`block h-full rounded-full ${
+                clipIndex < index ? "w-full bg-white/80" : clipIndex === index ? "animate-reel-progress" : "w-0"
               }`}
-              style={clipIndex === index ? { animationDuration: `${HERO_CLIP_SECONDS}s` } : undefined}
+              style={clipIndex === index ? { animationDuration: `${HERO_CLIP_SECONDS}s`, background: "linear-gradient(90deg, var(--hue-a), var(--hue-b))" } : undefined}
             />
           </button>
         ))}

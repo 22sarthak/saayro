@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { BuddyMark } from "@/components/brand/buddy-mark";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
 import { Magnetic } from "@/components/motion/magnetic";
@@ -33,12 +33,22 @@ export function Hero() {
     if (opening > 0) setClipIndex(opening);
   }, [mood]);
 
+  const clipHues = (heroClips[clipIndex] ?? heroClips[0])?.hues;
+  const hueStyle = clipHues ? ({ "--hue-a": clipHues[0], "--hue-b": clipHues[1], "--hue-c": clipHues[2] } as CSSProperties) : undefined;
+
   return (
-    <section ref={ref} className="relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-slate-950">
+    <section ref={ref} style={hueStyle} className="hue-shift relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-[#0c0b10]">
       <motion.div className="absolute inset-0 -z-10" style={{ y: imageY }}>
         <HeroReel index={clipIndex} onAdvance={advance} />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.6)_0%,rgba(15,23,42,0.1)_30%,rgba(15,23,42,0.25)_60%,rgba(15,23,42,0.92)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0.2)_40%,transparent_65%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,11,16,0.5)_0%,rgba(12,11,16,0.05)_30%,rgba(12,11,16,0.2)_60%,rgba(12,11,16,0.88)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(12,11,16,0.5)_0%,rgba(12,11,16,0.15)_40%,transparent_65%)]" />
+        <div
+          className="absolute inset-0 mix-blend-soft-light"
+          style={{
+            background:
+              "radial-gradient(ellipse at 15% 85%, color-mix(in srgb, var(--hue-a) 55%, transparent), transparent 55%), radial-gradient(ellipse at 85% 5%, color-mix(in srgb, var(--hue-b) 45%, transparent), transparent 50%)"
+          }}
+        />
         <div
           className={`absolute inset-0 transition-opacity duration-[1600ms] ${mood ? "opacity-100" : "opacity-0"}`}
           style={mood ? { background: mood.wash } : undefined}
@@ -82,7 +92,7 @@ export function Hero() {
               transition={{ duration: 0.9, delay: 0.3, ease }}
               className="eyebrow mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white/90 backdrop-blur"
             >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-300" />
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: "var(--hue-a)" }} />
               {moment && mood ? (
                 <span key={moment.daypart}>
                   {mood.label} in India · {moment.time}
@@ -101,7 +111,7 @@ export function Hero() {
               <br />
               finally in
               <br />
-              <em className="text-white/60">one place.</em>
+              <em className="pr-2">one place.</em>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 24 }}

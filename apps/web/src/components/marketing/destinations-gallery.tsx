@@ -10,7 +10,9 @@ export function DestinationsGallery() {
         <Reveal className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
             <p className="eyebrow text-violet-600">Pan-India</p>
-            <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">Every trip gets its own colour.</h2>
+            <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">
+              Every trip gets <em className="text-spectrum">its own colour.</em>
+            </h2>
           </div>
           <p className="max-w-sm text-base leading-7 text-slate-600">
             Saayro themes each trip from its place, so Goa feels like sea glass and Jaipur glows pink.

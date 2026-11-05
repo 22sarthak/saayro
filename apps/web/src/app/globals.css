@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hue stops for emphasis text. Registered so they can transition (hero shifts with each destination clip). */
+@property --hue-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1f84d0;
+}
+
+@property --hue-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7a5cf0;
+}
+
+@property --hue-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d9529a;
+}
+
 :root {
   color-scheme: light;
 }
@@ -14,9 +33,9 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(60rem 40rem at 0% -10%, rgba(149, 203, 238, 0.16), transparent 60%),
-    radial-gradient(50rem 36rem at 100% 0%, rgba(195, 179, 250, 0.12), transparent 60%),
-    radial-gradient(48rem 40rem at 80% 110%, rgba(127, 216, 181, 0.1), transparent 60%),
+    radial-gradient(60rem 40rem at 0% -10%, rgba(149, 203, 238, 0.28), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, rgba(195, 179, 250, 0.22), transparent 60%),
+    radial-gradient(48rem 40rem at 80% 110%, rgba(127, 216, 181, 0.18), transparent 60%),
     #f7f8fa;
   color: #0f172a;
 }
@@ -38,10 +57,43 @@ body {
     line-height: 1;
   }
 
-  /* Bricolage has no italic: emphasis is the second, lighter tone. Low specificity so utilities can recolour it. */
-  :where(.display, .editorial-title) em {
+  /* Bricolage has no italic: emphasis is a hue gradient. Low specificity so section hue classes can retune it. */
+  :where(.display, .editorial-title) em,
+  .text-hue {
     font-style: normal;
-    color: #94a3b8;
+    background-image: linear-gradient(100deg, var(--hue-a) 0%, var(--hue-b) 52%, var(--hue-c) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* Hue families: each section speaks in the hues that mean something there. */
+  .hues-sea {
+    --hue-a: #1d7fc4;
+    --hue-b: #11999b;
+    --hue-c: #1f9a6c;
+  }
+
+  .hues-fresh {
+    --hue-a: #179a6e;
+    --hue-b: #2385cc;
+    --hue-c: #7a5cf0;
+  }
+
+  .text-spectrum {
+    background-image: linear-gradient(95deg, #d9890f 0%, #db4f8e 28%, #7a5cf0 55%, #2385cc 78%, #179a6e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hue-shift {
+    transition:
+      --hue-a 1400ms ease,
+      --hue-b 1400ms ease,
+      --hue-c 1400ms ease;
   }
 
   .eyebrow {

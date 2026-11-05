@@ -5,6 +5,14 @@ import { BuddyMark } from "@/components/brand/buddy-mark";
 import { Reveal } from "@/components/motion/reveal";
 import { AvatarStack } from "./trip-artifacts";
 
+/** One hue per step: drop (sky), sort (violet), decide (amber), live (mint). */
+const stepHues = [
+  { border: "border-sky-400", text: "text-sky-600" },
+  { border: "border-violet-400", text: "text-violet-600" },
+  { border: "border-amber-400", text: "text-amber-600" },
+  { border: "border-mint-400", text: "text-mint-600" }
+];
+
 const steps = [
   { title: "Drop it in", body: "Tickets, Airbnb links, reels, voice notes, even your exported WhatsApp chat." },
   { title: "It sorts itself", body: "Flights become boarding passes. Links become places with photos, reviews and hours." },
@@ -287,8 +295,8 @@ export function GatherSection() {
       <div className="mt-24 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
         {steps.map((step, index) => (
           <Reveal key={step.title} delay={index * 0.08}>
-            <div className="border-t border-slate-900 pt-5">
-              <p className="font-mono text-xs text-slate-400">Step {index + 1}</p>
+            <div className={`border-t-2 pt-5 ${stepHues[index % stepHues.length]?.border ?? ""}`}>
+              <p className={`font-mono text-xs ${stepHues[index % stepHues.length]?.text ?? ""}`}>Step {index + 1}</p>
               <p className="display mt-3 text-2xl text-slate-950">{step.title}</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">{step.body}</p>
             </div>

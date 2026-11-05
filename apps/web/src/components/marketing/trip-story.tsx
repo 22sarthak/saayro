@@ -194,7 +194,7 @@ export function TripStory() {
   const strokeScale = keyframes[active]?.scale ?? 0.4;
 
   return (
-    <section id="trip" aria-label="A Goa trip, day by day" className="relative bg-porcelain-50 pt-24 lg:pt-32">
+    <section id="trip" aria-label="A Goa trip, day by day" className="hues-sea relative bg-porcelain-50 pt-24 lg:pt-32">
       <div className="mx-auto max-w-[1400px] px-5 lg:px-8">
         <Reveal className="max-w-3xl">
           <p className="eyebrow text-sky-600">One trip, start to finish</p>

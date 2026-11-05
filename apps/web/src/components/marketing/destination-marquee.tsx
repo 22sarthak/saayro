@@ -20,11 +20,9 @@ export function DestinationMarquee() {
           return (
             <div key={`${destination.name}-${index}`} className="flex items-center">
               <div className="group/item relative flex items-start px-8">
-                {destination.image ? (
-                  <span className="relative mt-3 h-14 w-0 shrink-0 overflow-hidden rounded-full opacity-0 transition-all duration-leisurely ease-entrance group-hover/item:mr-4 group-hover/item:w-24 group-hover/item:opacity-100">
-                    <Image src={destination.image} alt="" fill sizes="96px" className="object-cover" />
-                  </span>
-                ) : null}
+                <span className="relative mt-2 h-16 w-0 shrink-0 overflow-hidden rounded-full opacity-0 shadow-soft ring-1 ring-black/5 transition-all duration-leisurely ease-entrance group-hover/item:mr-4 group-hover/item:w-28 group-hover/item:opacity-100">
+                  <Image src={destination.image} alt="" fill sizes="112px" className="object-cover" />
+                </span>
                 <span
                   className={`display cursor-default text-[clamp(2.5rem,4.5vw,4.25rem)] transition-colors duration-standard group-hover/item:text-lagoon-600 ${
                     italic ? "italic text-sunset-600" : "text-ink-950"

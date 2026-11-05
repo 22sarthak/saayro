@@ -52,5 +52,53 @@
     "author": "Ingo Mehling",
     "license": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Hampi_-_Hemakuta_Hill,_Virupaksha_Temple.jpg"
+  },
+  "spiti-key-monastery": {
+    "title": "Pexels photo 31346694",
+    "author": "Matthew Solomon",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/31346694/"
+  },
+  "kutch-white-rann": {
+    "title": "Pexels photo 29230111",
+    "author": "Charanpreet Singh",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/29230111/"
+  },
+  "udaipur-lake-palace": {
+    "title": "Pexels photo 7195782",
+    "author": "ruslankphoto",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/7195782/"
+  },
+  "darjeeling-monastery": {
+    "title": "Pexels photo 37205307",
+    "author": "krishclicknature",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/37205307/"
+  },
+  "andaman-island": {
+    "title": "Pexels photo 37949154",
+    "author": "Nabil Naidu",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/37949154/"
+  },
+  "gokarna-coast": {
+    "title": "Pexels photo 39443926",
+    "author": "Nikhil (Nuance Nation)",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/39443926/"
+  },
+  "pondicherry-auroville": {
+    "title": "Pexels photo 37266542",
+    "author": "Prasang Yadav",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/37266542/"
+  },
+  "meghalaya-falls": {
+    "title": "Pexels photo 1403036",
+    "author": "Rasel",
+    "license": "Pexels License",
+    "source": "https://www.pexels.com/photo/1403036/"
   }
 }

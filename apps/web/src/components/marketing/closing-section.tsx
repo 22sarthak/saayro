@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
+import { Magnetic } from "@/components/motion/magnetic";
 import { Reveal } from "@/components/motion/reveal";
 
 export function ClosingSection() {
@@ -18,12 +19,11 @@ export function ClosingSection() {
               Bring the crew, bring the chaos. Saayro turns it into the trip you&apos;ll talk about for years.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/sign-up"
-                className="rounded-full bg-white px-8 py-4 text-base font-semibold text-ink-950 transition hover:scale-[1.03] hover:shadow-glow"
-              >
-                Start your trip, free
-              </Link>
+              <Magnetic>
+                <Link href="/sign-up" className="block rounded-full bg-white px-8 py-4 text-base font-semibold text-ink-950 transition hover:shadow-glow">
+                  Start your trip, free
+                </Link>
+              </Magnetic>
               <Link href="/sign-in" className="glass-dark rounded-full px-8 py-4 text-base text-white transition hover:bg-white/20">
                 I already have an account
               </Link>

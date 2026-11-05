@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BuddyMark } from "@/components/brand/buddy-mark";
 import { SaayroLogo } from "@/components/brand/saayro-logo";
+import { Magnetic } from "@/components/motion/magnetic";
+import { TiltCard } from "@/components/motion/tilt-card";
+import { daypartMoods, useDaypart } from "@/lib/daypart";
 import { heroClips } from "@/lib/hero-reel";
 import { HeroReel, HeroReelCaption } from "./hero-reel";
 import { AvatarStack, BoardingPass, BudgetMeter } from "./trip-artifacts";
@@ -19,6 +22,16 @@ export function Hero() {
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const [clipIndex, setClipIndex] = useState(0);
   const advance = useCallback(() => setClipIndex((current) => (current + 1) % heroClips.length), []);
+  const moment = useDaypart();
+  const mood = moment ? daypartMoods[moment.daypart] : null;
+  const openedOnMood = useRef(false);
+
+  useEffect(() => {
+    if (!mood || openedOnMood.current) return;
+    openedOnMood.current = true;
+    const opening = heroClips.findIndex((clip) => clip.slug === mood.openingClip);
+    if (opening > 0) setClipIndex(opening);
+  }, [mood]);
 
   return (
     <section ref={ref} className="relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-ink-950">
@@ -27,6 +40,10 @@ export function Hero() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,16,33,0.6)_0%,rgba(19,16,33,0.1)_30%,rgba(19,16,33,0.25)_60%,rgba(19,16,33,0.92)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,rgba(242,95,58,0.22),transparent_55%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(19,16,33,0.55)_0%,rgba(19,16,33,0.2)_40%,transparent_65%)]" />
+        <div
+          className={`absolute inset-0 transition-opacity duration-[1600ms] ${mood ? "opacity-100" : "opacity-0"}`}
+          style={mood ? { background: mood.wash } : undefined}
+        />
       </motion.div>
 
       <nav className="absolute inset-x-0 top-0 z-20 px-4 pt-4 lg:px-8 lg:pt-6">
@@ -41,12 +58,14 @@ export function Hero() {
             <Link href="/sign-in" className="rounded-full px-4 py-2 text-sm text-white/85 transition hover:text-white">
               Sign in
             </Link>
-            <Link
-              href="/sign-up"
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ink-950 transition hover:scale-[1.03] hover:shadow-glow"
-            >
-              Start a trip
-            </Link>
+            <Magnetic strength={0.2}>
+              <Link
+                href="/sign-up"
+                className="block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ink-950 transition hover:shadow-glow"
+              >
+                Start a trip
+              </Link>
+            </Magnetic>
           </div>
         </div>
       </nav>
@@ -65,7 +84,13 @@ export function Hero() {
               className="eyebrow mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white/90 backdrop-blur"
             >
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sunset-300" />
-              Every city, beach & backroad in India
+              {moment && mood ? (
+                <span key={moment.daypart}>
+                  {mood.label} in India · {moment.time}
+                </span>
+              ) : (
+                "Every city, beach & backroad in India"
+              )}
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, y: 40 }}
@@ -94,16 +119,20 @@ export function Hero() {
               transition={{ duration: 1, delay: 0.85, ease }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <Link
-                href="/sign-up"
-                className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-base font-semibold text-ink-950 shadow-elevated transition hover:shadow-glow"
-              >
-                Start your trip
-                <span className="transition-transform duration-standard group-hover:translate-x-1">→</span>
-              </Link>
-              <a href="#how" className="glass-dark inline-flex items-center gap-2 rounded-full px-6 py-4 text-base text-white transition hover:bg-white/20">
-                See how it works
-              </a>
+              <Magnetic>
+                <Link
+                  href="/sign-up"
+                  className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-base font-semibold text-ink-950 shadow-elevated transition hover:shadow-glow"
+                >
+                  Start your trip
+                  <span className="transition-transform duration-standard group-hover:translate-x-1">→</span>
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.22}>
+                <a href="#trip" className="glass-dark inline-flex items-center gap-2 rounded-full px-6 py-4 text-base text-white transition hover:bg-white/20">
+                  Watch a trip unfold
+                </a>
+              </Magnetic>
             </motion.div>
           </div>
 
@@ -114,7 +143,9 @@ export function Hero() {
               transition={{ duration: 1.1, delay: 0.9, ease }}
               className="absolute right-6 top-0 w-[380px] animate-float"
             >
-              <BoardingPass />
+              <TiltCard className="rounded-[24px]" maxTilt={8}>
+                <BoardingPass />
+              </TiltCard>
             </motion.div>
 
             <motion.div

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Reveal } from "@/components/motion/reveal";
+import { TiltCard } from "@/components/motion/tilt-card";
 import { destinationShowcase } from "@/lib/destinations";
 
 export function DestinationsGallery() {
@@ -20,6 +21,7 @@ export function DestinationsGallery() {
       <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-6 [scrollbar-width:none] lg:px-[max(2rem,calc((100vw-1400px)/2+2rem))]">
         {destinationShowcase.map((destination, index) => (
           <Reveal key={destination.slug} delay={index * 0.08} className="shrink-0 snap-start">
+            <TiltCard className="rounded-[32px]" cursorLabel={`Plan ${destination.name}`}>
             <article className="group relative h-[480px] w-[320px] overflow-hidden rounded-[32px] shadow-elevated lg:w-[360px]">
               <Image
                 src={destination.image}
@@ -44,6 +46,7 @@ export function DestinationsGallery() {
                 <p className="mt-2 text-sm text-white/80">{destination.mood}</p>
               </div>
             </article>
+            </TiltCard>
           </Reveal>
         ))}
       </div>

@@ -15,7 +15,7 @@ export function DayRouteMap() {
         <motion.path
           d={routePath}
           fill="none"
-          stroke="#f25f3a"
+          stroke="#2277b0"
           strokeWidth="8"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -27,14 +27,14 @@ export function DayRouteMap() {
         {stops.map((stop, index) => (
           <g key={stop.name}>
             <circle cx={stop.x} cy={stop.y} r="30" fill="#ffffff" />
-            <circle cx={stop.x} cy={stop.y} r="23" fill={index === 0 ? "#131021" : "#f25f3a"} />
+            <circle cx={stop.x} cy={stop.y} r="23" fill={index === 0 ? "#0f172a" : "#2277b0"} />
             <text x={stop.x} y={stop.y + 9} textAnchor="middle" fontSize="26" fontWeight="700" fill="#ffffff" fontFamily="var(--font-body)">
               {index + 1}
             </text>
           </g>
         ))}
       </svg>
-      <span className="absolute bottom-2 right-3 rounded bg-white/80 px-1.5 py-0.5 text-[10px] text-ink-500">© OpenStreetMap contributors</span>
+      <span className="absolute bottom-2 right-3 rounded bg-white/80 px-1.5 py-0.5 text-[10px] text-slate-500">© OpenStreetMap contributors</span>
     </div>
   );
 }

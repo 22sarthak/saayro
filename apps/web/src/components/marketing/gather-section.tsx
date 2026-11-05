@@ -24,21 +24,21 @@ function GroupChat() {
       <div className="flex items-center gap-3 border-b border-black/5 px-4 py-3">
         <AvatarStack names={["Kabir", "Meera"]} size="sm" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-ink-900">Goa Gang 🌴</p>
-          <p className="truncate text-[11px] text-ink-400">Aarav, Kabir, Meera, Rohan, Sara, You</p>
+          <p className="truncate text-sm font-semibold text-slate-900">Goa Gang 🌴</p>
+          <p className="truncate text-[11px] text-slate-400">Aarav, Kabir, Meera, Rohan, Sara, You</p>
         </div>
       </div>
       <div className="space-y-1.5 bg-[#efeae2] px-3 py-3">
         {chat.map((message) => (
           <div key={message.time} className="w-fit max-w-[88%] rounded-[12px] rounded-tl-[4px] bg-white px-2.5 py-1.5 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
             <p className={`text-[11px] font-semibold ${message.color}`}>{message.name}</p>
-            <p className="text-[13px] leading-[18px] text-ink-900">{message.text}</p>
-            <p className="mt-0.5 text-right text-[10px] text-ink-400">{message.time}</p>
+            <p className="text-[13px] leading-[18px] text-slate-900">{message.text}</p>
+            <p className="mt-0.5 text-right text-[10px] text-slate-400">{message.time}</p>
           </div>
         ))}
         <div className="ml-auto w-fit rounded-[12px] rounded-tr-[4px] bg-[#d9fdd3] px-2.5 py-1.5">
-          <p className="text-[13px] text-ink-900">putting it all in Saayro</p>
-          <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-ink-400">
+          <p className="text-[13px] text-slate-900">putting it all in Saayro</p>
+          <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-slate-400">
             11:44 pm <CheckCheck className="h-3 w-3 text-[#53bdeb]" />
           </p>
         </div>
@@ -49,7 +49,7 @@ function GroupChat() {
 
 function ReelFrame() {
   return (
-    <div className="relative aspect-[9/16] w-[190px] overflow-hidden rounded-[22px] bg-ink-950 shadow-elevated ring-1 ring-black/10">
+    <div className="relative aspect-[9/16] w-[190px] overflow-hidden rounded-[22px] bg-slate-950 shadow-elevated ring-1 ring-black/10">
       <Image src="/destinations/goa-palolem.jpg" alt="" fill sizes="190px" className="object-cover object-[30%_50%]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35),transparent_25%,transparent_55%,rgba(0,0,0,0.75))]" />
       <p className="absolute left-3 top-3 text-sm font-semibold text-white">Reels</p>
@@ -61,7 +61,7 @@ function ReelFrame() {
       </div>
       <div className="absolute inset-x-3 bottom-3 text-white">
         <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-full bg-marigold-300 ring-1 ring-white" />
+          <span className="h-6 w-6 rounded-full bg-amber-300 ring-1 ring-white" />
           <span className="text-[11px] font-semibold">konkan.diaries</span>
           <span className="rounded-md border border-white/60 px-1.5 text-[10px]">Follow</span>
         </div>
@@ -77,27 +77,27 @@ function ReelFrame() {
 function TicketPreview() {
   return (
     <div className="w-[210px] rounded-[16px] bg-white p-2 shadow-elevated ring-1 ring-black/5">
-      <div className="rounded-[10px] border border-ink-100 bg-[#fcfcfd] p-3">
+      <div className="rounded-[10px] border border-slate-100 bg-[#fcfcfd] p-3">
         <div className="flex items-center justify-between">
-          <span className="h-2 w-12 rounded-full bg-ink-800" />
-          <span className="font-mono text-[9px] tracking-widest text-ink-400">E-TICKET</span>
+          <span className="h-2 w-12 rounded-full bg-slate-800" />
+          <span className="font-mono text-[9px] tracking-widest text-slate-400">E-TICKET</span>
         </div>
-        <p className="mt-3 font-mono text-[15px] font-semibold text-ink-900">BLR → GOI</p>
-        <p className="font-mono text-[9px] text-ink-400">27 DEC 2026 · 06:10 · SEAT 14C</p>
+        <p className="mt-3 font-mono text-[15px] font-semibold text-slate-900">BLR → GOI</p>
+        <p className="font-mono text-[9px] text-slate-400">27 DEC 2026 · 06:10 · SEAT 14C</p>
         <div className="mt-3 space-y-1">
-          <span className="block h-1.5 w-full rounded-full bg-ink-100" />
-          <span className="block h-1.5 w-4/5 rounded-full bg-ink-100" />
-          <span className="block h-1.5 w-3/5 rounded-full bg-ink-100" />
+          <span className="block h-1.5 w-full rounded-full bg-slate-100" />
+          <span className="block h-1.5 w-4/5 rounded-full bg-slate-100" />
+          <span className="block h-1.5 w-3/5 rounded-full bg-slate-100" />
         </div>
         <div className="mt-3 flex h-6 items-end gap-[2px]">
           {[3, 1, 2, 1, 3, 2, 1, 1, 3, 1, 2, 3, 1, 2, 1, 3, 1, 2, 2, 1, 3, 1].map((width, index) => (
-            <span key={index} className="h-full bg-ink-900" style={{ width }} />
+            <span key={index} className="h-full bg-slate-900" style={{ width }} />
           ))}
         </div>
       </div>
       <div className="flex items-center gap-2 px-1 pb-0.5 pt-2">
         <span className="rounded bg-rose-500 px-1 py-0.5 text-[8px] font-bold text-white">PDF</span>
-        <span className="truncate text-[11px] font-medium text-ink-700">IndiGo_e-ticket.pdf</span>
+        <span className="truncate text-[11px] font-medium text-slate-700">IndiGo_e-ticket.pdf</span>
       </div>
     </div>
   );
@@ -110,10 +110,10 @@ function StayLinkPreview() {
         <Image src="/destinations/goa-anjuna.jpg" alt="" fill sizes="250px" className="object-cover object-[50%_70%]" />
       </div>
       <div className="p-3">
-        <p className="text-[11px] text-ink-400">airbnb.co.in</p>
-        <p className="mt-0.5 text-[13px] font-semibold leading-5 text-ink-900">Casa Saudade · Villa in Assagao</p>
-        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-ink-500">
-          <Star className="h-3 w-3 fill-ink-900 text-ink-900" /> 4.92 · 4 bedrooms · private pool
+        <p className="text-[11px] text-slate-400">airbnb.co.in</p>
+        <p className="mt-0.5 text-[13px] font-semibold leading-5 text-slate-900">Casa Saudade · Villa in Assagao</p>
+        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
+          <Star className="h-3 w-3 fill-slate-900 text-slate-900" /> 4.92 · 4 bedrooms · private pool
         </p>
       </div>
     </div>
@@ -123,16 +123,16 @@ function StayLinkPreview() {
 function VoiceNote() {
   return (
     <div className="flex w-[230px] items-center gap-3 rounded-[16px] bg-white px-3 py-2.5 shadow-elevated ring-1 ring-black/5">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-950">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-950">
         <Play className="ml-0.5 h-3.5 w-3.5 fill-white text-white" />
       </span>
       <div className="flex-1">
         <div className="flex h-5 items-center gap-[2px]">
           {[5, 9, 14, 8, 12, 6, 11, 16, 7, 10, 5, 13, 9, 6, 11, 8].map((height, index) => (
-            <span key={index} className={`w-[2.5px] rounded-full ${index < 6 ? "bg-sunset-500" : "bg-ink-200"}`} style={{ height }} />
+            <span key={index} className={`w-[2.5px] rounded-full ${index < 6 ? "bg-mint-500" : "bg-slate-200"}`} style={{ height }} />
           ))}
         </div>
-        <p className="mt-0.5 text-[10px] text-ink-400">Rohan · 0:24</p>
+        <p className="mt-0.5 text-[10px] text-slate-400">Rohan · 0:24</p>
       </div>
     </div>
   );
@@ -162,8 +162,8 @@ function ScatteredInputs() {
 
 function TripRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="border-t border-sand-200 py-3.5 first:border-t-0 first:pt-0">
-      <p className="eyebrow text-ink-400">{label}</p>
+    <div className="border-t border-porcelain-200 py-3.5 first:border-t-0 first:pt-0">
+      <p className="eyebrow text-slate-400">{label}</p>
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -183,21 +183,21 @@ function OrganisedTrip() {
       <div className="mx-auto w-full max-w-[420px] rounded-[28px] bg-white p-6 shadow-elevated ring-1 ring-black/5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-ink-400">27 Dec – 1 Jan · 6 people</p>
-            <p className="display mt-1 text-[2rem] text-ink-950">Goa, with the gang</p>
+            <p className="text-xs text-slate-400">27 Dec – 1 Jan · 6 people</p>
+            <p className="display mt-1 text-[2rem] text-slate-950">Goa, with the gang</p>
           </div>
           <AvatarStack names={["Aarav", "Sara", "Kabir", "Meera", "Rohan"]} size="sm" />
         </div>
 
         <div className="mt-5">
           <TripRow label="Bookings">
-            <div className="flex items-center justify-between rounded-[12px] bg-sand-50 px-3 py-2 font-mono text-xs text-ink-800">
+            <div className="flex items-center justify-between rounded-[12px] bg-porcelain-50 px-3 py-2 font-mono text-xs text-slate-800">
               <span>6E 2134 · BLR → GOI</span>
-              <span className="text-ink-400">27 Dec 06:10</span>
+              <span className="text-slate-400">27 Dec 06:10</span>
             </div>
-            <div className="mt-1.5 flex items-center justify-between rounded-[12px] bg-sand-50 px-3 py-2 text-xs text-ink-800">
+            <div className="mt-1.5 flex items-center justify-between rounded-[12px] bg-porcelain-50 px-3 py-2 text-xs text-slate-800">
               <span>Casa Saudade, Assagao</span>
-              <span className="font-medium text-palm-600">Confirmed</span>
+              <span className="font-medium text-mint-600">Confirmed</span>
             </div>
           </TripRow>
 
@@ -210,8 +210,8 @@ function OrganisedTrip() {
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-ink-600">
-                <span className="font-semibold text-ink-900">14 saved</span>, 6 locked in by votes
+              <p className="text-xs text-slate-600">
+                <span className="font-semibold text-slate-900">14 saved</span>, 6 locked in by votes
               </p>
             </div>
           </TripRow>
@@ -219,33 +219,33 @@ function OrganisedTrip() {
           <TripRow label="Plan">
             <div className="grid grid-cols-5 gap-1.5">
               {days.map((item) => (
-                <div key={item.day} className="rounded-[10px] border border-sand-200 px-1 py-1.5 text-center">
-                  <p className="text-[11px] font-semibold text-ink-900">{item.day}</p>
-                  <p className="text-[10px] text-ink-400">{item.area}</p>
+                <div key={item.day} className="rounded-[10px] border border-porcelain-200 px-1 py-1.5 text-center">
+                  <p className="text-[11px] font-semibold text-slate-900">{item.day}</p>
+                  <p className="text-[10px] text-slate-400">{item.area}</p>
                 </div>
               ))}
             </div>
           </TripRow>
 
           <TripRow label="Money">
-            <div className="flex items-baseline justify-between text-xs text-ink-600">
+            <div className="flex items-baseline justify-between text-xs text-slate-600">
               <span>
-                <span className="font-semibold text-ink-900">₹18.4k</span> of ₹25k
+                <span className="font-semibold text-slate-900">₹18.4k</span> of ₹25k
               </span>
               <span>Sara owes you ₹1,240</span>
             </div>
-            <div className="mt-2 flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-ink-100">
-              <span className="w-[33%] bg-sunset-400" />
-              <span className="w-[25%] bg-marigold-400" />
-              <span className="w-[15%] bg-lagoon-400" />
+            <div className="mt-2 flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-slate-100">
+              <span className="w-[33%] bg-sky-400" />
+              <span className="w-[25%] bg-amber-400" />
+              <span className="w-[15%] bg-sky-400" />
             </div>
           </TripRow>
         </div>
 
-        <div className="mt-2 flex items-start gap-3 rounded-[16px] bg-dusk-100/70 p-3">
+        <div className="mt-2 flex items-start gap-3 rounded-[16px] bg-violet-100/70 p-3">
           <BuddyMark size={26} />
-          <p className="text-[13px] leading-5 text-ink-800">
-            No one has booked the cab back to the airport on the 1st. <span className="font-semibold text-dusk-700">Remind Rohan?</span>
+          <p className="text-[13px] leading-5 text-slate-800">
+            No one has booked the cab back to the airport on the 1st. <span className="font-semibold text-violet-700">Remind Rohan?</span>
           </p>
         </div>
       </div>
@@ -258,7 +258,7 @@ function FlowConnector() {
     <div className="hidden w-32 flex-col items-center gap-3 lg:flex">
       <svg viewBox="0 0 120 260" className="h-[260px] w-full" fill="none">
         {[20, 75, 130, 185, 240].map((y) => (
-          <path key={y} d={`M0 ${y} C 60 ${y}, 60 130, 120 130`} stroke="#d6bc9a" strokeWidth="1.5" strokeDasharray="4 6" className="animate-dash" />
+          <path key={y} d={`M0 ${y} C 60 ${y}, 60 130, 120 130`} stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 6" className="animate-dash" />
         ))}
       </svg>
     </div>
@@ -269,11 +269,11 @@ export function GatherSection() {
   return (
     <section id="how" className="relative mx-auto max-w-[1400px] px-5 py-28 lg:px-8 lg:py-36">
       <Reveal className="mx-auto max-w-3xl text-center">
-        <p className="eyebrow text-sunset-600">How Saayro works</p>
-        <h2 className="display mt-4 text-balance text-5xl text-ink-950 lg:text-7xl">
-          Your trip is scattered. <em className="text-sunset-600">Saayro gathers it.</em>
+        <p className="eyebrow text-sky-700">How Saayro works</p>
+        <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">
+          Your trip is scattered. <em>Saayro gathers it.</em>
         </h2>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-ink-600">
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
           Half the plan lives in the group chat, the rest in saved reels and inbox tickets. Drop everything in and watch it become one trip.
         </p>
       </Reveal>
@@ -287,10 +287,10 @@ export function GatherSection() {
       <div className="mt-24 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
         {steps.map((step, index) => (
           <Reveal key={step.title} delay={index * 0.08}>
-            <div className="border-t border-ink-900 pt-5">
-              <p className="font-mono text-xs text-ink-400">Step {index + 1}</p>
-              <p className="display mt-3 text-2xl text-ink-950">{step.title}</p>
-              <p className="mt-2 text-sm leading-6 text-ink-600">{step.body}</p>
+            <div className="border-t border-slate-900 pt-5">
+              <p className="font-mono text-xs text-slate-400">Step {index + 1}</p>
+              <p className="display mt-3 text-2xl text-slate-950">{step.title}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{step.body}</p>
             </div>
           </Reveal>
         ))}

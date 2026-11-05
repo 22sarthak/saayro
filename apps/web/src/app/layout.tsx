@@ -1,14 +1,14 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Bricolage_Grotesque, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { createCssVariables } from "@saayro/ui";
 import { SessionProvider } from "@/components/auth/session-provider";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
-  axes: ["SOFT", "opsz"],
+  axes: ["opsz", "wdth"],
   display: "swap"
 });
 
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fffbf5"
+  themeColor: "#f7f8fa"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body style={cssVariables} className="font-body text-ink-950 antialiased">
+      <body style={cssVariables} className="font-body text-slate-900 antialiased">
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

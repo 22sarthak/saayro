@@ -89,7 +89,7 @@ function RouteLeg({ index, progress, strokeScale, registerPath }: RouteLegProps)
         ref={(element) => registerPath(index, element)}
         d={leg.path}
         fill="none"
-        stroke={index === goaTripMap.legs.length - 1 ? "#169e99" : "#f25f3a"}
+        stroke={index === goaTripMap.legs.length - 1 ? "#8466e8" : "#2277b0"}
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{ pathLength, strokeWidth: width, transition: "stroke-width 600ms ease" }}
@@ -194,19 +194,19 @@ export function TripStory() {
   const strokeScale = keyframes[active]?.scale ?? 0.4;
 
   return (
-    <section id="trip" aria-label="A Goa trip, day by day" className="relative bg-sand-50 pt-24 lg:pt-32">
+    <section id="trip" aria-label="A Goa trip, day by day" className="relative bg-porcelain-50 pt-24 lg:pt-32">
       <div className="mx-auto max-w-[1400px] px-5 lg:px-8">
         <Reveal className="max-w-3xl">
-          <p className="eyebrow text-lagoon-600">One trip, start to finish</p>
-          <h2 className="display mt-4 text-balance text-5xl text-ink-950 lg:text-7xl">
-            Six days in Goa, <em className="text-sunset-600">as Saayro sees it.</em>
+          <p className="eyebrow text-sky-600">One trip, start to finish</p>
+          <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">
+            Six days in Goa, <em>as Saayro sees it.</em>
           </h2>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-ink-600">Scroll the trip. Every road is real, every day is the plan a group of six actually made.</p>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">Scroll the trip. Every road is real, every day is the plan a group of six actually made.</p>
         </Reveal>
 
         <div className="relative mt-10 grid lg:mt-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-14">
-          <div className="sticky top-0 z-10 -mx-5 h-[48svh] bg-sand-50 px-3 py-3 lg:col-start-2 lg:row-start-1 lg:mx-0 lg:h-screen lg:self-start lg:px-0 lg:py-6">
-            <div ref={panelRef} className="relative h-full overflow-hidden rounded-[28px] bg-[#cfe8e4] shadow-elevated ring-1 ring-black/5">
+          <div className="sticky top-0 z-10 -mx-5 h-[48svh] bg-porcelain-50 px-3 py-3 lg:col-start-2 lg:row-start-1 lg:mx-0 lg:h-screen lg:self-start lg:px-0 lg:py-6">
+            <div ref={panelRef} className="relative h-full overflow-hidden rounded-[28px] bg-[#d3e5f3] shadow-elevated ring-1 ring-black/5">
               <motion.div
                 className="absolute left-0 top-0 will-change-transform"
                 style={{ x: camera.x, y: camera.y, scale: camera.scale, originX: 0, originY: 0, width: goaTripMap.width, height: goaTripMap.height }}
@@ -230,14 +230,14 @@ export function TripStory() {
                   <ScreenPoint key={key} mapX={place.x} mapY={place.y} camera={camera}>
                     <div className={`-translate-x-1/2 -translate-y-1/2 transition-all duration-leisurely ease-entrance ${shown ? "scale-100 opacity-100" : "scale-50 opacity-0"}`}>
                       {Icon ? (
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink-950 text-white ring-[3px] ring-white">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-white ring-[3px] ring-white">
                           <Icon className="h-3.5 w-3.5" strokeWidth={2} />
                         </span>
                       ) : (
-                        <span className={`block rounded-full ring-[3px] ring-white ${current ? "h-4 w-4 bg-sunset-500" : "h-3 w-3 bg-ink-700"}`} />
+                        <span className={`block rounded-full ring-[3px] ring-white ${current ? "h-4 w-4 bg-sky-600" : "h-3 w-3 bg-slate-700"}`} />
                       )}
                       <span
-                        className={`absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-ink-900 shadow-soft transition-opacity duration-standard ${
+                        className={`absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-900 shadow-soft transition-opacity duration-standard ${
                           current || Icon ? "opacity-100" : "opacity-0"
                         }`}
                       >
@@ -250,29 +250,29 @@ export function TripStory() {
 
               <ScreenPoint mapX={travellerX} mapY={travellerY} camera={camera}>
                 <span className="relative -ml-3 -mt-3 flex h-6 w-6 items-center justify-center">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-sunset-400/50" />
-                  <span className="relative h-3.5 w-3.5 rounded-full bg-white shadow-elevated ring-[3px] ring-sunset-500" />
+                  <span className="absolute inset-0 animate-ping rounded-full bg-sky-400/50" />
+                  <span className="relative h-3.5 w-3.5 rounded-full bg-white shadow-elevated ring-[3px] ring-sky-600" />
                 </span>
               </ScreenPoint>
 
               <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between lg:inset-x-5 lg:top-5">
                 <div key={chapter?.id} className="glass-strong animate-rise-in rounded-2xl px-4 py-2.5">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-ink-500">{chapter?.date}</p>
-                  <p className="text-sm font-semibold text-ink-900">{chapter?.day}</p>
+                  <p className="font-mono text-[11px] uppercase tracking-wider text-slate-500">{chapter?.date}</p>
+                  <p className="text-sm font-semibold text-slate-900">{chapter?.day}</p>
                 </div>
                 <div className="glass-strong flex gap-1 rounded-full p-1.5">
                   {goaTripChapters.map((item, index) => (
-                    <span key={item.id} className={`h-1.5 rounded-full transition-all duration-standard ${index === active ? "w-6 bg-sunset-500" : index < active ? "w-1.5 bg-ink-700" : "w-1.5 bg-ink-200"}`} />
+                    <span key={item.id} className={`h-1.5 rounded-full transition-all duration-standard ${index === active ? "w-6 bg-sky-600" : index < active ? "w-1.5 bg-slate-700" : "w-1.5 bg-slate-200"}`} />
                   ))}
                 </div>
               </div>
 
               <div className="pointer-events-none absolute bottom-3 left-3 lg:bottom-5 lg:left-5">
-                <p key={chapter?.id} className="glass-strong animate-rise-in rounded-full px-3.5 py-1.5 text-xs font-medium text-ink-800">
+                <p key={chapter?.id} className="glass-strong animate-rise-in rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-800">
                   {leg?.distanceKm} km · {leg?.durationMin} min by road
                 </p>
               </div>
-              <span className="absolute bottom-2 right-3 rounded bg-white/80 px-1.5 py-0.5 text-[10px] text-ink-500">© OpenStreetMap contributors</span>
+              <span className="absolute bottom-2 right-3 rounded bg-white/80 px-1.5 py-0.5 text-[10px] text-slate-500">© OpenStreetMap contributors</span>
             </div>
           </div>
 
@@ -284,13 +284,13 @@ export function TripStory() {
                   index === active ? "opacity-100" : "opacity-30"
                 }`}
               >
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-400">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-slate-400">
                   {item.day} · {item.date}
                 </p>
-                <h3 className="display mt-3 text-4xl text-ink-950 lg:text-6xl">
-                  {item.title} <em className="text-sunset-600">{item.emphasis}</em>
+                <h3 className="display mt-3 text-4xl text-slate-950 lg:text-6xl">
+                  {item.title} <em>{item.emphasis}</em>
                 </h3>
-                <p className="mt-4 max-w-md text-base leading-7 text-ink-600 lg:text-lg lg:leading-8">{item.body}</p>
+                <p className="mt-4 max-w-md text-base leading-7 text-slate-600 lg:text-lg lg:leading-8">{item.body}</p>
                 <div className="mt-7">
                   <TripStoryCard artifact={item.artifact} />
                 </div>

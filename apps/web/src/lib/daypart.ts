@@ -26,12 +26,12 @@ export const daypartMoods: Record<Daypart, DaypartMood> = {
   golden: {
     label: "Golden hour",
     openingClip: "goa-coast",
-    wash: "radial-gradient(ellipse at 70% 10%, rgba(255,179,122,0.32), transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(242,95,58,0.22), transparent 55%)"
+    wash: "radial-gradient(ellipse at 70% 10%, rgba(253,224,142,0.22), transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(195,179,250,0.16), transparent 55%)"
   },
   night: {
     label: "After dark",
     openingClip: "amritsar-night",
-    wash: "linear-gradient(180deg, rgba(36,28,84,0.40), rgba(19,16,33,0.15) 45%, transparent 70%)"
+    wash: "linear-gradient(180deg, rgba(30,41,82,0.40), rgba(15,23,42,0.15) 45%, transparent 70%)"
   }
 };
 

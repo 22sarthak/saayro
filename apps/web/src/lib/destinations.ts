@@ -16,7 +16,7 @@ export const destinationShowcase: DestinationShowcase[] = [
     region: "Konkan coast",
     mood: "Shacks, sunsets & scooters",
     image: "/destinations/goa-anjuna.jpg",
-    theme: createTripTheme("#f25f3a", "#169e99")
+    theme: createTripTheme("#2f93d0", "#22a378")
   },
   {
     slug: "ladakh",
@@ -48,7 +48,7 @@ export const destinationShowcase: DestinationShowcase[] = [
     region: "Ganga plains",
     mood: "Ghats, aarti & old lanes",
     image: "/destinations/varanasi-ghats.jpg",
-    theme: createTripTheme("#e39a0e", "#f25f3a")
+    theme: createTripTheme("#e09312", "#d9445a")
   },
   {
     slug: "hampi",
@@ -56,7 +56,7 @@ export const destinationShowcase: DestinationShowcase[] = [
     region: "Karnataka",
     mood: "Boulders & ruined empires",
     image: "/destinations/hampi-virupaksha.jpg",
-    theme: createTripTheme("#c9733a", "#7e62ec")
+    theme: createTripTheme("#e09312", "#8466e8")
   }
 ];
 

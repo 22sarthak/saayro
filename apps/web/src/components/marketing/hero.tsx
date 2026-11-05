@@ -34,12 +34,11 @@ export function Hero() {
   }, [mood]);
 
   return (
-    <section ref={ref} className="relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-ink-950">
+    <section ref={ref} className="relative isolate h-[100svh] min-h-[760px] overflow-hidden bg-slate-950">
       <motion.div className="absolute inset-0 -z-10" style={{ y: imageY }}>
         <HeroReel index={clipIndex} onAdvance={advance} />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,16,33,0.6)_0%,rgba(19,16,33,0.1)_30%,rgba(19,16,33,0.25)_60%,rgba(19,16,33,0.92)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,rgba(242,95,58,0.22),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(19,16,33,0.55)_0%,rgba(19,16,33,0.2)_40%,transparent_65%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.6)_0%,rgba(15,23,42,0.1)_30%,rgba(15,23,42,0.25)_60%,rgba(15,23,42,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.55)_0%,rgba(15,23,42,0.2)_40%,transparent_65%)]" />
         <div
           className={`absolute inset-0 transition-opacity duration-[1600ms] ${mood ? "opacity-100" : "opacity-0"}`}
           style={mood ? { background: mood.wash } : undefined}
@@ -61,7 +60,7 @@ export function Hero() {
             <Magnetic strength={0.2}>
               <Link
                 href="/sign-up"
-                className="block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ink-950 transition hover:shadow-glow"
+                className="block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:shadow-glow"
               >
                 Start a trip
               </Link>
@@ -83,7 +82,7 @@ export function Hero() {
               transition={{ duration: 0.9, delay: 0.3, ease }}
               className="eyebrow mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white/90 backdrop-blur"
             >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sunset-300" />
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-300" />
               {moment && mood ? (
                 <span key={moment.daypart}>
                   {mood.label} in India · {moment.time}
@@ -102,7 +101,7 @@ export function Hero() {
               <br />
               finally in
               <br />
-              <em className="text-gradient-golden pr-3">one place.</em>
+              <em className="text-white/60">one place.</em>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 24 }}
@@ -122,7 +121,7 @@ export function Hero() {
               <Magnetic>
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-base font-semibold text-ink-950 shadow-elevated transition hover:shadow-glow"
+                  className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-base font-semibold text-slate-950 shadow-elevated transition hover:shadow-glow"
                 >
                   Start your trip
                   <span className="transition-transform duration-standard group-hover:translate-x-1">→</span>
@@ -157,8 +156,8 @@ export function Hero() {
               <div className="flex items-start gap-3">
                 <BuddyMark size={30} />
                 <div>
-                  <p className="text-sm font-semibold text-ink-900">Buddy</p>
-                  <p className="mt-0.5 text-[13px] leading-5 text-ink-600">
+                  <p className="text-sm font-semibold text-slate-900">Buddy</p>
+                  <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                     Thalassa books out on New Year&apos;s week. Want me to hold a 7:30 table for six on the 29th?
                   </p>
                 </div>
@@ -173,8 +172,8 @@ export function Hero() {
             >
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-ink-900">Goa, with the gang</p>
-                  <p className="text-xs text-ink-500">27 Dec – 1 Jan · 52 days to go</p>
+                  <p className="text-sm font-semibold text-slate-900">Goa, with the gang</p>
+                  <p className="text-xs text-slate-500">27 Dec – 1 Jan · 52 days to go</p>
                 </div>
                 <AvatarStack names={["Aarav", "Sara", "Kabir", "Meera", "Rohan"]} size="sm" />
               </div>

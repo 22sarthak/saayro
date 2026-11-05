@@ -1,6 +1,6 @@
 /**
  * North Goa day route for the landing page planner tile.
- * Map: (c) OpenStreetMap contributors (ODbL), toned for Golden Hour. Route geometry: OSRM.
+ * Map: (c) OpenStreetMap contributors (ODbL), toned for the porcelain palette. Route geometry: OSRM.
  * Coordinates are pixels in /maps/north-goa-map.jpg (1748x1452).
  */
 export const northGoaMap = {

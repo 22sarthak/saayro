@@ -8,15 +8,15 @@ export function DestinationMarquee() {
   const items = [...marqueeDestinations, ...marqueeDestinations];
 
   return (
-    <section aria-label="Destinations across India" className="relative overflow-hidden border-b border-sand-200 bg-sand-50 pb-10 pt-8">
-      <p className="eyebrow mb-4 text-center text-ink-400">One app for every road in India</p>
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-40 bg-gradient-to-r from-sand-50 via-sand-50/80 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-40 bg-gradient-to-l from-sand-50 via-sand-50/80 to-transparent" />
+    <section aria-label="Destinations across India" className="relative overflow-hidden border-b border-porcelain-200 bg-porcelain-50 pb-10 pt-8">
+      <p className="eyebrow mb-4 text-center text-slate-400">One app for every road in India</p>
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-40 bg-gradient-to-r from-porcelain-50 via-porcelain-50/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-40 bg-gradient-to-l from-porcelain-50 via-porcelain-50/80 to-transparent" />
 
       <div className="flex w-max animate-marquee items-center hover:[animation-play-state:paused]">
         {items.map((destination, index) => {
           const ModeIcon = travelModes[index % travelModes.length] ?? Plane;
-          const italic = index % 2 === 1;
+          const muted = index % 2 === 1;
           return (
             <div key={`${destination.name}-${index}`} className="flex items-center">
               <div className="group/item relative flex items-start px-8">
@@ -24,15 +24,15 @@ export function DestinationMarquee() {
                   <Image src={destination.image} alt="" fill sizes="112px" className="object-cover" />
                 </span>
                 <span
-                  className={`display cursor-default text-[clamp(2.5rem,4.5vw,4.25rem)] transition-colors duration-standard group-hover/item:text-lagoon-600 ${
-                    italic ? "italic text-sunset-600" : "text-ink-950"
+                  className={`display cursor-default text-[clamp(2.5rem,4.5vw,4.25rem)] transition-colors duration-standard group-hover/item:text-sky-600 ${
+                    muted ? "text-slate-400" : "text-slate-900"
                   }`}
                 >
                   {destination.name}
                 </span>
-                <span className="ml-2 mt-2 font-mono text-[10px] tracking-wider text-ink-400">{destination.latitude}</span>
+                <span className="ml-2 mt-2 font-mono text-[10px] tracking-wider text-slate-400">{destination.latitude}</span>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-sand-300 text-ink-500">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-porcelain-300 text-slate-500">
                 <ModeIcon className="h-[18px] w-[18px]" strokeWidth={1.6} />
               </span>
             </div>

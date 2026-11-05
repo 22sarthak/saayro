@@ -19,18 +19,18 @@ export default function CreditsPage() {
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
       <SaayroLogo />
-      <h1 className="display mt-12 text-5xl text-ink-950">Photo credits</h1>
-      <p className="mt-4 text-ink-600">Destination photography from Wikimedia Commons contributors and video from Pexels contributors, used under the licences below.</p>
-      <ul className="mt-10 divide-y divide-sand-200">
+      <h1 className="display mt-12 text-5xl text-slate-950">Photo credits</h1>
+      <p className="mt-4 text-slate-600">Destination photography from Wikimedia Commons contributors and video from Pexels contributors, used under the licences below.</p>
+      <ul className="mt-10 divide-y divide-porcelain-200">
         {entries.map(([slug, credit]) => (
           <li key={slug} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold text-ink-900">{credit.title}</p>
-              <p className="text-sm text-ink-500">
+              <p className="font-semibold text-slate-900">{credit.title}</p>
+              <p className="text-sm text-slate-500">
                 {credit.author} · {credit.license}
               </p>
             </div>
-            <Link href={credit.source} className="text-sm text-sunset-600 hover:underline" target="_blank" rel="noreferrer">
+            <Link href={credit.source} className="text-sm text-sky-700 hover:underline" target="_blank" rel="noreferrer">
               Source ↗
             </Link>
           </li>

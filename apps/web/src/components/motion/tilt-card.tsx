@@ -65,7 +65,7 @@ export function TiltCard({ children, className, maxTilt = 6, cursorLabel }: Tilt
         {cursorLabel ? (
           <motion.span aria-hidden className="pointer-events-none absolute left-0 top-0 z-10" style={{ x: labelX, y: labelY }}>
             <span
-              className={`block -translate-x-1/2 -translate-y-[140%] whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-950 shadow-elevated transition duration-standard ease-entrance ${
+              className={`block -translate-x-1/2 -translate-y-[140%] whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-elevated transition duration-standard ease-entrance ${
                 hovering ? "scale-100 opacity-100" : "scale-75 opacity-0"
               }`}
             >

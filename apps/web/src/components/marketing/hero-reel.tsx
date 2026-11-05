@@ -48,7 +48,7 @@ export function HeroReel({ index, onAdvance }: HeroReelProps) {
   const nextIndex = (index + 1) % heroClips.length;
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-ink-950">
+    <div className="absolute inset-0 overflow-hidden bg-slate-950">
       {heroClips.map((clip, clipIndex) => {
         const isActive = clipIndex === index;
         const shouldLoad = isActive || clipIndex === nextIndex;
@@ -87,7 +87,7 @@ export function HeroReelCaption({ index, onSelect }: { index: number; onSelect: 
   if (!clip) return null;
 
   return (
-    <div className="w-[260px] rounded-[18px] bg-[radial-gradient(ellipse_at_center,rgba(19,16,33,0.35),transparent_75%)] p-3">
+    <div className="w-[260px] rounded-[18px] bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.35),transparent_75%)] p-3">
       <div className="flex gap-1.5">
         {heroClips.map((item, clipIndex) => (
           <button

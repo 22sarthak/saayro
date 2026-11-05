@@ -9,11 +9,11 @@ export function DestinationsGallery() {
       <div className="mx-auto max-w-[1400px] px-5 lg:px-8">
         <Reveal className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
-            <p className="eyebrow text-dusk-600">Pan-India</p>
-            <h2 className="display mt-4 text-balance text-5xl text-ink-950 lg:text-7xl">Every trip gets its own colour.</h2>
+            <p className="eyebrow text-violet-600">Pan-India</p>
+            <h2 className="display mt-4 text-balance text-5xl text-slate-950 lg:text-7xl">Every trip gets its own colour.</h2>
           </div>
-          <p className="max-w-sm text-base leading-7 text-ink-600">
-            Saayro themes each trip from its place, so Goa glows coral and Ladakh feels like thin, blue air.
+          <p className="max-w-sm text-base leading-7 text-slate-600">
+            Saayro themes each trip from its place, so Goa feels like sea glass and Jaipur glows pink.
           </p>
         </Reveal>
       </div>
